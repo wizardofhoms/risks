@@ -114,7 +114,7 @@ delete_tomb()
 # $2 - Identity
 open_tomb()
 {
-	local resource="${1}"
+    local resource="${1}"
 
     local tomb_label        # Cleartext identifier name of the tomb
     local tomb_file         # Encrypted name of the tomb, for the tomb file itself
@@ -137,21 +137,21 @@ open_tomb()
 
     # Some resources need to have fixed mount points, 
     # like the few below that are not matched by the wildcard.
-	case ${resource} in
-		gpg)
-			local mount_dir="${HOME}/.gnupg"
+    case ${resource} in
+        gpg)
+		    local mount_dir="${HOME}/.gnupg"
 		;;
-		pass)
-			local mount_dir="${HOME}/.password-store"
+        pass)
+            local mount_dir="${HOME}/.password-store"
 		;;
-		ssh)
-			local mount_dir="${HOME}/.ssh"
+        ssh)
+            local mount_dir="${HOME}/.ssh"
 		;;
-		mgmt)
-			local mount_dir="${HOME}/.tomb/mgmt"
+        mgmt)
+            local mount_dir="${HOME}/.tomb/mgmt"
 		;;
-		*)
-			local mount_dir="${HOME}/.tomb/${resource}"
+        *)
+            local mount_dir="${HOME}/.tomb/${resource}"
 		;;
 	esac
 
