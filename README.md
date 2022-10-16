@@ -55,7 +55,10 @@ While some of them are inherent to the original version, many are also specific 
     - [Initial setup](#initial-setup)
 - [Development](#development)
     - [Installing bashly](#installing-bashly)
-    - [Code base structure](#code-base-structure)
+    - [Code base](#code-base)
+        - [Structure](#structure)
+        - [Additional notes on the code](#additional-notes-on-the-code)
+        - [Conventions on code structure](#conventions-on-code-structure)
     - [Development workflow (adding commands)](#development-workflow-adding-commands)
 - [Additional usage workflows](#additional-usage-workflows)
 - [Command-line API](#command-line-api)
@@ -98,20 +101,20 @@ sudo cp /home/user/QubesIncoming/<disp_where_fscrypt_was_build>/fscrypt /usr/bin
 Finally, we install the tomb tool. First download the tomb script from a VM with internet access and copy it in our TemplateVM:
 ```
 cd /tmp
-wget -c https://files.dyne.org/tomb/Tomb-2.5.tar.gz
-wget -c https://files.dyne.org/tomb/Tomb-2.5.tar.gz.sha
-sha256sum -c Tomb-2.5.tar.gz.sha
-qvm-copy Tomb-2.5.tar.gz
+wget -c https://files.dyne.org/tomb/Tomb-2.9.tar.gz
+wget -c https://files.dyne.org/tomb/Tomb-2.9.tar.gz.sha
+sha256sum -c Tomb-2.9.tar.gz.sha
+qvm-copy Tomb-2.9.tar.gz
 ```
 
 After, install the tomb script in the TemplateVM:
 ```
 cd ~/QubesIncoming/<vm_where_tomb_was_downloaded>
-tar xvfz Tomb-2.5.tar.gz
-cd Tomb-2.5
+tar xvfz Tomb-2.9.tar.gz
+cd Tomb-2.9
 sudo make install
 cd ..
-rm -fR Tomb-2.5
+rm -fR Tomb-2.9
 ```
 
 ### AppVM vault packages
@@ -201,8 +204,65 @@ the configuration file in place, or use `risks config set <variable> <value>` co
 
 # Development
 
+In order to ease development and keep the (rather large) codebase structured, the [bashly CLI framework](https://bashly.dannyb.co) is used.
+
 ## Installing bashly
-## Code base structure
+
+Bashly requires ruby, and the bashly gem. To install all of them in the TemplateVM:
+```
+sudo apt install ruby
+gem install bashly
+sudo poweroff
+```
+Alternatively, if you want to install the bashly gem in the development AppVM:
+```
+gem install --user-install bashly
+```
+
+## Code base 
+
+### Structure
+The codebase is structured according to bashly conventions and usage.
+- `settings.yml` holds the general settings used by bashly when searching for YAML declarations, 
+  shell code, and for generating the final script.
+- `Makefile` is used to adjust for a few things that bashly doesn't handle, and to bundle the 
+  process into one command/workflow.
+- `risks` is the final generated CLI script.
+- `src/` contains all the code needed by bashly to generate our CLI script.
+
+In `src/`, the code is structured as the following:
+- `<command_files>...` - All files corresponding to CLI commands. Note that they are named 
+- `lib/` - Contains the code used by CLI commands in `src/`, split into files depending on their role. 
+- `lib/validations/` - Contains all functions used to validate CLI args/flags when parsing command.
+  after their CLI command position (eg. `risks hush format` command code is contained in `hush_format_command.sh`)
+
+In the `src/` directory, some files have a special role:
+- `bashly.yml` is the root YAML declaration scanned by bashly. It comprises the list of required binaries,
+  a list of other YAML files in which commands are declared, the version tag (generated in the `Makefile`),
+  and some hidden commands.
+- `hush_commands.yml` is an example of YAML file in which commands are declared, here the `hush` subcommand and
+  its own subcommands, along with their arguments, flags, help string, example usage, etc.
+- `header.sh` contains the shebang header to be included at the top of our final CLI script (here, a `zsh` shebang)
+- `initialize.sh` contains shell code that is to be executed before any command is actually run. In this script,
+  we initialize global variables (sometimes parsing them from the `risks` configuration file), and perform other
+  pre-run checks that are not handled by the rest of our code.
+
+### Additional notes on the code
+- Although the resulting script is a ZSH script (with the corresponding shebang header), all files in the `src/` 
+  directory must have the `.sh` extension for bashly to scan and recognize them.
+- Note that although each `<subject>_command.sh` file does not declare a corresponding function, bashly will
+  actually include the code in the file into a function named `risks_subject_command`, so if you happen to
+  develop with checkers like shellcheck, and that warnings are raised about not being allowed to declare local
+  variables, you can safely ignore/mute them. This also applies to any error/warning caused by you using zsh syntax.
+
+### Conventions on code structure
+Since bashly offers some facilities for querying our command args and flags, we try to split the functionality like this:
+- Command files (eg. `hush_format_command.sh`) are charged of initializing, setting and checking the command args/flags.
+- The command file then calls on specialized functions located in `src/lib/`, passing the arguments the latter require.
+  Accordingly, most of the functions in the `lib/` directory do (and should) document on the parameters they require.
+- As a result, some command files are only made of a single line (a `lib/` function call ).
+
+
 ## Development workflow (adding commands)
 
 # Additional usage workflows
