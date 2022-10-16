@@ -1,5 +1,5 @@
 if ! is_hush_mounted ; then
-            _failure "SDCARD is not mounted"
+    _failure "SDCARD is not mounted"
     exit 1
 fi
 

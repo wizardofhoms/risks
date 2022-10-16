@@ -1,7 +1,5 @@
-# Easily cleanup, format, luks-encrypt and filesystem setup onto an SDCard
-# to be used as a store for the various identities' data (excluding backup).
-# $1 - The device file to the SDCard (raw device, not partition, eg. /dev/sda, not /dev/sda1)
-# $2 - The size for the encrypted partition, either absolute or relative, to pass to the fdisk command.
+
+local sd_drive sd_ext4_drive sd_enc_part mount_point udev_rules uuid
 
 sd_drive="${args[device]}"        # Device file 
 sd_ext4_drive="$sd_drive"1        # Dumb partition
@@ -24,7 +22,7 @@ fi
 # Cleanup & making partitions 
 _message "Overwriting and partitioning SDCARD"
 _verbose "Cleaning drive"
- sudo dd if=/dev/urandom of="${sd_drive}" bs=1M status=progress && sync 
+sudo dd if=/dev/urandom of="${sd_drive}" bs=1M status=progress && sync 
 _message "Creating partitions"
 
 nl=$'\n' # Needed because EOF does not preserve some newlines.
@@ -54,6 +52,7 @@ mkdir "${mount_point}" &> /dev/null
 _message "Creating LUKS filesystem"
 sudo cryptsetup -v -q -y --cipher aes-xts-plain64 --key-size 512 --hash sha512 \
     --iter-time 5000 --use-random luksFormat "$sd_enc_part"
+
 _catch "Failed to format drive with LUKS"
 
 _verbose "Checking LUKS partition status"
@@ -83,8 +82,8 @@ _verbose "Last command should give the following result:                     \n 
 # Prepare a udev command string with correct UUID, to be written 
 # both on this system and on the hush if used on another computer.
 _message "Setting Udev rules for hush partition " 
-UUID=$(sudo cryptsetup luksUUID "${sd_enc_part}")
-local udev_rules='echo SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'${UUID}'\", SYMLINK+=\"hush\" > /etc/udev/rules.d/99-sdcard.rules'
+uuid=$(sudo cryptsetup luksUUID "${sd_enc_part}")
+udev_rules='echo SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'${uuid}'\", SYMLINK+=\"hush\" > /etc/udev/rules.d/99-sdcard.rules'
 
 # Write our risks scripts in a special directory on the hush, and close the device.
 store_risks_scripts "$udev_rules"

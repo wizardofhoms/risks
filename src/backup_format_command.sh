@@ -13,6 +13,7 @@ sudo dd if=/dev/urandom of="${pendrive}" bs=1M status=progress && sync
 _message "Setting up LUKS on drive"
 sudo cryptsetup -v -q -y --cipher aes-xts-plain64 --key-size 512 \
     --hash sha512 --iter-time 5000 --use-random luksFormat "${pendrive}"
+
 _catch "Failed to setup LUKS filesystem on backup drive"
 
 # Filesystem setup

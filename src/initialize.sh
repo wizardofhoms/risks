@@ -17,8 +17,8 @@ setopt BASH_REMATCH
 
 # Don't run as root
 if [[ $EUID -eq 0 ]]; then
-   echo "This script must be run as user"
-   exit 2
+    echo "This script must be run as user"
+    exit 2
 fi
 
 # Configuration file -------------------------------------------------------------------------------

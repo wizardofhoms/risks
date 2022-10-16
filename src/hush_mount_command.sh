@@ -1,7 +1,7 @@
 
 if ! is_named_partition_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
     _failure "Device mapper /dev/${SDCARD_ENC_PART_MAPPER} not found.\n\
-  Be sure you have attached your hush partition.       "
+        Be sure you have attached your hush partition.       "
 fi
 
 if is_hush_mounted ; then

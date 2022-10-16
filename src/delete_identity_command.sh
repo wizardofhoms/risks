@@ -14,7 +14,7 @@ fi
 # Still, fail now so that users don't panic with some data being wiped and some not
 if [[ ${args[--backup]} -eq 1 ]] && ! ls -1 /dev/mapper/"${BACKUP_MAPPER}" &> /dev/null; then
     _failure "User specified to also delete on backup, but none is mounted. \
-  Mount one with 'risks backup mount <dev> and rerun this command"
+        Mount one with 'risks backup mount <dev> and rerun this command"
 fi
 
 # Set the identity variables needed by all functions...

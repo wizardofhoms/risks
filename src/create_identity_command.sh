@@ -24,7 +24,7 @@ fi
 # currently writing to it.
 if is_hush_mounted && [[ -w "$HUSH_DIR" ]]; then
     _failure "Hush is currently mounted read-write. \n \
-   Please ensure nothing is writing to it and set it to read-only first"
+        Please ensure nothing is writing to it and set it to read-only first"
 fi
 
 

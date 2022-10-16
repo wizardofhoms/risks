@@ -43,6 +43,7 @@ _run backup_identity_gpg "${BACKUP_MOUNT_DIR}/graveyard"
 _verbose "Backing graveyard files"
 _run sudo chattr -i "${identity_graveyard_backup}"/* \
     || _verbose "No files in backup/graveyard for which to change immutability properties"
+
 _run cp -fR "${identity_graveyard}"/* "${identity_graveyard_backup}"
 _catch "Failed to copy graveyard files to backup medium"
 _verbose "Making graveyard backup files immutable"
