@@ -40,6 +40,7 @@ $nl
 w
 
 EOF
+
 _catch "Failed to format partitions"
 
 # Automounting the first partition on any OS
@@ -75,7 +76,7 @@ _catch "Failed to setup fscrypt metadata with root permissions"
 
 # Checks
 _verbose "$(mount | grep "${SDCARD_ENC_PART_MAPPER}")"
-_verbose "Last command should give the following result:                     \n \
+_verbose "Last command should give the following result:                            \n \
     /dev/mapper/hush on /home/user/.hush type ext4 (rw,relatime,data=ordered)       \n \
     /dev/mapper/hush on /rw/home/user/.hush type ext4 (rw,relatime,data=ordered)    \n\n"
 

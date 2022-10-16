@@ -1,7 +1,7 @@
 
 `R.I.S.K.S` (Relatively Insecure System for Keys and Secrets) is a CLI tool for creating, using and managing
 different online identities, centered around cryptographic autentication (GPG), communication (SSH) and website
-secrets (pass), with an emphasis on seggregating and isolating these identities, as well as their secrets.
+secrets (pass), with an emphasis on seggregating and isolating these identities and their data.
 
 The original idea and associated script can be found in the [risks-scripts](https://github.com/19hundreds/risks-scripts) repository, along with the associated [tutorials](https://19hundreds.github.io/risks-workflow).
 However, the concepts used by the tools (both original and this new version) are numerous. Consequently, the workflows
@@ -32,11 +32,11 @@ While some of them are inherent to the original version, many are also specific 
 - Strong isolation of identities, assuming the vault might be compromised and attackers having full access:
   all directories and files for identities are encrypted and obfuscated.
 - Easy but secure management of (arbitrary number of) identity secrets, with the use of tools like `spectre`:
-  root passwords and GPG passphrases are never written to disk, rather they are deterministically generated.
+  root passwords and GPG passphrases are never written to disk, rather they are derived from some parameters.
 - Detailed completions for easier use of the tool and reducing potential usage mistakes.
 - Efficient and concise worklow logging, with detailed errors and verbose logging options.
 - Structured codebase for easier review and development, while preserving usability.
-- Fail early and fail safe; various checks and validations are different steps (CLI parsing, execution, etc)
+- Fail early and fail safe; various checks and validations at different steps (CLI parsing, execution, etc)
 
 # Table of Contents
 
@@ -169,8 +169,35 @@ We poweroff the vault AppVM, and start it again to install the `risks` scripts.
 
 ## Installing risks
 
+Now that our vault VM is fully set up with required tools, we can install the `risks` tools.
+Download one of the releases, containing the CLI and its completions, and move them to the vault AppVM:
+```
+wget
+```
+
+Copy the files to their respective places (adapt the directories of this example), and launch a new terminal to load changes:
+```bash
+# Command script
+sudo cp QubesIncoming/joe-dvq/risks /usr/local/bin/risks && sudo chmod +x /usr/local/bin/risks
+# Completions
+sudo mkdir -p /usr/local/share/zsh/site-functions
+sudo cp QubesIncoming/joe-dvq/_risks /usr/local/share/zsh/site-functions/_risks
+```
 
 ## Initial setup
+
+A few things remain to be done for `risks` to work correctly. First, run the CLI without command.
+This will create a `~/.risks/` directory and will write the default configuration file in it:
+```
+$ risks
+risks  .  Creating RISKS directory in /home/user/.risks
+risks  .  Writing default configuration file to /home/user/.risks/config.ini
+```
+
+You can check the generated configuration file `~/.risks/config.ini`, which stores all values needed by `risks`.
+By default, none of those settings need to be changed. Should you want to modify them, you can either edit
+the configuration file in place, or use `risks config set <variable> <value>` commands (autocompleted).
+
 
 # Development
 

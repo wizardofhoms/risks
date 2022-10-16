@@ -17,6 +17,7 @@ fi
 if is_hush_read_write ; then
     _failure "Hush device is currently mounted with read-write permissions. \
         Please ensure not process is writing to it, and mount it read-only."
+fi
 
 # Finally try to umount it and close the LUKS filesystem
 if is_luks_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
