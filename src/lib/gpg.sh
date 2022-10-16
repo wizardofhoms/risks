@@ -75,17 +75,17 @@ gen_gpg_keys()
     # Output the identity batch file with values
     _verbose "Writing GPG batch file to ramdisk"
     cat >"${RAMDISK}/primary_key_unattended" <<EOF
-%echo Generating EDDSA key (Ed25519 curve)
-Key-Type: eddsa 
-Key-Curve: Ed25519 
-Key-Usage: sign
-Key-Length: 4096
-Name-Real: $name 
-Name-Email: $email 
-Expire-Date: 0
-Passphrase: $GPG_PASS 
-%commit
-%echo done
+    %echo Generating EDDSA key (Ed25519 curve)
+    Key-Type: eddsa 
+    Key-Curve: Ed25519 
+    Key-Usage: sign
+    Key-Length: 4096
+    Name-Real: $name 
+    Name-Email: $email 
+    Expire-Date: 0
+    Passphrase: $GPG_PASS 
+    %commit
+    %echo done
 EOF
 
     # Generate key and get rid of batch file
@@ -164,10 +164,10 @@ cleanup_gpg_init()
     _verbose "Checking directory contents"
     _verbose "$(tree "$HUSH_DIR" "$GRAVEYARD")"
     _verbose "Should look like this:           \n\n \
-/home/user/.hush                                    \n    \
-    ├── fjdri3kff2i4rjkFA (joe-gpg.key)             \n    \
-/home/user/.graveyard                               \n    \
-    ├── fejk38RjhfEf13 (joe-gpg.coffin) \n"
+    /home/user/.hush                           \n    \
+    ├── fjdri3kff2i4rjkFA (joe-gpg.key)        \n    \
+    /home/user/.graveyard                      \n    \
+    ├── fejk38RjhfEf13 (joe-gpg.coffin)        \n"
 
     _verbose "Test opening and closing coffin for $IDENTITY"
     close_coffin
@@ -201,6 +201,7 @@ cleanup_gpg_init()
     sudo chattr -i "${RAMDISK}"/private-keys-v1.d/"${keygrip}" 
     _run wipe -rf "${RAMDISK}"/private-keys-v1.d/"${keygrip}" \
         || _warning "Failed to delete master private key from keyring !"
+
     sudo chattr -i "${RAMDISK}"/openpgp-revocs.d/"${fingerprint}".rev
     _run wipe -rf "${RAMDISK}"/openpgp-revocs.d/"${fingerprint}".rev \
         || _warning "Failed to delete master key revocation from keyring !"

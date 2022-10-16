@@ -76,7 +76,7 @@ EOF
     # Hush device udev rules: UUID is evaluated at format time here,
     # then installed onto the hush, so value freezed once and for all.
     cat >"${RISKS_SCRIPTS_INSTALL_PATH}/install_udev_rules" <<EOF
-#!/bin/sh
+    #!/bin/sh
 
 # Maps this device ID to be automatically mounted as /dev/hush mapper.
 ${udev_rules}

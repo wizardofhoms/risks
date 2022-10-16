@@ -26,8 +26,8 @@ env=~/.ssh/agent.env
 agent_load_env () { test -f "$env" && . "$env" >| /dev/null ; }
 
 agent_start () {
-    (umask 077; ssh-agent >| "$env")
-    . "$env" >| /dev/null ; }
+(umask 077; ssh-agent >| "$env")
+. "$env" >| /dev/null ; }
 
 agent_load_env
 
@@ -35,18 +35,20 @@ agent_load_env
 agent_run_state=$(ssh-add -l >| /dev/null 2>&1; echo $?)
 
 if [ ! "$SSH_AUTH_SOCK" ] || [ $agent_run_state = 2 ]; then
-    agent_start
-    # this will load all private keys in ~/.ssh directory if agent not running
-    find ~/.ssh/ -type f -exec grep -l "PRIVATE" {} \; | xargs ssh-add &> /dev/null
+agent_start
+# this will load all private keys in ~/.ssh directory if agent not running
+find ~/.ssh/ -type f -exec grep -l "PRIVATE" {} \; | xargs ssh-add &> /dev/null
 elif [ "$SSH_AUTH_SOCK" ] && [ $agent_run_state = 1 ]; then
-    # this will load all private keys in ~/.ssh directory if agent is not filled with any private key
-    find ~/.ssh/ -type f -exec grep -l "PRIVATE" {} \; | xargs ssh-add &> /dev/null
+# this will load all private keys in ~/.ssh directory if agent is not filled with any private key
+find ~/.ssh/ -type f -exec grep -l "PRIVATE" {} \; | xargs ssh-add &> /dev/null
 fi
 
 unset env
 EOF
+
+    # Make the script executable
     chmod +x "${HOME}/.ssh/ssh-add" || _warning "Failed to make ssh-add custom script executable"
-    
+
     # Generate keys
     _verbose "Generating keys for identity"
     _run ssh-keygen -t ed25519 -b 4096 -C "$email" -N "" -f "${HOME}"/.ssh/id_ed25519 # No passphrase

@@ -7,8 +7,8 @@ new_graveyard ()
 
     # Always make sure the root graveyard directory exists
     if [[ ! -d ${GRAVEYARD} ]]; then
-            _verbose "Creating directory $GRAVEYARD"
-            mkdir -p "$GRAVEYARD"
+        _verbose "Creating directory $GRAVEYARD"
+        mkdir -p "$GRAVEYARD"
     fi
 
     # The directory name in cleartext is simply the identity name
@@ -22,7 +22,7 @@ new_graveyard ()
     # And setup fscrypt protectors on it.
     _verbose "Setting up fscrypt protectors on directory"
     echo "$FILE_ENCRYPTION_KEY" | sudo fscrypt encrypt "$identity_graveyard" \
-       --quiet --source=custom_passphrase --name="$identity_dir"
+        --quiet --source=custom_passphrase --name="$identity_dir"
 }
 
 # delete_graveyard wipes the graveyard directory of an identity

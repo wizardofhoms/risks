@@ -7,24 +7,17 @@ dependencies:
   # Filesystem
   - wipe
   - tomb
-  # - cryptsetup
-  # - fscrypt 
-  # - steghide
-  # - dosfstools
-  # - e2fsprogs
-  
+  - cryptsetup
+  - fscrypt 
+  - steghide
   # Encryption, non-filesystem related
-  # - age
   - spectre
   - pass
   - gpg2
-
   # Agents and workflow
   - xclip
   - socat
-  # - ncurses
   - pinentry-curses
-  # - ssh-akspass-gnome
 
 commands:
   # Drives/partitions

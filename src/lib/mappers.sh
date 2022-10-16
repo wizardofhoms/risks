@@ -17,13 +17,13 @@ is_luks_open()
 
 is_luks_mounted()
 {
-	mount | grep "^${1}" &> /dev/null
+    mount | grep "^${1}" &> /dev/null
 }
 
 # Checks if the "hush partition" is already mounted and returns 0 if true
 is_hush_mounted()
 {
-	mount | grep "^/dev/mapper/${SDCARD_ENC_PART_MAPPER}" &> /dev/null
+    mount | grep "^/dev/mapper/${SDCARD_ENC_PART_MAPPER}" &> /dev/null
 }
 
 # Returns 0 if yes, 1 if not.
@@ -36,19 +36,18 @@ is_hush_read_write ()
 # Synopsis: _is_encrypted_block /path/to/block/device
 # Return 0 if it is an encrypted block device
 is_encrypted_block() {
-	local	 b=$1 # Path to a block device
-	local	 s="" # lsblk option -s (if available)
+    local	 b=$1 # Path to a block device
+    local	 s="" # lsblk option -s (if available)
 
-	# Issue #163
-	# lsblk --inverse appeared in util-linux 2.22
-	# but --version is not consistent...
-	lsblk --help | grep -Fq -- --inverse
-	[[ $? -eq 0 ]] && s="--inverse"
+    # Issue #163
+    # lsblk --inverse appeared in util-linux 2.22
+    # but --version is not consistent...
+    lsblk --help | grep -Fq -- --inverse
+    [[ $? -eq 0 ]] && s="--inverse"
 
     sudo lsblk $s -o type -n "$b" 2>/dev/null \
-		| grep -e -q '^crypt$'
-		# | egrep -q '^crypt$'
+        | grep -e -q '^crypt$'
 
-	return $?
+    return $?
 }
 

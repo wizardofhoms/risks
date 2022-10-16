@@ -32,12 +32,11 @@ _set_active_identity ()
         return
     fi
 
-    
     # If we don't have a file containing the 
     # identity name, populate it.
     if [[ ! -e ${RISKS_IDENTITY_FILE} ]]; then
         print "$1" > "${RISKS_IDENTITY_FILE}"
-	fi
+    fi
 
     _verbose "Identity '${1}' is now active (name file written)"
     _message "Identity '${1}' is now ACTIVE"
@@ -50,7 +49,7 @@ _identity_active ()
 
     if [[ ! -e "${RISKS_IDENTITY_FILE}" ]]; then
         return 1
-	fi
+    fi
 
     identity=$(cat "${RISKS_IDENTITY_FILE}")
     if [[ -z ${identity} ]]; then

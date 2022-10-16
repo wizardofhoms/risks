@@ -19,8 +19,10 @@ setup_identity_backup ()
 
     # And setup fscrypt protectors on it.
     _verbose "Setting up fscrypt protectors on directory"
+
     echo "$FILE_ENCRYPTION_KEY" | sudo fscrypt encrypt "$identity_graveyard_backup" \
-       --quiet --source=custom_passphrase --name="$identity_dir"
+        --quiet --source=custom_passphrase --name="$identity_dir"
+
     _catch "Failed to encrypt identity graveyard in backup"
 }
 
