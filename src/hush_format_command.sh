@@ -23,24 +23,9 @@ fi
 _message "Overwriting and partitioning SDCARD"
 _verbose "Cleaning drive"
 sudo dd if=/dev/urandom of="${sd_drive}" bs=1M status=progress && sync 
+
 _message "Creating partitions"
-
-nl=$'\n' # Needed because EOF does not preserve some newlines.
-_run sudo fdisk -u "${sd_drive}" <<-EOF
-n
-p
-1
-
-+${start_enc_sectors}
-n
-p
-2
-
-$nl
-w
-
-EOF
-
+format_hush_partitions "$sd_drive" "$start_enc_sectors"
 _catch "Failed to format partitions"
 
 # Automounting the first partition on any OS

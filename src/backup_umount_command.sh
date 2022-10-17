@@ -1,4 +1,3 @@
-# 
 if [[ -e "$BACKUP_MOUNT_DIR" ]] ; then
     if ! sudo umount -f "${BACKUP_MOUNT_DIR}" ; then
         _failure "/dev/mapper/${BACKUP_MAPPER} can not be umounted from ${BACKUP_MOUNT_DIR}"

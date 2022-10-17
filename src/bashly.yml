@@ -1,23 +1,22 @@
 name: risks 
 help: Identity creation and management tool
-version: 46459a1d012d6b5c5ed9a99c0e0da4977476c8c0
+version: ccf777eecddb5a58a283c1e983ca5f7457c0e5fb
 
 # Required programs for all commands
-# dependencies:
-#   # Filesystem
-#   - wipe
-#   - tomb
-#   - cryptsetup
-#   - fscrypt 
-#   - steghide
-#   # Encryption, non-filesystem related
-#   - spectre
-#   - pass
-#   - gpg2
-#   # Agents and workflow
-#   - xclip
-#   - socat
-#   - pinentry-curses
+dependencies:
+  # Filesystem
+  - wipe
+  - tomb
+  - fscrypt 
+  - steghide
+  # Encryption, non-filesystem related
+  - spectre
+  - pass
+  - gpg2
+  # Agents and workflow
+  - xclip
+  - socat
+  - pinentry-curses
 
 commands:
   # Drives/partitions

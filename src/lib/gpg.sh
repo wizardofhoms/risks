@@ -75,17 +75,17 @@ gen_gpg_keys()
     # Output the identity batch file with values
     _verbose "Writing GPG batch file to ramdisk"
     cat >"${RAMDISK}/primary_key_unattended" <<EOF
-    %echo Generating EDDSA key (Ed25519 curve)
-    Key-Type: eddsa 
-    Key-Curve: Ed25519 
-    Key-Usage: sign
-    Key-Length: 4096
-    Name-Real: $name 
-    Name-Email: $email 
-    Expire-Date: 0
-    Passphrase: $GPG_PASS 
-    %commit
-    %echo done
+%echo Generating EDDSA key (Ed25519 curve)
+Key-Type: eddsa 
+Key-Curve: Ed25519 
+Key-Usage: sign
+Key-Length: 4096
+Name-Real: $name 
+Name-Email: $email 
+Expire-Date: 0
+Passphrase: $GPG_PASS 
+%commit
+%echo done
 EOF
 
     # Generate key and get rid of batch file

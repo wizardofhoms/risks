@@ -15,7 +15,8 @@ config_init() {
     RISKS_CONFIG_FILE=${RISKS_CONFIG_FILE-${RISKS_DIR}/config.ini}
     [[ -f "$RISKS_CONFIG_FILE" ]] || { 
         _message "Writing default configuration file to ${RISKS_CONFIG_FILE}"
-            cat << EOF > "$RISKS_CONFIG_FILE" 
+
+    cat << EOF > "$RISKS_CONFIG_FILE" 
 ; RISKS Vault (domU) Configuration file
 
 ; You can either edit this file in place, set values
@@ -40,8 +41,8 @@ GRAVEYARD=/home/user/.graveyard
 BACKUP_MAPPER=pendev 
 
 EOF
-        }
     }
+}
 
 ## Get a value from the config.
 ## Usage: result=$(config_get hello)

@@ -1790,7 +1790,8 @@ config_init() {
     [[ -f "$RISKS_CONFIG_FILE" ]] || {
 
         _message "Writing default configuration file to ${RISKS_CONFIG_FILE}"
-            cat << EOF > "$RISKS_CONFIG_FILE"
+
+    cat << EOF > "$RISKS_CONFIG_FILE"
 
 ; RISKS Vault (domU) Configuration file
 
@@ -1816,8 +1817,8 @@ GRAVEYARD=/home/user/.graveyard
 BACKUP_MAPPER=pendev
 
 EOF
-        }
     }
+}
 
 config_get() {
 
@@ -1992,22 +1993,22 @@ gen_gpg_keys()
     # Output the identity batch file with values
     _verbose "Writing GPG batch file to ramdisk"
     cat >"${RAMDISK}/primary_key_unattended" <<EOF
-    %echo Generating EDDSA key (Ed25519 curve)
-    Key-Type: eddsa
+%echo Generating EDDSA key (Ed25519 curve)
+Key-Type: eddsa
 
-    Key-Curve: Ed25519
+Key-Curve: Ed25519
 
-    Key-Usage: sign
-    Key-Length: 4096
-    Name-Real: $name
+Key-Usage: sign
+Key-Length: 4096
+Name-Real: $name
 
-    Name-Email: $email
+Name-Email: $email
 
-    Expire-Date: 0
-    Passphrase: $GPG_PASS
+Expire-Date: 0
+Passphrase: $GPG_PASS
 
-    %commit
-    %echo done
+%commit
+%echo done
 EOF
 
     # Generate key and get rid of batch file
@@ -2199,6 +2200,32 @@ get_identity_graveyard ()
     print "${identity_graveyard}"
 }
 
+# format_hush_partitions is a separate function because we must
+# avoid bashly CLI framework to indent the Heredoc in there.
+# $1 - Path to hush full sd_drive, e.g /dev/xvdi
+# $2 - Start of the encrypted partition, in number of sectors.
+format_hush_partitions ()
+{
+    local sd_drive="$1"
+    local start_enc_sectors="$2"
+
+    nl=$'\n' # Needed because EOF does not preserve some newlines.
+    _run sudo fdisk -u "${sd_drive}" <<EOF
+n
+p
+1
+
++${start_enc_sectors}
+n
+p
+2
+
+$nl
+w
+
+EOF
+}
+
 # _set_identity is used to propagate our various IDENTITY related variables
 # so that all functions that will be subsequently called can access them.
 #
@@ -2363,7 +2390,7 @@ EOF
     # Hush device udev rules: UUID is evaluated at format time here,
     # then installed onto the hush, so value freezed once and for all.
     cat >"${RISKS_SCRIPTS_INSTALL_PATH}/install_udev_rules" <<EOF
-    #!/bin/sh
+#!/bin/sh
 
 # Maps this device ID to be automatically mounted as /dev/hush mapper.
 ${udev_rules}
@@ -3461,23 +3488,7 @@ risks_hush_format_command() {
   sudo dd if=/dev/urandom of="${sd_drive}" bs=1M status=progress && sync
 
   _message "Creating partitions"
-
-  nl=$'\n' # Needed because EOF does not preserve some newlines.
-  _run sudo fdisk -u "${sd_drive}" <<-EOF
-  n
-  p
-  1
-
-  +${start_enc_sectors}
-  n
-  p
-  2
-
-  $nl
-  w
-
-  EOF
-
+  format_hush_partitions "$sd_drive" "$start_enc_sectors"
   _catch "Failed to format partitions"
 
   # Automounting the first partition on any OS
@@ -3586,8 +3597,6 @@ risks_backup_mount_command() {
 }
 
 risks_backup_umount_command() {
-  #
-
   if [[ -e "$BACKUP_MOUNT_DIR" ]] ; then
       if ! sudo umount -f "${BACKUP_MOUNT_DIR}" ; then
           _failure "/dev/mapper/${BACKUP_MAPPER} can not be umounted from ${BACKUP_MOUNT_DIR}"
@@ -4372,6 +4381,47 @@ parse_requirements() {
     ;;
 
   esac
+
+  if ! [[ -x "$(command -v wipe)" ]]; then
+    printf "missing dependency: wipe\n"
+    exit 1
+  fi
+  if ! [[ -x "$(command -v tomb)" ]]; then
+    printf "missing dependency: tomb\n"
+    exit 1
+  fi
+  if ! [[ -x "$(command -v fscrypt)" ]]; then
+    printf "missing dependency: fscrypt\n"
+    exit 1
+  fi
+  if ! [[ -x "$(command -v steghide)" ]]; then
+    printf "missing dependency: steghide\n"
+    exit 1
+  fi
+  if ! [[ -x "$(command -v spectre)" ]]; then
+    printf "missing dependency: spectre\n"
+    exit 1
+  fi
+  if ! [[ -x "$(command -v pass)" ]]; then
+    printf "missing dependency: pass\n"
+    exit 1
+  fi
+  if ! [[ -x "$(command -v gpg2)" ]]; then
+    printf "missing dependency: gpg2\n"
+    exit 1
+  fi
+  if ! [[ -x "$(command -v xclip)" ]]; then
+    printf "missing dependency: xclip\n"
+    exit 1
+  fi
+  if ! [[ -x "$(command -v socat)" ]]; then
+    printf "missing dependency: socat\n"
+    exit 1
+  fi
+  if ! [[ -x "$(command -v pinentry-curses)" ]]; then
+    printf "missing dependency: pinentry-curses\n"
+    exit 1
+  fi
 
   action=${1:-}
 
@@ -6559,7 +6609,7 @@ risks_identity_parse_requirements() {
 }
 
 initialize() {
-  version="46459a1d012d6b5c5ed9a99c0e0da4977476c8c0"
+  version="ccf777eecddb5a58a283c1e983ca5f7457c0e5fb"
   long_usage=''
   
 
