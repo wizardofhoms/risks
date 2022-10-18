@@ -62,7 +62,7 @@ typeset -gr RAMDISK="${HOME}/.gnupg"
 typeset -gr BACKUP_MOUNT_DIR="/tmp/pendrive"
 
 typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/db/"
-typeset -gr RISKS_SCRIPTS_INSTALL_PATH="${HUSH_DIR}/.risks-scripts"
+typeset -gr RISKS_SCRIPTS_INSTALL_PATH="${HUSH_DIR}/.risks"
 
 typeset -gr RISKS_IDENTITY_FILE="${RISKS_DIR}/.identity"
 

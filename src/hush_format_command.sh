@@ -69,8 +69,7 @@ _verbose "Last command should give the following result:                        
 # both on this system and on the hush if used on another computer.
 _message "Setting Udev rules for hush partition " 
 uuid=$(sudo cryptsetup luksUUID "${sd_enc_part}")
-# udev_rules='echo SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'${uuid}'\", SYMLINK+=\"hush\" > /etc/udev/rules.d/99-sdcard.rules'
-udev_rules='echo SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'${uuid}'\", SYMLINK+=\"hush\" >> '${UDEV_RULES_PATH}''
+echo 'SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'"${uuid}"'\", SYMLINK+=\"hush\"' >> "${UDEV_RULES_PATH}"
 
 # Write our risks scripts in a special directory on the hush, and close the device.
 store_risks_scripts "$udev_rules"
@@ -84,7 +83,6 @@ _catch "Failed to close LUKS filesystem on ${SDCARD_ENC_PART_MAPPER}"
 
 # Setup udev identitiers mapping for hush partition 
 _message "Setting Udev rules for hush partition " 
-sh -c "${udev_rules}"
 _catch "Failed to write udev mapper file with SDCard UUID"
 
 # Create the necessary symbolic links if needed, and reload the rules after creating this link,

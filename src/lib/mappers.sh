@@ -64,13 +64,13 @@ link_hush_udev_rules ()
 
     # Or check that a symlink exists, not taking into account 
     # the number in the name. If not found:
-    if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}"; then
+    if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}" &> /dev/null ; then
         _message "No link to hush udev rules detected, setting it persistent and for this session"
 
         # - echo the link command into rc.local
         _verbose "Adding the link command to /rw/config/rc.local"
-        echo "# The following line was added by the risks CLI, to map hush devices when plugged in this VM" > /rw/config/rc.local
-        echo "sudo ln -s $UDEV_RULES_PATH /etc/udev/rules.d/99-risks-hush.rules" > /rw/config/rc.local
+        sudo sh -c 'echo "# The following line was added by the risks CLI, to map hush devices when plugged in this VM" > /rw/config/rc.local'
+        sudo sh -c 'echo "sudo ln -s '"$UDEV_RULES_PATH"' /etc/udev/rules.d/99-risks-hush.rules" > /rw/config/rc.local'
 
         # - Create the symlink for this session
         _verbose "Linking the file for this login session"

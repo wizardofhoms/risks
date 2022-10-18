@@ -2145,6 +2145,24 @@ cleanup_gpg_init()
     rm -rf "$tmp_dir"
 }
 
+# is_gpg_passphrase_cached returns 0 if the
+
+# gpg-agent has the private cached, or 1 if not.
+is_gpg_passphrase_cached ()
+{
+    local key
+    key=$(gpg-connect-agent 'keyinfo --list' /bye 2>/dev/null | awk 'BEGIN{CACHED=0} /^S/ {if($7==1){CACHED=1}} END{if($0!=""){print CACHED} else {print "none"}}')
+
+    if [[ "$key" == "CACHED" ]]; then
+        return 0
+    else
+        return 1
+    fi
+
+    # Just in case
+    return 1
+}
+
 # new_graveyard generates a private directory in the
 # graveyard for a given identity, with fscrypt support.
 new_graveyard ()
@@ -2610,6 +2628,39 @@ is_encrypted_block() {
     return $?
 }
 
+# link_hush_udev_rules checks that the udev-rules file that risks
+# keeps in its config directory is linked against a file in /etc/udev/rules.d/,
+# and if not, echoes this link to the /rw/config/rc.local file.
+link_hush_udev_rules ()
+
+{
+    # We don't do anything if we don't have a udev-rules file in
+    # the risks directory yet.
+    if [[ ! -e "$UDEV_RULES_PATH" ]]; then
+        return
+    fi
+
+    # Or check that a symlink exists, not taking into account
+
+    # the number in the name. If not found:
+    if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}" &> /dev/null ; then
+        _message "No link to hush udev rules detected, setting it persistent and for this session"
+
+        # - echo the link command into rc.local
+        _verbose "Adding the link command to /rw/config/rc.local"
+        sudo sh -c 'echo "# The following line was added by the risks CLI, to map hush devices when plugged in this VM" > /rw/config/rc.local'
+        sudo sh -c 'echo "sudo ln -s '"$UDEV_RULES_PATH"' /etc/udev/rules.d/99-risks-hush.rules" > /rw/config/rc.local'
+
+        # - Create the symlink for this session
+        _verbose "Linking the file for this login session"
+        sudo ln -s "$UDEV_RULES_PATH" /etc/udev/rules.d/99-risks-hush.rules
+
+        # - reload the udev rules
+        _verbose "Reloading udev rules"
+        sudo udevadm control --reload-rules
+    fi
+}
+
 COMMAND_STDOUT=''           # Stores a command's stdout output.
 COMMAND_STDERR=''           # Stores a command's stderr output.
 
@@ -3064,9 +3115,13 @@ delete_tomb()
 
 }
 
-# open_tomb requires a cleartext resource name that the function will encrypt to resolve the correct tomb file.
-# The name is both used as a mount directory, as well as to determine when some special tombs need to be mounted
-# on non-standard mount points, like gpg/ssh.
+# open_tomb requires a cleartext resource name that the function will encrypt
+
+# to resolve the correct tomb file. The name is both used as a mount directory,
+
+# as well as to determine when some special tombs need to be mounted on non-standard
+
+# mount points, like gpg/ssh.
 # $1 - Name of the tomb
 # $2 - Identity
 open_tomb()
@@ -3541,7 +3596,8 @@ risks_hush_format_command() {
   _message "Setting Udev rules for hush partition "
 
   uuid=$(sudo cryptsetup luksUUID "${sd_enc_part}")
-  udev_rules='echo SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'${uuid}'\", SYMLINK+=\"hush\" > /etc/udev/rules.d/99-sdcard.rules'
+  # udev_rules='echo SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'${uuid}'\", SYMLINK+=\"hush\" >> '${UDEV_RULES_PATH}''
+  echo 'SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'"${uuid}"'\", SYMLINK+=\"hush\"' >> "${UDEV_RULES_PATH}"
 
   # Write our risks scripts in a special directory on the hush, and close the device.
   store_risks_scripts "$udev_rules"
@@ -3560,11 +3616,18 @@ risks_hush_format_command() {
 
   _message "Setting Udev rules for hush partition "
 
-  sudo sh -c "${udev_rules}"
+  sh -c "${udev_rules}"
   _catch "Failed to write udev mapper file with SDCard UUID"
-  _verbose "Restarting udev service"
 
-  sudo udevadm control --reload-rules
+  # Create the necessary symbolic links if needed, and reload the rules after creating this link,
+  # or simply reload the udev service, to take into account our changes to the udev.
+  if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}"; then
+      link_hush_udev_rules
+  else
+      _verbose "Restarting udev service"
+
+      sudo udevadm control --reload-rules
+  fi
   _success "Successfully formatted and prepared SDcard as hush device"
 
 }
@@ -3928,10 +3991,13 @@ risks_open_command() {
   fi
 
   # Then derive the gpg pass phrase from it, with one-time use,
-  # needed for all tombs, no matter how many.
-  GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
-  echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
-  _warning "GPG passphrase copied to clipboard with one-time use only"
+  # needed for all tombs, no matter how many. Only ask for it
+  # if it is not yet in the GPG agent cache.
+  if ! is_gpg_passphrase_cached ; then
+      GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
+      echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
+      _warning "GPG passphrase copied to clipboard with one-time use only"
+  fi
 
   # Bulk load
   if [[ "$resource" == "identity" ]]; then
@@ -6609,7 +6675,7 @@ risks_identity_parse_requirements() {
 }
 
 initialize() {
-  version="ccf777eecddb5a58a283c1e983ca5f7457c0e5fb"
+  version="858139e0671ece75f3df0801fbf961db4944182f"
   long_usage=''
   
 
@@ -6645,6 +6711,11 @@ initialize() {
   # Write the default configuration if it does not exist.
   config_init
 
+  # Create a symbolic link to the udev rules file we store
+  # in the risks directory. This is only done once, when we
+  # don't detect our symlink to the /etc/udev/rules.d/hush.rules
+  link_hush_udev_rules
+
   # Default filesystem settings from configuration file ----------------------------------------------
 
   typeset -gr SDCARD_ENC_PART="$(config_get SDCARD_ENC_PART)"
@@ -6671,9 +6742,14 @@ initialize() {
   typeset -gr BACKUP_MOUNT_DIR="/tmp/pendrive"
 
   typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/db/"
-  typeset -gr RISKS_SCRIPTS_INSTALL_PATH="${HUSH_DIR}/.risks-scripts"
+  typeset -gr RISKS_SCRIPTS_INSTALL_PATH="${HUSH_DIR}/.risks"
 
-  typeset -rg RISKS_IDENTITY_FILE="${RISKS_DIR}/.identity"
+  typeset -gr RISKS_IDENTITY_FILE="${RISKS_DIR}/.identity"
+
+  # Other constants ..................................................................................
+
+  typeset -gr UDEV_RULES_FILE="risks-hush.rules"
+  typeset -gr UDEV_RULES_PATH="${RISKS_DIR}/${UDEV_RULES_FILE}" # Contains udev rules for all formatted SDcards
 
   # Sensitive & and recurring variables used by program ..............................................
 
