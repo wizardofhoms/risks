@@ -107,9 +107,10 @@ delete_tomb()
     fi 
 }
 
-# open_tomb requires a cleartext resource name that the function will encrypt to resolve the correct tomb file.
-# The name is both used as a mount directory, as well as to determine when some special tombs need to be mounted
-# on non-standard mount points, like gpg/ssh.
+# open_tomb requires a cleartext resource name that the function will encrypt 
+# to resolve the correct tomb file. The name is both used as a mount directory, 
+# as well as to determine when some special tombs need to be mounted on non-standard 
+# mount points, like gpg/ssh.
 # $1 - Name of the tomb
 # $2 - Identity
 open_tomb()

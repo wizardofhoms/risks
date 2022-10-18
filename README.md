@@ -18,14 +18,29 @@ This repository provides a CLI (`risks`) to be used in a vault VM. Its purpose i
 
 The `risks` CLI provided in this repository is independent from the `risk` CLI tool used in dom0, which you can find [here](https://github.com/wizardofhoms/risk).
 
+# What to expect from using the RISKS tool 
+
+Setting up RISKS and following its workflow results in:
+- Just four (4) passphares to memorize to manage all the secrets (doesn’t matter how many identities or how many secrets)
+- An encrypted sdcard configured for hosting private keys
+- An isolated qube (virtual machine) configured for:
+    - Managing GPG configurations for multiple identities
+    - Managing credentials using pass
+    - Managing SSH configurations for multiple identities
+    - Managing multiple encrypted filesystems (embedded in a file) for multiple identities
+    - Providing a secure access to GPG and SSH keys from any other qube
+- A set of scripts to manage the workflow comfortably
+- Disaster recovery and backup procedures
+
+
 # Documentation
 
-* [Software used](https://github.wizardofhoms/risks.wiki/Software-Used)
-* [RISKS architecture in Qubes](https://github.wizardofhoms/risks.wiki/RISKS-Architecture-In-Qubes)
-* [Components and roles](https://github.wizardofhoms/risks.wiki/Components-And-Roles)
-* [Simplified workflow](https://github.wizardofhoms/risks.wiki/Simplified-Workflow)
-* [Installation](https://github.wizardofhoms/risks.wiki/Installation)
-* [Development](/https://github.wizardofhoms/risks.wiki/Development)
-* [Full workflow example](/https://github.wizardofhoms/risks.wiki/Full-Workflow-Example)
-* [Additional workflows](/https://github.wizardofhoms/risks.wiki/Additional-Workflows)
-* [Command-line API](/https://github.wizardofhoms/risks.wiki/Command-Line-API)
+* [Software used](https://github.wizardofhoms/risks/wiki/Software-Used)
+* [RISKS architecture in Qubes](https://github.wizardofhoms/risks/wiki/RISKS-Architecture-In-Qubes)
+* [Components and roles](https://github.wizardofhoms/risks/wiki/Components-And-Roles)
+* [Components workflow](https://github.wizardofhoms/risks/wiki/Components-Workflow)
+* [Installation](https://github.wizardofhoms/risks/wiki/Installation)
+* [Development](/https://github.wizardofhoms/risks/wiki/Development)
+* [Full workflow example](/https://github.wizardofhoms/risks/wiki/Full-Workflow-Example)
+* [Additional workflows](/https://github.wizardofhoms/risks/wiki/Additional-Workflows)
+* [Command-line API](/https://github.wizardofhoms/risks/wiki/Command-Line-API)

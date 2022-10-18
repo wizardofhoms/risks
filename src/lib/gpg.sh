@@ -215,3 +215,20 @@ cleanup_gpg_init()
     # Cleanup files
     rm -rf "$tmp_dir"
 }
+
+# is_gpg_passphrase_cached returns 0 if the 
+# gpg-agent has the private cached, or 1 if not.
+is_gpg_passphrase_cached ()
+{
+    local key
+    key=$(gpg-connect-agent 'keyinfo --list' /bye 2>/dev/null | awk 'BEGIN{CACHED=0} /^S/ {if($7==1){CACHED=1}} END{if($0!=""){print CACHED} else {print "none"}}')
+
+    if [[ "$key" == "CACHED" ]]; then
+        return 0
+    else
+        return 1
+    fi
+
+    # Just in case
+    return 1
+}
