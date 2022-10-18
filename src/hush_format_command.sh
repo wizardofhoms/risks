@@ -69,7 +69,8 @@ _verbose "Last command should give the following result:                        
 # both on this system and on the hush if used on another computer.
 _message "Setting Udev rules for hush partition " 
 uuid=$(sudo cryptsetup luksUUID "${sd_enc_part}")
-udev_rules='echo SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'${uuid}'\", SYMLINK+=\"hush\" > /etc/udev/rules.d/99-sdcard.rules'
+# udev_rules='echo SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'${uuid}'\", SYMLINK+=\"hush\" > /etc/udev/rules.d/99-sdcard.rules'
+udev_rules='echo SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'${uuid}'\", SYMLINK+=\"hush\" >> '${UDEV_RULES_PATH}''
 
 # Write our risks scripts in a special directory on the hush, and close the device.
 store_risks_scripts "$udev_rules"
@@ -83,8 +84,15 @@ _catch "Failed to close LUKS filesystem on ${SDCARD_ENC_PART_MAPPER}"
 
 # Setup udev identitiers mapping for hush partition 
 _message "Setting Udev rules for hush partition " 
-sudo sh -c "${udev_rules}"
+sh -c "${udev_rules}"
 _catch "Failed to write udev mapper file with SDCard UUID"
-_verbose "Restarting udev service" 
-sudo udevadm control --reload-rules
+
+# Create the necessary symbolic links if needed, and reload the rules after creating this link,
+# or simply reload the udev service, to take into account our changes to the udev.
+if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}"; then
+    link_hush_udev_rules
+else
+    _verbose "Restarting udev service" 
+    sudo udevadm control --reload-rules
+fi
 _success "Successfully formatted and prepared SDcard as hush device"

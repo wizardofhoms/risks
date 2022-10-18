@@ -32,6 +32,11 @@ typeset -rg RISKS_DIR="${HOME}/.risks"
 # Write the default configuration if it does not exist.
 config_init
 
+# Create a symbolic link to the udev rules file we store
+# in the risks directory. This is only done once, when we
+# don't detect our symlink to the /etc/udev/rules.d/hush.rules
+link_hush_udev_rules
+
 # Default filesystem settings from configuration file ----------------------------------------------
 
 typeset -gr SDCARD_ENC_PART="$(config_get SDCARD_ENC_PART)"
@@ -59,7 +64,12 @@ typeset -gr BACKUP_MOUNT_DIR="/tmp/pendrive"
 typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/db/"
 typeset -gr RISKS_SCRIPTS_INSTALL_PATH="${HUSH_DIR}/.risks-scripts"
 
-typeset -rg RISKS_IDENTITY_FILE="${RISKS_DIR}/.identity"
+typeset -gr RISKS_IDENTITY_FILE="${RISKS_DIR}/.identity"
+
+# Other constants ..................................................................................
+
+typeset -gr UDEV_RULES_FILE="risks-hush.rules"
+typeset -gr UDEV_RULES_PATH="${RISKS_DIR}/${UDEV_RULES_FILE}" # Contains udev rules for all formatted SDcards
 
 # Sensitive & and recurring variables used by program ..............................................
 

@@ -51,3 +51,33 @@ is_encrypted_block() {
     return $?
 }
 
+# link_hush_udev_rules checks that the udev-rules file that risks
+# keeps in its config directory is linked against a file in /etc/udev/rules.d/,
+# and if not, echoes this link to the /rw/config/rc.local file.
+link_hush_udev_rules () 
+{
+    # We don't do anything if we don't have a udev-rules file in
+    # the risks directory yet.
+    if [[ ! -e "$UDEV_RULES_PATH" ]]; then
+        return
+    fi
+
+    # Or check that a symlink exists, not taking into account 
+    # the number in the name. If not found:
+    if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}"; then
+        _message "No link to hush udev rules detected, setting it persistent and for this session"
+
+        # - echo the link command into rc.local
+        _verbose "Adding the link command to /rw/config/rc.local"
+        echo "# The following line was added by the risks CLI, to map hush devices when plugged in this VM" > /rw/config/rc.local
+        echo "sudo ln -s $UDEV_RULES_PATH /etc/udev/rules.d/99-risks-hush.rules" > /rw/config/rc.local
+
+        # - Create the symlink for this session
+        _verbose "Linking the file for this login session"
+        sudo ln -s "$UDEV_RULES_PATH" /etc/udev/rules.d/99-risks-hush.rules
+
+        # - reload the udev rules
+        _verbose "Reloading udev rules"
+        sudo udevadm control --reload-rules
+    fi
+}
