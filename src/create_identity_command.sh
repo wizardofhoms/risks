@@ -90,12 +90,6 @@ init_pass "$email"
 _in_section 'mgmt' && _message "Creating management tomb"
 init_mgmt
 
-## 8 - Create Signal tomb, set admin stuff and generate password
-# for the enrypted data directory in the Signal VM.
-_in_section 'signal' && _message "Creating Signal messenger tomb"
-_run new_tomb "$SIGNAL_TOMB_LABEL" 20
-
-
 ## Backup
 #
 if [[ -n "$pendrive" ]]; then

@@ -4,9 +4,6 @@ _set_identity ""
 
 _warning "risks" "Slaming identity $IDENTITY"
 
-_message "Slaming Signal tomb ..."
-_run slam_tomb "$SIGNAL_TOMB_LABEL"
-
 _message "Slaming PASS tomb ..."
 _run slam_tomb "$PASS_TOMB_LABEL"
 

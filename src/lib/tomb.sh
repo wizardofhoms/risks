@@ -232,7 +232,7 @@ close_tomb()
 
     # And delete the directory if it's not a builtin
     case ${resource} in
-        gpg|pass|ssh|signal|mgmt)
+        gpg|pass|ssh|mgmt)
             # Ignore those
             ;;
         *)
@@ -272,7 +272,7 @@ slam_tomb()
 
     # And delete the directory if it's not a builtin
     case ${resource} in
-        gpg|pass|ssh|signal|mgmt)
+        gpg|pass|ssh|mgmt)
             # Ignore those
             ;;
         *)

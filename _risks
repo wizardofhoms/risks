@@ -438,7 +438,6 @@ _builtin_stores ()
     #     'mgmt:"Management tomb"' 
     #     'pass:"Password-store tomb"' 
     #     'ssh:"SSH keys tomb"' 
-    #     'signal:"Signal messenger data (contacts, history, etc)"' 
     # )
     #
     # This line has a bug where completion descriptions are not justified
@@ -450,7 +449,6 @@ _builtin_stores ()
         mgmt\:"Management tomb" \
         pass\:"Password-store tomb" \
         ssh\:"SSH keys tomb" \
-        signal\:"Signal messenger data (contacts, history, etc)" \
         ))'
 }
 
@@ -461,7 +459,7 @@ _open_stores ()
     _builtin_stores
 
     # Then add the detected ones under another group heading
-    local exclude_builtins="mgmt|password-store|signal|ssh"
+    local exclude_builtins="mgmt|password-store|ssh"
 
     local -a tombs_mounts tomb_names
     tombs_mounts=$(tomb list 2>&1 \

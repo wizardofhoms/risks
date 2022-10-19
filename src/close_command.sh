@@ -12,9 +12,6 @@ fi
 
 # Or close everything
 if [[ "$resource" == "identity" ]]; then
-    _message "Closing Signal tomb ..."
-    _run close_tomb "$SIGNAL_TOMB_LABEL"
-
     _message "Closing PASS tomb ..."
     _run close_tomb "$PASS_TOMB_LABEL"
 

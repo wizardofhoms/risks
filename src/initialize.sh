@@ -53,7 +53,6 @@ typeset -gr GPG_TOMB_LABEL="GPG"          # Stores an identity GPG private keys.
 typeset -gr SSH_TOMB_LABEL="ssh"          # Stores SSH keypairs
 typeset -gr MGMT_TOMB_LABEL="mgmt"        # Holds the key-value store, and anything the user wants.
 typeset -gr PASS_TOMB_LABEL="pass"        # Holds the password store data
-typeset -gr SIGNAL_TOMB_LABEL="signal"    # Holds data for Signal messenger (contacts, keys, configs, etc)
 
 typeset -gr FILE_ENCRYPTION="file_encryption_key" # Simply used as site name in spectre call.
 
