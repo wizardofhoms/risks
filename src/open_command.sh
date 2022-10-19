@@ -5,6 +5,11 @@ resource="${args[resource]}"
 
 _set_identity "${args[identity]}"
 
+# Whatever we need to open, we need the hush device for a key.
+if ! is_hush_mounted ; then
+    _failure "The hush device is not mounted. Mount it first and rerun the command."
+fi
+
 # Either only open the GPG keyring.
 if [[ "$resource" == "gpg" ]] || [[ "$resource" == "coffin" ]]; then
     # We need to identity argument to be non-nil
