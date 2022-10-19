@@ -22,11 +22,10 @@ The `risks` CLI provided in this repository is independent from the `risk` CLI t
 # Documentation
 
 * [Software used](https://github.com/wizardofhoms/risks/wiki/Software-Used)
-* [RISKS architecture in Qubes](https://github.com/wizardofhoms/risks/wiki/RISKS-Architecture-In-Qubes)
 * [Components and roles](https://github.com/wizardofhoms/risks/wiki/Components-And-Roles)
 * [Components workflow](https://github.com/wizardofhoms/risks/wiki/Components-Workflow)
 * [Installation](https://github.com/wizardofhoms/risks/wiki/Installation)
-* [Development](/https://github.com/wizardofhoms/risks/wiki/Development)
-* [Full workflow example](/https://github.com/wizardofhoms/risks/wiki/Full-Workflow-Example)
+* [Usage tutorial](https://github.com/wizardofhoms/risks/wiki/Usage-Tutorial)
 * [Additional workflows](/https://github.com/wizardofhoms/risks/wiki/Additional-Workflows)
 * [Command-line API](/https://github.com/wizardofhoms/risks/wiki/Command-Line-API)
+* [Development](/https://github.com/wizardofhoms/risks/wiki/Development)

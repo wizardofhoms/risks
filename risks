@@ -1719,7 +1719,7 @@ open_coffin()
     # names and content, this does not prevent our own obfuscated names; the end
     # result is that all NAMES are obfuscated twice (once us, once fscrypt) and
     # the contents are encrypted once (fscrypt).
-    echo "$FILE_ENCRYPTION_KEY" | sudo fscrypt unlock "$identity_graveyard" --quiet
+    echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard" --quiet
 
     _verbose "Identity directory ($identity_graveyard) is unlocked"
 }
@@ -3913,11 +3913,11 @@ risks_create_identity_command() {
 
 
   # config files, etc, and set default key=values
-  _in_section 'mgmt' && _message "Generating management tomb"
+  _in_section 'mgmt' && _message "Creating management tomb"
   init_mgmt
 
   # for the enrypted data directory in the Signal VM.
-  _in_section 'signal' && _message "Generating Signal messenger tomb"
+  _in_section 'signal' && _message "Creating Signal messenger tomb"
   _run new_tomb "$SIGNAL_TOMB_LABEL" 20
 
   #
@@ -4265,6 +4265,13 @@ risks_delete_tomb_command() {
   # We need the hush device, on which to save the key
   if ! is_luks_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
       _failure "Hush device not mounted. Need access to delete tomb key in it."
+  fi
+
+  # Check the backup medium is here if asked to delete it also.
+  if [[ "${args[--backup]}" -eq 1 ]]; then
+      if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+          _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+      fi
   fi
 
   _set_identity "${args[identity]}"
@@ -6682,7 +6689,7 @@ risks_identity_parse_requirements() {
 }
 
 initialize() {
-  version="73564bb6eb7a4ed12bd043fcb2876598571ed4a6"
+  version="a7c9a1a7fd80fab72eaa3ec8badc32cd69cc59f4"
   long_usage=''
   
 
