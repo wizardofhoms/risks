@@ -1719,7 +1719,7 @@ open_coffin()
     # names and content, this does not prevent our own obfuscated names; the end
     # result is that all NAMES are obfuscated twice (once us, once fscrypt) and
     # the contents are encrypted once (fscrypt).
-    echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard" --quiet
+    echo "$FILE_ENCRYPTION_KEY" | sudo fscrypt unlock "$identity_graveyard" --quiet
 
     _verbose "Identity directory ($identity_graveyard) is unlocked"
 }
@@ -3978,6 +3978,11 @@ risks_open_command() {
   resource="${args[resource]}"
 
   _set_identity "${args[identity]}"
+
+  # Whatever we need to open, we need the hush device for a key.
+  if ! is_hush_mounted ; then
+      _failure "The hush device is not mounted. Mount it first and rerun the command."
+  fi
 
   # Either only open the GPG keyring.
   if [[ "$resource" == "gpg" ]] || [[ "$resource" == "coffin" ]]; then
@@ -6677,7 +6682,7 @@ risks_identity_parse_requirements() {
 }
 
 initialize() {
-  version="0b95a4d23e0ac9d45d6e47e0f2238293c1082928"
+  version="73564bb6eb7a4ed12bd043fcb2876598571ed4a6"
   long_usage=''
   
 

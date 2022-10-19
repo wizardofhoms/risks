@@ -5,6 +5,13 @@ if ! is_luks_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
     _failure "Hush device not mounted. Need access to delete tomb key in it."
 fi
 
+# Check the backup medium is here if asked to delete it also.
+if [[ "${args[--backup]}" -eq 1 ]]; then
+    if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+        _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+    fi
+fi
+
 _set_identity "${args[identity]}"
 
 # Set the hush device with read-write permissions, 

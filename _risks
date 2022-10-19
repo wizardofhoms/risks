@@ -38,7 +38,7 @@ _risks()
             'close:Close an identity or some of its associated data stores'
             'list:Show currently open data stores'
             'slam:Close all active identities and unmount hush/backup partitions'
-            'gpgpass:Copy the identity passphrase to the clipboard'
+            'gpgpass:Copy the identity GPG passphrase to the clipboard'
             'load:Copy some resource to a VM where to use it (completed)'
             'save:Move some data coming from another VM to a (tomb) directory'
             'kv:Manage the small key=value store used by other commands/functions'

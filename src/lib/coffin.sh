@@ -137,7 +137,7 @@ open_coffin()
     # names and content, this does not prevent our own obfuscated names; the end
     # result is that all NAMES are obfuscated twice (once us, once fscrypt) and
     # the contents are encrypted once (fscrypt).
-    echo "$FILE_ENCRYPTION_KEY" | sudo fscrypt unlock "$identity_graveyard" --quiet
+    echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard" --quiet
 
     _verbose "Identity directory ($identity_graveyard) is unlocked"
 }
