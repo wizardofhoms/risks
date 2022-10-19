@@ -68,7 +68,6 @@ gen_gpg_keys()
     local name="$1"
     local email="$2"
     local expiry="$3"
-    local passphrase="$4"
 
     local expiry_date fingerprint
 
@@ -182,10 +181,10 @@ cleanup_gpg_init()
     fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
 
     # Creating tomb file for private keys and moving them
-    _verbose "Creating tomb file for identity ${IDENTITY}"
-    _run new_tomb "$GPG_TOMB_LABEL" $tomb_size "$IDENTITY"
+    _verbose "Creating tomb file for for storing GPG privates"
+    _run new_tomb "$GPG_TOMB_LABEL" $tomb_size
     _verbose "Opening tomb file"
-    _run open_tomb "$GPG_TOMB_LABEL" "$IDENTITY"
+    _run open_tomb "$GPG_TOMB_LABEL"
 
     keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
     _verbose "Keygrip: $keygrip"

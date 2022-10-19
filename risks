@@ -514,7 +514,7 @@ risks_create_identity_usage() {
     echo
 
     echo "  EXPIRY_DATE"
-    printf "    Human readable, or GPG-compliant expiry duration to use for the GPG subkeys\n    (eg. '1 year', '1 week', etc)\n"
+    printf "    Human readable, or GPG-compliant expiry duration to use for the GPG subkeys\n    (eg. '1 year', '1 week', '0' for no expiry, etc)\n"
     echo
 
     printf "Examples:\n"
@@ -1816,6 +1816,9 @@ GRAVEYARD=/home/user/.graveyard
 ; Name of LUKS mapper to backup partition
 BACKUP_MAPPER=pendev
 
+; Default timeout after which the clipboard is wiped after being filled with GPG passphrase.
+GPGPASS_TIMEOUT=45
+
 EOF
     }
 }
@@ -1986,7 +1989,6 @@ gen_gpg_keys()
     local name="$1"
     local email="$2"
     local expiry="$3"
-    local passphrase="$4"
 
     local expiry_date fingerprint
 
@@ -2110,10 +2112,10 @@ cleanup_gpg_init()
     fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
 
     # Creating tomb file for private keys and moving them
-    _verbose "Creating tomb file for identity ${IDENTITY}"
-    _run new_tomb "$GPG_TOMB_LABEL" $tomb_size "$IDENTITY"
+    _verbose "Creating tomb file for for storing GPG privates"
+    _run new_tomb "$GPG_TOMB_LABEL" $tomb_size
     _verbose "Opening tomb file"
-    _run open_tomb "$GPG_TOMB_LABEL" "$IDENTITY"
+    _run open_tomb "$GPG_TOMB_LABEL"
 
     keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
     _verbose "Keygrip: $keygrip"
@@ -2648,8 +2650,8 @@ link_hush_udev_rules ()
 
         # - echo the link command into rc.local
         _verbose "Adding the link command to /rw/config/rc.local"
-        sudo sh -c 'echo "# The following line was added by the risks CLI, to map hush devices when plugged in this VM" > /rw/config/rc.local'
-        sudo sh -c 'echo "sudo ln -s '"$UDEV_RULES_PATH"' /etc/udev/rules.d/99-risks-hush.rules" > /rw/config/rc.local'
+        sudo sh -c 'echo "# The following line was added by the risks CLI, to map hush devices when plugged in this VM" >> /rw/config/rc.local'
+        sudo sh -c 'echo "ln -s '"$UDEV_RULES_PATH"' /etc/udev/rules.d/99-risks-hush.rules" >> /rw/config/rc.local'
 
         # - Create the symlink for this session
         _verbose "Linking the file for this login session"
@@ -3596,8 +3598,7 @@ risks_hush_format_command() {
   _message "Setting Udev rules for hush partition "
 
   uuid=$(sudo cryptsetup luksUUID "${sd_enc_part}")
-  # udev_rules='echo SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'${uuid}'\", SYMLINK+=\"hush\" >> '${UDEV_RULES_PATH}''
-  echo 'SUBSYSTEM==\"block\", ENV{ID_FS_UUID}==\"'"${uuid}"'\", SYMLINK+=\"hush\"' >> "${UDEV_RULES_PATH}"
+  echo 'SUBSYSTEM=="block", ENV{ID_FS_UUID}=="'"${uuid}"'", SYMLINK+="hush"' >> "${UDEV_RULES_PATH}"
 
   # Write our risks scripts in a special directory on the hush, and close the device.
   store_risks_scripts "$udev_rules"
@@ -3616,19 +3617,20 @@ risks_hush_format_command() {
 
   _message "Setting Udev rules for hush partition "
 
-  sh -c "${udev_rules}"
   _catch "Failed to write udev mapper file with SDCard UUID"
 
   # Create the necessary symbolic links if needed, and reload the rules after creating this link,
   # or simply reload the udev service, to take into account our changes to the udev.
-  if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}"; then
+  if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}" &>/dev/null ; then
       link_hush_udev_rules
   else
       _verbose "Restarting udev service"
 
       sudo udevadm control --reload-rules
   fi
+
   _success "Successfully formatted and prepared SDcard as hush device"
+  _success "Please detach the device from the qube for udev rules to work"
 
 }
 
@@ -6675,7 +6677,7 @@ risks_identity_parse_requirements() {
 }
 
 initialize() {
-  version="858139e0671ece75f3df0801fbf961db4944182f"
+  version="0b95a4d23e0ac9d45d6e47e0f2238293c1082928"
   long_usage=''
   
 
@@ -6724,6 +6726,7 @@ initialize() {
   typeset -gr BACKUP_MAPPER="$(config_get BACKUP_MAPPER)"
   typeset -gr HUSH_DIR="$(config_get HUSH_DIR)"
   typeset -gr GRAVEYARD="$(config_get GRAVEYARD)"
+  typeset -gH GPGPASS_TIMEOUT=$(config_get GPGPASS_TIMEOUT)
 
   # Default tombs and corresponding mount points (CONSTANTS) .........................................
 
@@ -6751,18 +6754,15 @@ initialize() {
   typeset -gr UDEV_RULES_FILE="risks-hush.rules"
   typeset -gr UDEV_RULES_PATH="${RISKS_DIR}/${UDEV_RULES_FILE}" # Contains udev rules for all formatted SDcards
 
+  # Password-store
+  export PASSWORD_STORE_ENABLE_EXTENSIONS=true
+  export PASSWORD_STORE_GENERATED_LENGTH=20
+
   # Sensitive & and recurring variables used by program ..............................................
 
   typeset -gH IDENTITY
   typeset -gH FILE_ENCRYPTION_KEY
   typeset -gH GPG_PASS
-
-  # Variables potentially overrode by user in their shell/rc .........................................
-  typeset -gH GPGPASS_TIMEOUT=45            # Can be modified with --timeout flag on gpgpass command
-
-  # Password-store
-  export PASSWORD_STORE_ENABLE_EXTENSIONS=true
-  export PASSWORD_STORE_GENERATED_LENGTH=20
 
 }
 

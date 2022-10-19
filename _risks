@@ -231,7 +231,7 @@ _create_identity ()
             _message "mail address recipient to use for GPG" 
             ;;
         duration)
-            _message "quoted, human readable expiry duration for GPG keys" 
+            _message "quoted, human readable expiry duration for GPG keys ('0' for no expiry)" 
             ;;
     esac
 }

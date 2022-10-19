@@ -45,6 +45,7 @@ typeset -gr SDCARD_QUIET="$(config_get SDCARD_QUIET)"
 typeset -gr BACKUP_MAPPER="$(config_get BACKUP_MAPPER)"
 typeset -gr HUSH_DIR="$(config_get HUSH_DIR)"
 typeset -gr GRAVEYARD="$(config_get GRAVEYARD)"
+typeset -gH GPGPASS_TIMEOUT=$(config_get GPGPASS_TIMEOUT)
 
 # Default tombs and corresponding mount points (CONSTANTS) .........................................
 
@@ -71,17 +72,14 @@ typeset -gr RISKS_IDENTITY_FILE="${RISKS_DIR}/.identity"
 typeset -gr UDEV_RULES_FILE="risks-hush.rules"
 typeset -gr UDEV_RULES_PATH="${RISKS_DIR}/${UDEV_RULES_FILE}" # Contains udev rules for all formatted SDcards
 
+# Password-store
+export PASSWORD_STORE_ENABLE_EXTENSIONS=true
+export PASSWORD_STORE_GENERATED_LENGTH=20
+
 # Sensitive & and recurring variables used by program ..............................................
 
 typeset -gH IDENTITY
 typeset -gH FILE_ENCRYPTION_KEY
 typeset -gH GPG_PASS
-
-# Variables potentially overrode by user in their shell/rc .........................................
-typeset -gH GPGPASS_TIMEOUT=45            # Can be modified with --timeout flag on gpgpass command
-
-# Password-store
-export PASSWORD_STORE_ENABLE_EXTENSIONS=true
-export PASSWORD_STORE_GENERATED_LENGTH=20
 
 

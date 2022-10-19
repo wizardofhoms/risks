@@ -40,6 +40,9 @@ GRAVEYARD=/home/user/.graveyard
 ; Name of LUKS mapper to backup partition
 BACKUP_MAPPER=pendev 
 
+; Default timeout after which the clipboard is wiped after being filled with GPG passphrase.
+GPGPASS_TIMEOUT=45
+
 EOF
     }
 }

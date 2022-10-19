@@ -69,8 +69,8 @@ link_hush_udev_rules ()
 
         # - echo the link command into rc.local
         _verbose "Adding the link command to /rw/config/rc.local"
-        sudo sh -c 'echo "# The following line was added by the risks CLI, to map hush devices when plugged in this VM" > /rw/config/rc.local'
-        sudo sh -c 'echo "sudo ln -s '"$UDEV_RULES_PATH"' /etc/udev/rules.d/99-risks-hush.rules" > /rw/config/rc.local'
+        sudo sh -c 'echo "# The following line was added by the risks CLI, to map hush devices when plugged in this VM" >> /rw/config/rc.local'
+        sudo sh -c 'echo "ln -s '"$UDEV_RULES_PATH"' /etc/udev/rules.d/99-risks-hush.rules" >> /rw/config/rc.local'
 
         # - Create the symlink for this session
         _verbose "Linking the file for this login session"

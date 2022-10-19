@@ -14,7 +14,7 @@ commands:
         help: "Email address to use for the GPG identity"
       - name: expiry_date
         required: true
-        help: Human readable, or GPG-compliant expiry duration to use for the GPG subkeys (eg. '1 year', '1 week', etc)
+        help: Human readable, or GPG-compliant expiry duration to use for the GPG subkeys (eg. '1 year', '1 week', '0' for no expiry, etc)
     flags:
       - &verbose
         long: --verbose
