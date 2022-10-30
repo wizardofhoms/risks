@@ -29,3 +29,7 @@ release:
 	sed -i 's/set -e//g' risks
 	# And reset the settings from prod to dev
 	sed -i 's#^.*\benv\b.*$$#env: development#' settings.yml
+
+	# Signatures
+	qubes-gpg-client-wrapper --detach-sign risq > risq.gpg
+	sha256sum risq > risq.sha
