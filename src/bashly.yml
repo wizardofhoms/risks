@@ -30,6 +30,7 @@ commands:
 - import: src/slam_command.yml
 - import: src/gpgpass_command.yml
 - import: src/delete_commands.yml
+- import: src/private_commands.yml
   # Data/tools commands
 - import: src/load_command.yml
 - import: src/save_command.yml

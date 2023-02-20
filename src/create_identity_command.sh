@@ -52,7 +52,7 @@ _message "Generating GPG keys"
 GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
 echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
 _warning "GPG passphrase copied to clipboard with one-time use only"
-_message -n "Copy it in the coming GPG prompt when creating builtin tombs\n"
+_message -n "Paste it in the coming GPG prompt when creating builtin tombs\n"
 
 _run gen_gpg_keys "$name" "$email" "$expiry"
 

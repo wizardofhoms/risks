@@ -35,6 +35,7 @@ risks_usage() {
   echo "  slam      Close all active identities and unmount hush/backup partitions"
   echo "  gpgpass   Copy the identity GPG passphrase to the clipboard"
   echo "  delete    Delete identities or associated data stores and backups"
+  echo "  private   manage private keys for an identity"
   echo "  load      Copy some resource to a VM where to use it (completed)"
   echo "  save      Move some data coming from another VM to a (tomb) directory"
   echo "  kv        Manage the small key=value store used by other commands/functions"
@@ -292,6 +293,8 @@ risks_backup_usage() {
   echo "  format     Format and setup a drive for as a risks backup medium"
   echo "  identity   Backup the graveyard and the GPG coffin file for the current identity, active or specified."
   echo "  hush       Backup only the raw hush device image"
+  echo "  unlock     Unlock encryption on the backup of an identity"
+  echo "  lock       Lock encryption on the backup of an identity"
   echo
 
   # :command.long_usage
@@ -498,6 +501,89 @@ risks_backup_hush_usage() {
     # :command.usage_fixed_flags
     echo "  --help, -h"
     printf "    Show this help\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+risks_backup_unlock_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "risks backup unlock - Unlock encryption on the backup of an identity\n"
+    echo
+
+  else
+    printf "risks backup unlock - Unlock encryption on the backup of an identity\n"
+    echo
+
+  fi
+
+  printf "Usage:\n"
+  printf "  risks backup unlock IDENTITY [options]\n"
+  printf "  risks backup unlock --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_flags
+    # :flag.usage
+    echo "  --verbose, -v"
+    printf "    Show verbose logging\n"
+    echo
+
+    # :command.usage_args
+    printf "Arguments:\n"
+
+    # :argument.usage
+    echo "  IDENTITY"
+    printf "    Identity owning the backup.\n"
+    echo
+
+    # :command.usage_examples
+    printf "Examples:\n"
+    printf "  backup unlock john_doe\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+risks_backup_lock_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "risks backup lock - Lock encryption on the backup of an identity\n"
+    echo
+
+  else
+    printf "risks backup lock - Lock encryption on the backup of an identity\n"
+    echo
+
+  fi
+
+  printf "Usage:\n"
+  printf "  risks backup lock [options]\n"
+  printf "  risks backup lock --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_flags
+    # :flag.usage
+    echo "  --verbose, -v"
+    printf "    Show verbose logging\n"
     echo
 
   fi
@@ -1022,6 +1108,112 @@ risks_delete_tomb_usage() {
     # :argument.usage
     echo "  TOMB_NAME"
     printf "    Name/label of the tomb to delete\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+risks_private_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "risks private - manage private keys for an identity\n"
+    echo
+
+  else
+    printf "risks private - manage private keys for an identity\n"
+    echo
+
+  fi
+
+  printf "Usage:\n"
+  printf "  risks private [command]\n"
+  printf "  risks private [command] --help | -h\n"
+  echo
+  # :command.usage_commands
+  printf "Commands:\n"
+  echo "  import   Import the GPG private key from the backup to the GPG keyring, in read-write mode"
+  echo "  remove   Remove the GPG private key from the keyring, and set the hush in read-only mode"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+risks_private_import_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "risks private import - Import the GPG private key from the backup to the GPG keyring, in read-write mode\n"
+    echo
+
+  else
+    printf "risks private import - Import the GPG private key from the backup to the GPG keyring, in read-write mode\n"
+    echo
+
+  fi
+
+  printf "Usage:\n"
+  printf "  risks private import IDENTITY [options]\n"
+  printf "  risks private import --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_flags
+    # :flag.usage
+    echo "  --verbose, -v"
+    printf "    Show verbose logging\n"
+    echo
+
+    # :command.usage_args
+    printf "Arguments:\n"
+
+    # :argument.usage
+    echo "  IDENTITY"
+    printf "    Identity owning the backup.\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+risks_private_remove_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "risks private remove - Remove the GPG private key from the keyring, and set the hush in read-only mode\n"
+    echo
+
+  else
+    printf "risks private remove - Remove the GPG private key from the keyring, and set the hush in read-only mode\n"
+    echo
+
+  fi
+
+  printf "Usage:\n"
+  printf "  risks private remove\n"
+  printf "  risks private remove --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
     echo
 
   fi
@@ -4097,6 +4289,76 @@ risks_backup_hush_command() {
 }
 
 # :command.function
+risks_backup_unlock_command() {
+  # src/backup_unlock_command.sh
+
+  local backup_graveyard          # Where the graveyard root directory is in the backup drive
+  local identity_graveyard_backup # Full path to identity graveyard backup
+  local identity_dir              # The encrypted graveyard directory for the identity
+
+  backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
+
+  # Ensure a backup is mounted
+  if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+      _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+  fi
+
+  # Ensure we have an active identity, which will be detected in this call
+  _set_identity
+
+  if ! _identity_active ; then
+      _failure "This command requires an identity to be active"
+  fi
+
+  identity_dir=$(_encrypt_filename "$IDENTITY")
+  identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
+
+  # If the identity has no backup, exit.
+  if [[ ! -e "$identity_graveyard_backup" ]]; then
+      _failure "This identity has no graveyard on the backup medium"
+  fi
+
+  _message "Unlocking identity graveyard backup"
+  echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard_backup" --quiet
+
+}
+
+# :command.function
+risks_backup_lock_command() {
+  # src/backup_lock_command.sh
+
+  local backup_graveyard          # Where the graveyard root directory is in the backup drive
+  local identity_graveyard_backup # Full path to identity graveyard backup
+  local identity_dir              # The encrypted graveyard directory for the identity
+
+  backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
+
+  # Ensure a backup is mounted
+  if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+      _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+  fi
+
+  # Ensure we have an active identity, which will be detected in this call
+  _set_identity
+
+  if ! _identity_active ; then
+      _failure "This command requires an identity to be active"
+  fi
+
+  identity_dir=$(_encrypt_filename "$IDENTITY")
+  identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
+
+  # If the identity has no backup, exit.
+  if [[ ! -e "$identity_graveyard_backup" ]]; then
+      _failure "This identity has no graveyard on the backup medium"
+  fi
+
+  _message "Locking identity graveyard backup"
+  _run sudo fscrypt lock "${identity_graveyard_backup}"
+
+}
+
+# :command.function
 risks_create_identity_command() {
   # src/create_identity_command.sh
 
@@ -4580,6 +4842,26 @@ risks_delete_tomb_command() {
 }
 
 # :command.function
+risks_private_import_command() {
+  # src/private_import_command.sh
+  echo "# this file is located in 'src/private_import_command.sh'"
+  echo "# code for 'risks private import' goes here"
+  echo "# you can edit it freely and regenerate (it will not be overwritten)"
+  inspect_args
+
+}
+
+# :command.function
+risks_private_remove_command() {
+  # src/private_remove_command.sh
+  echo "# this file is located in 'src/private_remove_command.sh'"
+  echo "# code for 'risks private remove' goes here"
+  echo "# you can edit it freely and regenerate (it will not be overwritten)"
+  inspect_args
+
+}
+
+# :command.function
 risks_load_command() {
   # src/load_command.sh
 
@@ -4879,6 +5161,13 @@ parse_requirements() {
     action="delete"
     shift
     risks_delete_parse_requirements "$@"
+    shift $#
+    ;;
+
+  private )
+    action="private"
+    shift
+    risks_private_parse_requirements "$@"
     shift $#
     ;;
 
@@ -5359,6 +5648,20 @@ risks_backup_parse_requirements() {
     shift $#
     ;;
 
+  unlock )
+    action="unlock"
+    shift
+    risks_backup_unlock_parse_requirements "$@"
+    shift $#
+    ;;
+
+  lock )
+    action="lock"
+    shift
+    risks_backup_lock_parse_requirements "$@"
+    shift $#
+    ;;
+
   # :command.command_fallback
   "" )
     risks_backup_usage
@@ -5640,6 +5943,113 @@ risks_backup_hush_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
+
+    -?* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+
+    * )
+      # :command.parse_requirements_case
+      # :command.parse_requirements_case_simple
+      printf "invalid argument: %s\n" "$key"
+      exit 1
+
+      ;;
+
+    esac
+  done
+
+}
+
+# :command.parse_requirements
+risks_backup_unlock_parse_requirements() {
+  # :command.fixed_flags_filter
+  case "${1:-}" in
+  --help | -h )
+    long_usage=yes
+    risks_backup_unlock_usage
+    exit
+    ;;
+
+  esac
+
+  # :command.command_filter
+  action="backup unlock"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+    # :flag.case
+    --verbose | -v )
+
+      # :flag.case_no_arg
+      args[--verbose]=1
+      shift
+      ;;
+
+    -?* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+
+    * )
+      # :command.parse_requirements_case
+      # :command.parse_requirements_case_simple
+      if [[ -z ${args[identity]+x} ]]; then
+        # :argument.validations
+        if [[ -n $(validate_identity_exists "$1") ]]; then
+          printf "validation error in %s:\n%s\n" "IDENTITY" "$(validate_identity_exists "$1")"
+          exit 1
+        fi
+
+        args[identity]=$1
+        shift
+      else
+        printf "invalid argument: %s\n" "$key"
+        exit 1
+      fi
+
+      ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args[identity]+x} ]]; then
+    printf "missing required argument: IDENTITY\nusage: risks backup unlock IDENTITY [options]\n"
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+risks_backup_lock_parse_requirements() {
+  # :command.fixed_flags_filter
+  case "${1:-}" in
+  --help | -h )
+    long_usage=yes
+    risks_backup_lock_usage
+    exit
+    ;;
+
+  esac
+
+  # :command.command_filter
+  action="backup lock"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+    # :flag.case
+    --verbose | -v )
+
+      # :flag.case_no_arg
+      args[--verbose]=1
+      shift
+      ;;
 
     -?* )
       printf "invalid option: %s\n" "$key"
@@ -6366,6 +6776,175 @@ risks_delete_tomb_parse_requirements() {
     printf "missing required argument: TOMB_NAME\nusage: risks delete tomb TOMB_NAME [options]\n"
     exit 1
   fi
+
+}
+
+# :command.parse_requirements
+risks_private_parse_requirements() {
+  # :command.fixed_flags_filter
+  case "${1:-}" in
+  --help | -h )
+    long_usage=yes
+    risks_private_usage
+    exit
+    ;;
+
+  esac
+
+  # :command.command_filter
+  action=${1:-}
+
+  case $action in
+  -* )
+    ;;
+
+  import )
+    action="import"
+    shift
+    risks_private_import_parse_requirements "$@"
+    shift $#
+    ;;
+
+  remove )
+    action="remove"
+    shift
+    risks_private_remove_parse_requirements "$@"
+    shift $#
+    ;;
+
+  # :command.command_fallback
+  "" )
+    risks_private_usage
+    exit 1
+    ;;
+
+  * )
+    printf "invalid command: %s\n" "$action"
+    exit 1
+    ;;
+
+  esac
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+    -?* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+
+    * )
+      # :command.parse_requirements_case
+      # :command.parse_requirements_case_simple
+      printf "invalid argument: %s\n" "$key"
+      exit 1
+
+      ;;
+
+    esac
+  done
+
+}
+
+# :command.parse_requirements
+risks_private_import_parse_requirements() {
+  # :command.fixed_flags_filter
+  case "${1:-}" in
+  --help | -h )
+    long_usage=yes
+    risks_private_import_usage
+    exit
+    ;;
+
+  esac
+
+  # :command.command_filter
+  action="private import"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+    # :flag.case
+    --verbose | -v )
+
+      # :flag.case_no_arg
+      args[--verbose]=1
+      shift
+      ;;
+
+    -?* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+
+    * )
+      # :command.parse_requirements_case
+      # :command.parse_requirements_case_simple
+      if [[ -z ${args[identity]+x} ]]; then
+        # :argument.validations
+        if [[ -n $(validate_identity_exists "$1") ]]; then
+          printf "validation error in %s:\n%s\n" "IDENTITY" "$(validate_identity_exists "$1")"
+          exit 1
+        fi
+
+        args[identity]=$1
+        shift
+      else
+        printf "invalid argument: %s\n" "$key"
+        exit 1
+      fi
+
+      ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args[identity]+x} ]]; then
+    printf "missing required argument: IDENTITY\nusage: risks private import IDENTITY [options]\n"
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+risks_private_remove_parse_requirements() {
+  # :command.fixed_flags_filter
+  case "${1:-}" in
+  --help | -h )
+    long_usage=yes
+    risks_private_remove_usage
+    exit
+    ;;
+
+  esac
+
+  # :command.command_filter
+  action="private remove"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+    -?* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+
+    * )
+      # :command.parse_requirements_case
+      # :command.parse_requirements_case_simple
+      printf "invalid argument: %s\n" "$key"
+      exit 1
+
+      ;;
+
+    esac
+  done
 
 }
 
@@ -7399,6 +7978,22 @@ run() {
       risks_backup_hush_command
     fi
 
+  elif [[ $action == "backup unlock" ]]; then
+    if [[ ${args[--help]:-} ]]; then
+      long_usage=yes
+      risks_backup_unlock_usage
+    else
+      risks_backup_unlock_command
+    fi
+
+  elif [[ $action == "backup lock" ]]; then
+    if [[ ${args[--help]:-} ]]; then
+      long_usage=yes
+      risks_backup_lock_usage
+    else
+      risks_backup_lock_command
+    fi
+
   elif [[ $action == "create" ]]; then
     if [[ ${args[--help]:-} ]]; then
       long_usage=yes
@@ -7485,6 +8080,30 @@ run() {
       risks_delete_tomb_usage
     else
       risks_delete_tomb_command
+    fi
+
+  elif [[ $action == "private" ]]; then
+    if [[ ${args[--help]:-} ]]; then
+      long_usage=yes
+      risks_private_usage
+    else
+      risks_private_command
+    fi
+
+  elif [[ $action == "private import" ]]; then
+    if [[ ${args[--help]:-} ]]; then
+      long_usage=yes
+      risks_private_import_usage
+    else
+      risks_private_import_command
+    fi
+
+  elif [[ $action == "private remove" ]]; then
+    if [[ ${args[--help]:-} ]]; then
+      long_usage=yes
+      risks_private_remove_usage
+    else
+      risks_private_remove_command
     fi
 
   elif [[ $action == "load" ]]; then
