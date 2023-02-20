@@ -1,0 +1,19 @@
+name: private
+help: manage private keys for an identity
+
+commands:
+  - name: import
+    help: 'Import the GPG private key from the backup to the GPG keyring, in read-write mode'
+    args:
+      - name: identity 
+        required: true 
+        help: "Identity owning the backup."
+        validate: identity_exists
+    flags:
+      - &verbose
+        long: --verbose
+        short: -v
+        help: "Show verbose logging"
+
+  - name: remove
+    help: 'Remove the GPG private key from the keyring, and set the hush in read-only mode'
