@@ -3,13 +3,14 @@ local name identity expiry pendrive email
 
 # Base identity parameters, set globally.
 name="${args[name]}"
-expiry="${args[expiry_date]}"
-
 identity="${name// /_}"
-email="${args[email]}"
+pendrive="${args[--backup]}" # Backup is optional
 
-# Backup is optional
-pendrive="${args[--backup]}"
+## Pre-run parameters setup
+name="$(_get_name "${name}")"
+expiry="$(_get_expiry "${args[expiry_date]}")"
+email="$(_get_mail "${name}" "${args[email]}")"
+
 
 ## Pre-run checks ========
 
@@ -27,12 +28,14 @@ if is_hush_mounted && [[ -w "$HUSH_DIR" ]]; then
         Please ensure nothing is writing to it and set it to read-only first"
 fi
 
-
 ## Start work ============
 
 _in_section 'risks' 6
 _message "Starting new identity generation process"
 _warning "Do not unplug hush and backup devices during the process"
+
+_message "Using ${name} as identity name"
+_message "Using ${email} as email"
 
 # Use the identity name to set its file encryption key.
 # This call propagates some of those essential variables 
@@ -79,11 +82,15 @@ cleanup_gpg_init "$email"
 
 ## Builtin tombs
 #
-_in_section 'ssh' && _message "Generating SSH keypair and multi-key ssh-agent script" 
-gen_ssh_keys "$email"
-
 _in_section 'pass' && _message "Initializing password-store"
 init_pass "$email"
+
+if [[ "${args[--burner]}" -eq 1 ]]; then
+    echo && _success "risks" "Identity (burner) generation complete." && echo
+fi
+
+_in_section 'ssh' && _message "Generating SSH keypair and multi-key ssh-agent script" 
+gen_ssh_keys "$email"
 
 ## Create a tomb to use for admin storage: 
 # config files, etc, and set default key=values

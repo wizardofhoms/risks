@@ -28,6 +28,7 @@ _risks()
             (config)    _config ;;
             (delete)    _delete ;;
             (private)   _private ;;
+            (resolve)    _resolve ;;
         esac
     else
         local -a subcmds
@@ -46,6 +47,7 @@ _risks()
             'config:Manage the global risk configuration settings from the CLI'
             'delete:Delete an identity or one of its associated stores/tombs'
             'private:Manage private keys for an identity'
+            'resolve:Retrieve the encrypted names of identity files'
         )
 
         _describe -t commands 'commands' subcmds
@@ -226,19 +228,21 @@ _create_identity ()
     _arguments -C \
         "${_flags_base[@]}" \
         '(-b --backup)'{-b,--backup}'[Device file of the backup drive (whole drive without partition number, eg. /dev/sdb)]:path to backup device:_path_files -W /dev -g "xvd*" -F exclude_devices -P /dev/' \
+        '(-m --mail)'{-m,--mail}'[Mail provider to use for the GPG key (appended to the name when no full mail is given as arg)]:mail provider (without @):' \
+        '(-B --burner)'{-B,--burner}'[Generate a random username, and only generate GPG/Pass stores]' \
         "2: :->name" \
         "3:arg:->recipient" \
         "4:arg:->duration"
 
     case "$state" in
         name)
-            _message "quoted string of the name, if spaces"
+            _message "quoted string of the name, if spaces (optional if --burner)"
             ;;
         recipient)
-            _message "mail address recipient to use for GPG" 
+            _message "mail address recipient to use for GPG (optional)" 
             ;;
         duration)
-            _message "quoted, human readable expiry duration for GPG keys ('0' for no expiry)" 
+            _message "quoted, human readable expiry duration for GPG keys (empty: no expiry)" 
             ;;
     esac
 }
@@ -412,14 +416,14 @@ _private_commands ()
 {
     local -a subcmds 
     subcmds=(
-        "import:Import the GPG private key from the backup to the GPG keyring, in read-write mode"
-        "remove:Remove the GPG private key from the keyring, and set the hush in read-only mode"
+        "import:Import the GPG master private key from the backup to the GPG keyring, in read-write mode"
+        "remove:Remove the GPG master private key from the keyring, and set the hush in read-only mode"
     )
 
     _describe -t commands 'private commands' subcmds && ret=0
 }
 
-# Completion dispatcher for backup subcommand
+# Completion dispatcher for private subcommand
 _private ()
 {
     local ret=1
@@ -442,6 +446,41 @@ _private ()
     esac
 }
 
+# Completes the commands for resolve, without parameters
+_resolve_commands () 
+{
+    local -a subcmds 
+    subcmds=(
+        "coffin:Get the name of the gpg coffin for an identity"
+        "tomb:Get the filename of a tomb file"
+        "key:Get the filename of a tomb key"
+    )
+
+    _describe -t commands 'resolve commands' subcmds && ret=0
+}
+
+# Completion dispatcher for resolve subcommand
+_resolve ()
+{
+    local ret=1
+    local line state
+    _arguments -C \
+        "1: :_resolve_commands" \
+        "2::arg:->args" \
+        && ret=0
+
+    case $state in
+        args)
+            case $line[1] in
+            coffin)
+                _message "identity name"
+                ;;
+            tomb|key)
+                _message "tomb name"
+                ;;
+            esac
+    esac
+}
 
 
 # Flags =======================================================================================

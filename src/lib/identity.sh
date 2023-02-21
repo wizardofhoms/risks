@@ -81,3 +81,53 @@ _identity_active_or_specified ()
 
     print "$(cat "${RISKS_IDENTITY_FILE}")"
 }
+
+# _get_name either returns the name given as parameter, or
+# generates a random (burner) one and prints it to the screen.
+_get_name () 
+{
+    local name
+
+    if [[ -z "${1}" ]] && [[ "${args[--burner]}" -eq 0 ]]; then
+        _failure "Either an identity name is required, or the --burner flag" 
+    fi
+
+    # Either use the provided one
+    if [[ -n "${1}" ]]; then
+        name="${1}"
+    elif [[ "${args[--burner]}" -eq 1 ]]; then
+        name="$(rig -m | head -n 1)"
+        name="${name// /_}"
+    fi
+
+    print "${name}"
+}
+
+# _get_mail returns a correctly formatted mail given either a fully specified 
+# one as positional, or a generated/concatenated one from the username argument.
+_get_mail ()
+{
+    local name="$1"
+    local email="$2"
+
+    [[ -n "${email}" ]] && return
+
+    email="${args[--mail]}"
+    [[ -n "${email}" ]] && print "${name}@${email}"
+}
+
+# _get_expiry returns a correctly formatted expiry date for a GPG key.
+# If no arguments are passed to the call, the expiry date is never.
+_get_expiry () 
+{
+    local expiry
+
+    if [[ -z "${1}" ]]; then
+        expiry="0"
+    else
+        expiry="${1}"
+    fi
+
+    expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")" 
+    print "${expiry_date}"
+}

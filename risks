@@ -40,6 +40,7 @@ risks_usage() {
   echo "  save      Move some data coming from another VM to a (tomb) directory"
   echo "  kv        Manage the small key=value store used by other commands/functions"
   echo "  config    Manage the risk global configuration"
+  echo "  resolve   Retrieve the encrypted names of identity files"
   echo
 
   # :command.long_usage
@@ -636,7 +637,7 @@ risks_create_identity_usage() {
   fi
 
   printf "Usage:\n"
-  printf "  risks create identity NAME EMAIL EXPIRY_DATE [options]\n"
+  printf "  risks create identity [NAME] [EMAIL] [EXPIRY_DATE] [options]\n"
   printf "  risks create identity --help | -h\n"
   echo
 
@@ -660,6 +661,16 @@ risks_create_identity_usage() {
     printf "    Device file of the backup drive (must be a whole drive without a partition\n    number, eg. /dev/sdb)\n"
     echo
 
+    # :flag.usage
+    echo "  --burner, -B"
+    printf "    Generate a random username, and only generate GPG/Pass stores\n"
+    echo
+
+    # :flag.usage
+    echo "  --mail, -m"
+    printf "    Mail provider to use for the GPG key (appended to the name when no full mail\n    is given as arg)\n"
+    echo
+
     # :command.usage_args
     printf "Arguments:\n"
 
@@ -675,12 +686,14 @@ risks_create_identity_usage() {
 
     # :argument.usage
     echo "  EXPIRY_DATE"
-    printf "    Human readable, or GPG-compliant expiry duration to use for the GPG subkeys\n    (eg. '1 year', '1 week', '0' for no expiry, etc)\n"
+    printf "    Human readable, or GPG-compliant expiry duration to use for the GPG subkeys\n    (eg. '1 year', '1 week', etc)\n"
     echo
 
     # :command.usage_examples
     printf "Examples:\n"
-    printf "  new identity 'John Doe' john.doe@mail.com '1 year' /dev/xvdj\n"
+    printf "  create identity 'John Doe' john.doe@mail.com '1 year' /dev/xvdj\n"
+    printf "  create identity --burner --mail proton.me\n"
+    printf "  create identity 'James Steel' jamessteel@proton.me --burner\n"
     echo
 
   fi
@@ -1762,6 +1775,152 @@ risks_config_keys_usage() {
 }
 
 # :command.usage
+risks_resolve_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "risks resolve - Retrieve the encrypted names of identity files\n"
+    echo
+
+  else
+    printf "risks resolve - Retrieve the encrypted names of identity files\n"
+    echo
+
+  fi
+
+  printf "Usage:\n"
+  printf "  risks resolve [command]\n"
+  printf "  risks resolve [command] --help | -h\n"
+  echo
+  # :command.usage_commands
+  printf "Commands:\n"
+  echo "  coffin   Get the name of the gpg coffin for an identity"
+  echo "  tomb     Get the filename of a tomb file"
+  echo "  key      Get the filename of a tomb key"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+risks_resolve_coffin_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "risks resolve coffin - Get the name of the gpg coffin for an identity\n"
+    echo
+
+  else
+    printf "risks resolve coffin - Get the name of the gpg coffin for an identity\n"
+    echo
+
+  fi
+
+  printf "Usage:\n"
+  printf "  risks resolve coffin [NAME]\n"
+  printf "  risks resolve coffin --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "Arguments:\n"
+
+    # :argument.usage
+    echo "  NAME"
+    printf "    identity name\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+risks_resolve_tomb_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "risks resolve tomb - Get the filename of a tomb file\n"
+    echo
+
+  else
+    printf "risks resolve tomb - Get the filename of a tomb file\n"
+    echo
+
+  fi
+
+  printf "Usage:\n"
+  printf "  risks resolve tomb TOMB_NAME\n"
+  printf "  risks resolve tomb --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "Arguments:\n"
+
+    # :argument.usage
+    echo "  TOMB_NAME"
+    printf "    Tomb name\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+risks_resolve_key_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "risks resolve key - Get the filename of a tomb key\n"
+    echo
+
+  else
+    printf "risks resolve key - Get the filename of a tomb key\n"
+    echo
+
+  fi
+
+  printf "Usage:\n"
+  printf "  risks resolve key TOMB_NAME\n"
+  printf "  risks resolve key --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "Arguments:\n"
+
+    # :argument.usage
+    echo "  TOMB_NAME"
+    printf "    Tomb name\n"
+    echo
+
+  fi
+}
+
+# :command.usage
 risks_identity_usage() {
   if [[ -n $long_usage ]]; then
     printf "risks identity - Prints the active identity as a raw string, to be used by prompts.\n"
@@ -2755,6 +2914,61 @@ _identity_active_or_specified ()
     fi
 
     print "$(cat "${RISKS_IDENTITY_FILE}")"
+}
+
+# _get_name either returns the name given as parameter, or
+# generates a random (burner) one and prints it to the screen.
+_get_name ()
+
+{
+    local name
+
+    if [[ -z "${1}" ]] && [[ "${args[--burner]}" -eq 0 ]]; then
+        _failure "Either an identity name is required, or the --burner flag"
+
+    fi
+
+    # Either use the provided one
+    if [[ -n "${1}" ]]; then
+        name="${1}"
+    elif [[ "${args[--burner]}" -eq 1 ]]; then
+        name="$(rig -m | head -n 1)"
+        name="${name// /_}"
+    fi
+
+    print "${name}"
+}
+
+# _get_mail returns a correctly formatted mail given either a fully specified
+
+# one as positional, or a generated/concatenated one from the username argument.
+_get_mail ()
+{
+    local name="$1"
+    local email="$2"
+
+    [[ -n "${email}" ]] && return
+
+    email="${args[--mail]}"
+    [[ -n "${email}" ]] && print "${name}@${email}"
+}
+
+# _get_expiry returns a correctly formatted expiry date for a GPG key.
+# If no arguments are passed to the call, the expiry date is never.
+_get_expiry ()
+
+{
+    local expiry
+
+    if [[ -z "${1}" ]]; then
+        expiry="0"
+    else
+        expiry="${1}"
+    fi
+
+    expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")"
+
+    print "${expiry_date}"
 }
 
 # src/lib/init.sh
@@ -3826,6 +4040,8 @@ validate_device () {
     fi
 }
 
+# src/lib/validations/identity.sh
+
 # validate_identity_exists simply hashes an identity name and tries to
 # find its corresponding coffin file in .graveyard/. If yes, the identity
 # exists and is theoretically accessible on this system.
@@ -4366,13 +4582,12 @@ risks_create_identity_command() {
 
   # Base identity parameters, set globally.
   name="${args[name]}"
-  expiry="${args[expiry_date]}"
-
   identity="${name// /_}"
-  email="${args[email]}"
+  pendrive="${args[--backup]}" # Backup is optional
 
-  # Backup is optional
-  pendrive="${args[--backup]}"
+  name="$(_get_name "${name}")"
+  expiry="$(_get_expiry "${args[expiry_date]}")"
+  email="$(_get_mail "${name}" "${args[email]}")"
 
 
   # No identity should be active, because some important mount points will be
@@ -4394,6 +4609,9 @@ risks_create_identity_command() {
   _message "Starting new identity generation process"
   _warning "Do not unplug hush and backup devices during the process"
 
+  _message "Using ${name} as identity name"
+  _message "Using ${email} as email"
+
   # Use the identity name to set its file encryption key.
   # This call propagates some of those essential variables
 
@@ -4414,7 +4632,7 @@ risks_create_identity_command() {
   GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
   echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
   _warning "GPG passphrase copied to clipboard with one-time use only"
-  _message -n "Copy it in the coming GPG prompt when creating builtin tombs\n"
+  _message -n "Paste it in the coming GPG prompt when creating builtin tombs\n"
 
   _run gen_gpg_keys "$name" "$email" "$expiry"
 
@@ -4441,12 +4659,16 @@ risks_create_identity_command() {
   cleanup_gpg_init "$email"
 
   #
+  _in_section 'pass' && _message "Initializing password-store"
+  init_pass "$email"
+
+  if [[ "${args[--burner]}" -eq 1 ]]; then
+      echo && _success "risks" "Identity (burner) generation complete." && echo
+  fi
+
   _in_section 'ssh' && _message "Generating SSH keypair and multi-key ssh-agent script"
 
   gen_ssh_keys "$email"
-
-  _in_section 'pass' && _message "Initializing password-store"
-  init_pass "$email"
 
 
   # config files, etc, and set default key=values
@@ -4844,20 +5066,89 @@ risks_delete_tomb_command() {
 # :command.function
 risks_private_import_command() {
   # src/private_import_command.sh
-  echo "# this file is located in 'src/private_import_command.sh'"
-  echo "# code for 'risks private import' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  local keygrip keypath
+
+  _set_identity "${args[identity]}"
+
+  # Hush and identity checks
+  if ! is_hush_mounted ; then
+      _failure "The hush device is not mounted. Mount it first and rerun the command."
+  fi
+
+  if ! _identity_active ; then
+      _failure "This command requires an identity to be active"
+  fi
+
+  # 1 - Open the GPG tomb, and verify target files are here.
+  open_tomb "$GPG_TOMB_LABEL" "$IDENTITY"
+
+  keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
+  _verbose "Keygrip: $keygrip"
+  keypath="${HOME}/.tomb/${GPG_TOMB_LABEL}/${keygrip}"
+
+  if [[ ! -e "${keypath}" ]]; then
+      _failure "Private key ${keygrip} not found in ${GPG_TOMB_LABEL} tomb"
+  fi
+
+  # 2 - Set the hush partition read-write and import the corresponding key
+  risks_hush_rw_command
+
+  _message "Importing GPG private key in keyring"
+  cp "${keypath}" "${RAMDISK}"/private-keys-v1.d/"${keygrip}"
 
 }
 
 # :command.function
 risks_private_remove_command() {
   # src/private_remove_command.sh
-  echo "# this file is located in 'src/private_remove_command.sh'"
-  echo "# code for 'risks private remove' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  local keygrip keypath
+
+  _set_identity "${args[identity]}"
+
+  # Hush and identity checks
+  if ! is_hush_mounted ; then
+      _failure "The hush device is not mounted. Mount it first and rerun the command."
+  fi
+
+  if ! _identity_active ; then
+      _failure "This command requires an identity to be active"
+  fi
+
+  # 1 - Open the GPG tomb
+  open_tomb "$GPG_TOMB_LABEL" "$IDENTITY"
+
+  # 3 - Copy/check the private key and revoc certificate, check correcly copied, close GPG tomb
+  keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
+  _verbose "Keygrip: $keygrip"
+  keypath="${HOME}/.tomb/${GPG_TOMB_LABEL}/${keygrip}"
+  keyring_path="${RAMDISK}/private-keys-v1.d/${keygrip}"
+
+  if [[ ! -e "${keypath}" ]]; then
+      _message "Copying private key ${keygrip} in $GPG_TOMB_LABEL tomb"
+      cp "${keyring_path}" "${keypath}"
+
+      sudo chattr +i "${keypath}"
+
+  fi
+
+  close_tomb "$GPG_TOMB_LABEL"
+
+  if [[ ! -e ${keypath} ]]; then
+      _failure "Private key file should be found in $GPG_TOMB_LABEL tomb after copy, aborting deletion"
+  fi
+
+  # 2 - Set the partition read-write and remove from the gpg keyring
+  risks_hush_rw_command
+
+  _message "Wiping private GPG key ${keygrip} from keyring"
+  _run wipe -rf "${keyring_path}" \
+      || _warning "Failed to delete master private key from keyring !"
+
+  risks_hush_ro_command
+
+  _message "Removed private key from keyring"
 
 }
 
@@ -5024,6 +5315,49 @@ risks_config_list_command() {
 risks_config_keys_command() {
   # src/config_keys_command.sh
   config_keys
+
+}
+
+# :command.function
+risks_resolve_coffin_command() {
+  # src/resolve_coffin_command.sh
+
+  _set_identity "${args[identity]}"
+
+  coffin_filename=$(_encrypt_filename "${IDENTITY}-gpg.coffin")
+  print "${coffin_filename}"
+
+}
+
+# :command.function
+risks_resolve_tomb_command() {
+  # src/resolve_tomb_command.sh
+
+  local tomb_file tomb_label resource
+
+  _set_identity ""
+
+  resource="${args[tomb_name]}"
+  tomb_label="${IDENTITY}-${resource}"
+
+  tomb_file=$(_encrypt_filename "$tomb_label")
+  print "${tomb_file}.tomb"
+
+}
+
+# :command.function
+risks_resolve_key_command() {
+  # src/resolve_key_command.sh
+
+  local tomb_key tomb_label
+
+  _set_identity ""
+
+  resource="${args[tomb_name]}"
+  tomb_label="${IDENTITY}-${resource}"
+
+  tomb_key=$(_encrypt_filename "$tomb_label.key")
+  print "${tomb_key}"
 
 }
 
@@ -5196,6 +5530,13 @@ parse_requirements() {
     action="config"
     shift
     risks_config_parse_requirements "$@"
+    shift $#
+    ;;
+
+  resolve )
+    action="resolve"
+    shift
+    risks_resolve_parse_requirements "$@"
     shift $#
     ;;
 
@@ -6173,6 +6514,22 @@ risks_create_identity_parse_requirements() {
       shift
       ;;
 
+    # :flag.case
+    --burner | -B )
+
+      # :flag.case_no_arg
+      args[--burner]=1
+      shift
+      ;;
+
+    # :flag.case
+    --mail | -m )
+
+      # :flag.case_no_arg
+      args[--mail]=1
+      shift
+      ;;
+
     -?* )
       printf "invalid option: %s\n" "$key"
       exit 1
@@ -6202,20 +6559,6 @@ risks_create_identity_parse_requirements() {
 
     esac
   done
-
-  # :command.required_args_filter
-  if [[ -z ${args[name]+x} ]]; then
-    printf "missing required argument: NAME\nusage: risks create identity NAME EMAIL EXPIRY_DATE [options]\n"
-    exit 1
-  fi
-  if [[ -z ${args[email]+x} ]]; then
-    printf "missing required argument: EMAIL\nusage: risks create identity NAME EMAIL EXPIRY_DATE [options]\n"
-    exit 1
-  fi
-  if [[ -z ${args[expiry_date]+x} ]]; then
-    printf "missing required argument: EXPIRY_DATE\nusage: risks create identity NAME EMAIL EXPIRY_DATE [options]\n"
-    exit 1
-  fi
 
 }
 
@@ -7745,6 +8088,226 @@ risks_config_keys_parse_requirements() {
 }
 
 # :command.parse_requirements
+risks_resolve_parse_requirements() {
+  # :command.fixed_flags_filter
+  case "${1:-}" in
+  --help | -h )
+    long_usage=yes
+    risks_resolve_usage
+    exit
+    ;;
+
+  esac
+
+  # :command.command_filter
+  action=${1:-}
+
+  case $action in
+  -* )
+    ;;
+
+  coffin )
+    action="coffin"
+    shift
+    risks_resolve_coffin_parse_requirements "$@"
+    shift $#
+    ;;
+
+  tomb )
+    action="tomb"
+    shift
+    risks_resolve_tomb_parse_requirements "$@"
+    shift $#
+    ;;
+
+  key )
+    action="key"
+    shift
+    risks_resolve_key_parse_requirements "$@"
+    shift $#
+    ;;
+
+  # :command.command_fallback
+  "" )
+    risks_resolve_usage
+    exit 1
+    ;;
+
+  * )
+    printf "invalid command: %s\n" "$action"
+    exit 1
+    ;;
+
+  esac
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+    -?* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+
+    * )
+      # :command.parse_requirements_case
+      # :command.parse_requirements_case_simple
+      printf "invalid argument: %s\n" "$key"
+      exit 1
+
+      ;;
+
+    esac
+  done
+
+}
+
+# :command.parse_requirements
+risks_resolve_coffin_parse_requirements() {
+  # :command.fixed_flags_filter
+  case "${1:-}" in
+  --help | -h )
+    long_usage=yes
+    risks_resolve_coffin_usage
+    exit
+    ;;
+
+  esac
+
+  # :command.command_filter
+  action="resolve coffin"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+    -?* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+
+    * )
+      # :command.parse_requirements_case
+      # :command.parse_requirements_case_simple
+      if [[ -z ${args[name]+x} ]]; then
+
+        args[name]=$1
+        shift
+      else
+        printf "invalid argument: %s\n" "$key"
+        exit 1
+      fi
+
+      ;;
+
+    esac
+  done
+
+}
+
+# :command.parse_requirements
+risks_resolve_tomb_parse_requirements() {
+  # :command.fixed_flags_filter
+  case "${1:-}" in
+  --help | -h )
+    long_usage=yes
+    risks_resolve_tomb_usage
+    exit
+    ;;
+
+  esac
+
+  # :command.command_filter
+  action="resolve tomb"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+    -?* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+
+    * )
+      # :command.parse_requirements_case
+      # :command.parse_requirements_case_simple
+      if [[ -z ${args[tomb_name]+x} ]]; then
+
+        args[tomb_name]=$1
+        shift
+      else
+        printf "invalid argument: %s\n" "$key"
+        exit 1
+      fi
+
+      ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args[tomb_name]+x} ]]; then
+    printf "missing required argument: TOMB_NAME\nusage: risks resolve tomb TOMB_NAME\n"
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
+risks_resolve_key_parse_requirements() {
+  # :command.fixed_flags_filter
+  case "${1:-}" in
+  --help | -h )
+    long_usage=yes
+    risks_resolve_key_usage
+    exit
+    ;;
+
+  esac
+
+  # :command.command_filter
+  action="resolve key"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+    -?* )
+      printf "invalid option: %s\n" "$key"
+      exit 1
+      ;;
+
+    * )
+      # :command.parse_requirements_case
+      # :command.parse_requirements_case_simple
+      if [[ -z ${args[tomb_name]+x} ]]; then
+
+        args[tomb_name]=$1
+        shift
+      else
+        printf "invalid argument: %s\n" "$key"
+        exit 1
+      fi
+
+      ;;
+
+    esac
+  done
+
+  # :command.required_args_filter
+  if [[ -z ${args[tomb_name]+x} ]]; then
+    printf "missing required argument: TOMB_NAME\nusage: risks resolve key TOMB_NAME\n"
+    exit 1
+  fi
+
+}
+
+# :command.parse_requirements
 risks_identity_parse_requirements() {
   # :command.fixed_flags_filter
   case "${1:-}" in
@@ -8216,6 +8779,38 @@ run() {
       risks_config_keys_usage
     else
       risks_config_keys_command
+    fi
+
+  elif [[ $action == "resolve" ]]; then
+    if [[ ${args[--help]:-} ]]; then
+      long_usage=yes
+      risks_resolve_usage
+    else
+      risks_resolve_command
+    fi
+
+  elif [[ $action == "resolve coffin" ]]; then
+    if [[ ${args[--help]:-} ]]; then
+      long_usage=yes
+      risks_resolve_coffin_usage
+    else
+      risks_resolve_coffin_command
+    fi
+
+  elif [[ $action == "resolve tomb" ]]; then
+    if [[ ${args[--help]:-} ]]; then
+      long_usage=yes
+      risks_resolve_tomb_usage
+    else
+      risks_resolve_tomb_command
+    fi
+
+  elif [[ $action == "resolve key" ]]; then
+    if [[ ${args[--help]:-} ]]; then
+      long_usage=yes
+      risks_resolve_key_usage
+    else
+      risks_resolve_key_command
     fi
 
   elif [[ $action == "identity" ]]; then

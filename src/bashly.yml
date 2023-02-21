@@ -36,6 +36,7 @@ commands:
 - import: src/save_command.yml
 - import: src/kv_commands.yml
 - import: src/config_commands.yml
+- import: src/resolve_commands.yml
 
 # Hidden commands
 - name: identity 

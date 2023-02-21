@@ -1,0 +1,25 @@
+name: resolve
+help: 'Retrieve the encrypted names of identity files'
+
+commands:
+  - name: coffin 
+    help: 'Get the name of the gpg coffin for an identity'
+    args:
+      - name: name
+        help: 'identity name'
+        required: false
+
+  - name: tomb 
+    help: 'Get the filename of a tomb file'
+    args:
+      - name: tomb_name 
+        help: 'Tomb name'
+        required: true 
+
+  - name: key
+    help: 'Get the filename of a tomb key'
+    args:
+      - name: tomb_name
+        help: 'Tomb name'
+        required: true 
+
