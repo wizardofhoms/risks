@@ -2179,6 +2179,39 @@ delete_tomb_backup ()
     _run sudo fscrypt lock "${identity_graveyard_backup}"
 }
 
+# remove_gpg_private checks that the GPG tomb file is present
+# in the identity backup, and if yes, deletes the GPG tomb from
+# the identity system graveyard.
+# This function requires the identity backup to be mounted and unlocked.
+remove_gpg_private ()
+{
+    local tomb_label                # Cleartext identifier name of the tomb
+    local tomb_file                 # Encrypted name of the tomb, for the tomb file itself
+    local backup_graveyard          # Where the graveyard root directory is in the backup drive
+    local identity_graveyard        # The full path to the identity system graveyard.
+    local identity_graveyard_backup # Full path to identity graveyard backup
+
+    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+
+    backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
+    identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
+
+    tomb_label="${IDENTITY}-${GPG_TOMB_LABEL}"
+    tomb_file=$(_encrypt_filename "$tomb_label")
+    tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
+
+    # Nothing to do if the tomb is not here.
+
+    [[ ! -e "${tomb_file_path}" ]] && return
+
+    # Otherwise move the file to the backup
+    _run sudo chattr -i "${identity_graveyard_backup}"/*
+    _run sudo mv "${tomb_file_path}" "${identity_graveyard_backup}"
+
+    _run sudo chattr +i "${identity_graveyard_backup}"/*
+}
+
 # src/lib/cleanup.sh
 
 # Cleanup anything sensitive before exiting.
@@ -3643,7 +3676,7 @@ gen_ssh_keys()
 
     _verbose "Creating and opening tomb file for SSH"
     _run new_tomb "$SSH_TOMB_LABEL" 20 "$IDENTITY"
-    _run open_tomb "$SSH_TOMB_LABEL" "$IDENTITY"
+    _run open_tomb "$SSH_TOMB_LABEL"
 
     # Write multi-key loading script
     _verbose "Writing multiple SSH-keypairs loading script (ssh-add)"
@@ -3692,7 +3725,7 @@ EOF
     _verbose "Making keys immutable"
     sudo chattr +i "${HOME}"/.ssh/id_ed25519*
     _verbose "Closing SSH tomb file"
-    _run close_tomb "$SSH_TOMB_LABEL" "$IDENTITY"
+    _run close_tomb "$SSH_TOMB_LABEL"
 }
 
 # src/lib/store.sh
@@ -3885,35 +3918,15 @@ delete_tomb()
 
 }
 
-# open_tomb requires a cleartext resource name that the function will encrypt
-
-# to resolve the correct tomb file. The name is both used as a mount directory,
-
-# as well as to determine when some special tombs need to be mounted on non-standard
-
-# mount points, like gpg/ssh.
-# $1 - Name of the tomb
-# $2 - Identity
-open_tomb()
-{
+# open_tomb_path accepts an arbitrary tomb path to open.
+# $1 - Resource name
+# $2 - Tomb file path
+# $3 - Tomb key path
+open_tomb_path () {
     local resource="${1}"
-
-    local tomb_label        # Cleartext identifier name of the tomb
-    local tomb_file         # Encrypted name of the tomb, for the tomb file itself
-    local tomb_file_path    # Absolute path to the tomb file
-    local tomb_key          # Encrypted name of the tomb key file
-    local tomb_key_path     # Absolute path to the tomb key file
-    local mapper            # Mapper name for tomb LUKS filesystem
-
-    # Filenames
-    tomb_label="${IDENTITY}-${resource}"
-    tomb_file=$(_encrypt_filename "$tomb_label")
-
-    tomb_key=$(_encrypt_filename "$tomb_label.key")
-    tomb_key_path="${HUSH_DIR}/${tomb_key}"
-
-    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
-    tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
+    local tomb_file_path="${2}"
+    local tomb_key_path="${3}"
+    local tomb_file="${tomb_file_path:t}"
 
     mapper=$(get_tomb_mapper "$tomb_file")
 
@@ -3981,6 +3994,70 @@ open_tomb()
             ssh-add
         fi
     fi
+}
+
+# open_tomb requires a cleartext resource name that the function will encrypt
+
+# to resolve the correct tomb file. The name is both used as a mount directory,
+
+# as well as to determine when some special tombs need to be mounted on non-standard
+
+# mount points, like gpg/ssh.
+# $1 - Name of the tomb
+open_tomb()
+{
+    local resource="${1}"
+
+    local tomb_label        # Cleartext identifier name of the tomb
+    local tomb_file         # Encrypted name of the tomb, for the tomb file itself
+    local tomb_file_path    # Absolute path to the tomb file
+    local tomb_key          # Encrypted name of the tomb key file
+    local tomb_key_path     # Absolute path to the tomb key file
+    local mapper            # Mapper name for tomb LUKS filesystem
+
+    # Filenames
+    tomb_label="${IDENTITY}-${resource}"
+    tomb_file=$(_encrypt_filename "$tomb_label")
+
+    tomb_key=$(_encrypt_filename "$tomb_label.key")
+    tomb_key_path="${HUSH_DIR}/${tomb_key}"
+
+    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+    tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
+
+    # Open the target
+    open_tomb_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
+}
+
+# open_tomb_backup opens a target tomb from the
+
+# user backup graveyard instead of the system one.
+# This function assumes the backup is accessible.
+open_tomb_backup () {
+    local resource="${1}"
+
+    local tomb_label        # Cleartext identifier name of the tomb
+    local tomb_file         # Encrypted name of the tomb, for the tomb file itself
+    local tomb_file_path    # Absolute path to the tomb file
+    local tomb_key          # Encrypted name of the tomb key file
+    local tomb_key_path     # Absolute path to the tomb key file
+    local mapper            # Mapper name for tomb LUKS filesystem
+
+    # Filenames
+    tomb_label="${IDENTITY}-${resource}"
+
+    tomb_key=$(_encrypt_filename "$tomb_label.key")
+    tomb_key_path="${HUSH_DIR}/${tomb_key}"
+
+    backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
+    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
+
+    tomb_file=$(_encrypt_filename "$tomb_label")
+    tomb_file_path="${identity_graveyard_backup}/${tomb_file}.tomb"
+
+    # Open the target
+    open_tomb_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
 }
 
 close_tomb()
@@ -4577,7 +4654,13 @@ risks_backup_identity_command() {
 
   _run cp -fR "${identity_graveyard}"/* "${identity_graveyard_backup}"
   _catch "Failed to copy graveyard files to backup medium"
+
   _verbose "Making graveyard backup files immutable"
+  _run sudo chattr +i "${identity_graveyard_backup}"/* \
+      || _verbose "No files in backup/graveyard for which to change immutability properties"
+
+  # Remove the GPG tomb containing master private and revoc
+  remove_gpg_private
 
   # Testing the full backup
 
@@ -4901,7 +4984,7 @@ risks_open_command() {
   fi
 
   # Or open a single tomb
-  open_tomb "$resource" "$IDENTITY"
+  _run open_tomb "$resource"
 
 }
 
@@ -5190,18 +5273,23 @@ risks_private_import_command() {
       _failure "The hush device is not mounted. Mount it first and rerun the command."
   fi
 
+  if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+      _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+  fi
+
   if ! _identity_active ; then
       _failure "This command requires an identity to be active"
   fi
 
-  # 1 - Open the GPG tomb, and verify target files are here.
-  open_tomb "$GPG_TOMB_LABEL" "$IDENTITY"
+  # 1 - Open the GPG tomb in the backup, and verify target files are here.
+  _run open_tomb_backup "$GPG_TOMB_LABEL"
 
   keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
   _verbose "Keygrip: $keygrip"
   keypath="${HOME}/.tomb/${GPG_TOMB_LABEL}/${keygrip}"
 
   if [[ ! -e "${keypath}" ]]; then
+      close_tomb "${GPG_TOMB_LABEL}"
       _failure "Private key ${keygrip} not found in ${GPG_TOMB_LABEL} tomb"
   fi
 
@@ -5210,6 +5298,8 @@ risks_private_import_command() {
 
   _message "Importing GPG private key in keyring"
   cp "${keypath}" "${RAMDISK}"/private-keys-v1.d/"${keygrip}"
+
+  _run close_tomb "${GPG_TOMB_LABEL}"
 
 }
 
@@ -5222,10 +5312,10 @@ risks_private_remove_command() {
   _set_identity "${args[identity]}"
 
   # Backup/hush and identity checks
-  # if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
-  #     _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
-  # fi
-  #
+  if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+      _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+  fi
+
   if ! is_hush_mounted ; then
       _failure "The hush device is not mounted. Mount it first and rerun the command."
   fi
@@ -5234,8 +5324,8 @@ risks_private_remove_command() {
       _failure "This command requires an identity to be active"
   fi
 
-  # 1 - Open the GPG tomb
-  open_tomb "$GPG_TOMB_LABEL" "$IDENTITY"
+  # 1 - Open the GPG tomb backup
+  _run open_tomb_backup "$GPG_TOMB_LABEL"
 
   # 3 - Copy/check the private key and revoc certificate, check correcly copied, close GPG tomb
   keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
@@ -5251,11 +5341,11 @@ risks_private_remove_command() {
 
   fi
 
-  close_tomb "$GPG_TOMB_LABEL"
-
   if [[ ! -e ${keypath} ]]; then
       _failure "Private key file should be found in $GPG_TOMB_LABEL tomb after copy, aborting deletion"
   fi
+
+  _run close_tomb "$GPG_TOMB_LABEL"
 
   # 2 - Set the partition read-write and remove from the gpg keyring
   risks_hush_rw_command
@@ -5313,7 +5403,7 @@ risks_private_add_command() {
       _message "Generating SSH keypair"
       _message "Type: ${args[--algo]}"
 
-      _run open_tomb "$SSH_TOMB_LABEL" "$IDENTITY"
+      _run open_tomb "$SSH_TOMB_LABEL"
 
       # Generate SSH key.
       _verbose "Generating keys for identity"
@@ -5531,7 +5621,7 @@ risks_resolve_coffin_command() {
   _set_identity "${args[identity]}"
 
   coffin_filename=$(_encrypt_filename "${IDENTITY}-gpg.coffin")
-  print "${coffin_filename}"
+  print "${GRAVEYARD}/${coffin_filename}"
 
 }
 
@@ -5546,8 +5636,10 @@ risks_resolve_tomb_command() {
   resource="${args[tomb_name]}"
   tomb_label="${IDENTITY}-${resource}"
 
+  identity_graveyard=$(get_identity_graveyard "$IDENTITY")
   tomb_file=$(_encrypt_filename "$tomb_label")
-  print "${tomb_file}.tomb"
+
+  print "${identity_graveyard}/${tomb_file}.tomb"
 
 }
 
@@ -5563,7 +5655,7 @@ risks_resolve_key_command() {
   tomb_label="${IDENTITY}-${resource}"
 
   tomb_key=$(_encrypt_filename "$tomb_label.key")
-  print "${tomb_key}"
+  print "${HUSH_DIR}/${tomb_key}"
 
 }
 
