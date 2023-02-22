@@ -17,3 +17,25 @@ commands:
 
   - name: remove
     help: 'Remove the GPG private key from the keyring, and set the hush in read-only mode'
+
+  - name: add
+    help: 'Add a key to one of the cryptographic stores'
+    args:
+      - name: store
+        help: 'The key/store type to add'
+        required: true
+        allowed: [gpg, ssh]
+      - name: expiry_date
+        help: 'The expiry date for the key, if GPG'
+        required: false
+    flags:
+      - long: --algo
+        short: -a
+        help: 'Key algorithm to use'
+      - long: --sign
+        short: -S
+        help: 'If generated key is a GPG subkey, add sign capability'
+      - long: --encrypt
+        short: -E
+        help: 'If generated key is a GPG subkey, add encrypt capability'
+

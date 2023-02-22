@@ -3,7 +3,11 @@ local keygrip keypath
 
 _set_identity "${args[identity]}"
 
-# Hush and identity checks
+# Backup/hush and identity checks
+# if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+#     _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+# fi
+#
 if ! is_hush_mounted ; then
     _failure "The hush device is not mounted. Mount it first and rerun the command."
 fi

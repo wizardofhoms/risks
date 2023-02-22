@@ -110,7 +110,7 @@ _get_mail ()
     local name="$1"
     local email="$2"
 
-    [[ -n "${email}" ]] && return
+    [[ -n "${email}" ]] && print "${email}" && return
 
     email="${args[--mail]}"
     [[ -n "${email}" ]] && print "${name}@${email}"
@@ -123,7 +123,7 @@ _get_expiry ()
     local expiry
 
     if [[ -z "${1}" ]]; then
-        expiry="0"
+        expiry="never"
     else
         expiry="${1}"
     fi
