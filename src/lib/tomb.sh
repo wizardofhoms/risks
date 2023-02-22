@@ -107,32 +107,15 @@ delete_tomb()
     fi 
 }
 
-# open_tomb requires a cleartext resource name that the function will encrypt 
-# to resolve the correct tomb file. The name is both used as a mount directory, 
-# as well as to determine when some special tombs need to be mounted on non-standard 
-# mount points, like gpg/ssh.
-# $1 - Name of the tomb
-# $2 - Identity
-open_tomb()
-{
+# open_tomb_path accepts an arbitrary tomb path to open.
+# $1 - Resource name
+# $2 - Tomb file path
+# $3 - Tomb key path
+open_tomb_path () {
     local resource="${1}"
-
-    local tomb_label        # Cleartext identifier name of the tomb
-    local tomb_file         # Encrypted name of the tomb, for the tomb file itself
-    local tomb_file_path    # Absolute path to the tomb file
-    local tomb_key          # Encrypted name of the tomb key file
-    local tomb_key_path     # Absolute path to the tomb key file
-    local mapper            # Mapper name for tomb LUKS filesystem
-
-    # Filenames
-    tomb_label="${IDENTITY}-${resource}"
-    tomb_file=$(_encrypt_filename "$tomb_label")
-
-    tomb_key=$(_encrypt_filename "$tomb_label.key")
-    tomb_key_path="${HUSH_DIR}/${tomb_key}"
-
-    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
-    tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
+    local tomb_file_path="${2}"
+    local tomb_key_path="${3}"
+    local tomb_file="${tomb_file_path:t}"
 
     mapper=$(get_tomb_mapper "$tomb_file")
 
@@ -200,6 +183,67 @@ open_tomb()
         fi
     fi
 }
+
+# open_tomb requires a cleartext resource name that the function will encrypt 
+# to resolve the correct tomb file. The name is both used as a mount directory, 
+# as well as to determine when some special tombs need to be mounted on non-standard 
+# mount points, like gpg/ssh.
+# $1 - Name of the tomb
+open_tomb()
+{
+    local resource="${1}"
+
+    local tomb_label        # Cleartext identifier name of the tomb
+    local tomb_file         # Encrypted name of the tomb, for the tomb file itself
+    local tomb_file_path    # Absolute path to the tomb file
+    local tomb_key          # Encrypted name of the tomb key file
+    local tomb_key_path     # Absolute path to the tomb key file
+    local mapper            # Mapper name for tomb LUKS filesystem
+
+    # Filenames
+    tomb_label="${IDENTITY}-${resource}"
+    tomb_file=$(_encrypt_filename "$tomb_label")
+
+    tomb_key=$(_encrypt_filename "$tomb_label.key")
+    tomb_key_path="${HUSH_DIR}/${tomb_key}"
+
+    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+    tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
+
+    # Open the target
+    open_tomb_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
+}
+
+# open_tomb_backup opens a target tomb from the 
+# user backup graveyard instead of the system one.
+# This function assumes the backup is accessible.
+open_tomb_backup () {
+    local resource="${1}"
+
+    local tomb_label        # Cleartext identifier name of the tomb
+    local tomb_file         # Encrypted name of the tomb, for the tomb file itself
+    local tomb_file_path    # Absolute path to the tomb file
+    local tomb_key          # Encrypted name of the tomb key file
+    local tomb_key_path     # Absolute path to the tomb key file
+    local mapper            # Mapper name for tomb LUKS filesystem
+
+    # Filenames
+    tomb_label="${IDENTITY}-${resource}"
+
+    tomb_key=$(_encrypt_filename "$tomb_label.key")
+    tomb_key_path="${HUSH_DIR}/${tomb_key}"
+
+    backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
+    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
+
+    tomb_file=$(_encrypt_filename "$tomb_label")
+    tomb_file_path="${identity_graveyard_backup}/${tomb_file}.tomb"
+
+    # Open the target
+    open_tomb_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
+}
+
 
 close_tomb()
 {
@@ -281,3 +325,4 @@ slam_tomb()
     esac
 
 }
+

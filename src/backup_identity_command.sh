@@ -46,7 +46,13 @@ _run sudo chattr -i "${identity_graveyard_backup}"/* \
 
 _run cp -fR "${identity_graveyard}"/* "${identity_graveyard_backup}"
 _catch "Failed to copy graveyard files to backup medium"
+
 _verbose "Making graveyard backup files immutable"
+_run sudo chattr +i "${identity_graveyard_backup}"/* \
+    || _verbose "No files in backup/graveyard for which to change immutability properties"
+
+# Remove the GPG tomb containing master private and revoc
+remove_gpg_private
 
 # Testing the full backup 
 _verbose "Printing directory tree in identity backup graveyard"

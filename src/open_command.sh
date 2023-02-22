@@ -54,4 +54,4 @@ if [[ "$resource" == "identity" ]]; then
 fi
 
 # Or open a single tomb
-open_tomb "$resource" "$IDENTITY"
+_run open_tomb "$resource"

@@ -118,3 +118,34 @@ delete_tomb_backup ()
     # And lock the graveyard
     _run sudo fscrypt lock "${identity_graveyard_backup}"
 }
+
+# remove_gpg_private checks that the GPG tomb file is present
+# in the identity backup, and if yes, deletes the GPG tomb from
+# the identity system graveyard.
+# This function requires the identity backup to be mounted and unlocked.
+remove_gpg_private ()
+{
+    local tomb_label                # Cleartext identifier name of the tomb
+    local tomb_file                 # Encrypted name of the tomb, for the tomb file itself
+    local backup_graveyard          # Where the graveyard root directory is in the backup drive
+    local identity_graveyard        # The full path to the identity system graveyard.
+    local identity_graveyard_backup # Full path to identity graveyard backup
+
+    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+
+    backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
+    identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
+
+    tomb_label="${IDENTITY}-${GPG_TOMB_LABEL}"
+    tomb_file=$(_encrypt_filename "$tomb_label")
+    tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
+
+    # Nothing to do if the tomb is not here. 
+    [[ ! -e "${tomb_file_path}" ]] && return
+
+    # Otherwise move the file to the backup
+    _run sudo chattr -i "${identity_graveyard_backup}"/*
+    _run sudo mv "${tomb_file_path}" "${identity_graveyard_backup}" 
+    _run sudo chattr +i "${identity_graveyard_backup}"/*
+}
