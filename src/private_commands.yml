@@ -32,6 +32,7 @@ commands:
       - long: --algo
         short: -a
         help: 'Key algorithm to use'
+        arg: algo
       - long: --sign
         short: -S
         help: 'If generated key is a GPG subkey, add sign capability'

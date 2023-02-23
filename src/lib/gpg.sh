@@ -221,13 +221,9 @@ generate_subkeys ()
 {
     local algo="${1}"
     local email="${2}"
-    local expiry="${3}"
-    local expiry_date fingerprint
+    local expiry_date="${3}"
 
-    expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")" 
-    fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
-    _message "Fingerprint: ${fingerprint}"
-
+    local fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
     local gpg_base_cmd=(gpg --pinentry-mode loopback --batch --no-tty --yes --passphrase-fd 0 --quick-add-key "${fingerprint}")
 
     # Signing subkey
@@ -238,7 +234,7 @@ generate_subkeys ()
     fi
 
     # Encryption subkey 
-    if [[ "${args[--encr]}" -eq 1 ]]; then
+    if [[ "${args[--encrypt]}" -eq 1 ]]; then
         if [[ "${algo}" == "ed25519" ]]; then
             algo="cv25519"
         fi
@@ -274,7 +270,7 @@ get_master_key_status () {
 
     key_status="$(gpg --list-secret-keys | head -n 3 | tail -n 1 | awk '{print $1;}')"
 
-    if [[ "${key_status}" == "pub" ]]; then
+    if [[ "${key_status}" == "sec" ]]; then
         masterkey_available=true
     elif [[ "${key_status}" == "sec#" ]]; then
         masterkey_available=false

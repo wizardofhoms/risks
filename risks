@@ -1261,7 +1261,7 @@ risks_private_add_usage() {
 
     # :command.usage_flags
     # :flag.usage
-    echo "  --algo, -a"
+    echo "  --algo, -a ALGO"
     printf "    Key algorithm to use\n"
     echo
 
@@ -2825,14 +2825,9 @@ generate_subkeys ()
 {
     local algo="${1}"
     local email="${2}"
-    local expiry="${3}"
-    local expiry_date fingerprint
+    local expiry_date="${3}"
 
-    expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")"
-
-    fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
-    _message "Fingerprint: ${fingerprint}"
-
+    local fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
     local gpg_base_cmd=(gpg --pinentry-mode loopback --batch --no-tty --yes --passphrase-fd 0 --quick-add-key "${fingerprint}")
 
     # Signing subkey
@@ -2844,7 +2839,7 @@ generate_subkeys ()
 
     # Encryption subkey
 
-    if [[ "${args[--encr]}" -eq 1 ]]; then
+    if [[ "${args[--encrypt]}" -eq 1 ]]; then
         if [[ "${algo}" == "ed25519" ]]; then
             algo="cv25519"
         fi
@@ -2881,7 +2876,7 @@ get_master_key_status () {
 
     key_status="$(gpg --list-secret-keys | head -n 3 | tail -n 1 | awk '{print $1;}')"
 
-    if [[ "${key_status}" == "pub" ]]; then
+    if [[ "${key_status}" == "sec" ]]; then
         masterkey_available=true
     elif [[ "${key_status}" == "sec#" ]]; then
         masterkey_available=false
@@ -3108,12 +3103,12 @@ _get_expiry ()
     local expiry
 
     if [[ -z "${1}" ]]; then
-        expiry="never"
+        expiry_date="never"
     else
         expiry="${1}"
-    fi
+        expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")"
 
-    expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")"
+    fi
 
     print "${expiry_date}"
 }
@@ -5311,7 +5306,11 @@ risks_private_remove_command() {
 
   _set_identity "${args[identity]}"
 
-  # Hush and identity checks
+  # Backup/hush and identity checks
+  if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+      _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+  fi
+
   if ! is_hush_mounted ; then
       _failure "The hush device is not mounted. Mount it first and rerun the command."
   fi
@@ -5322,6 +5321,11 @@ risks_private_remove_command() {
 
   # 2 - Set the partition read-write and remove from the gpg keyring
   risks_hush_rw_command
+
+  # 3 - Copy/check the private key and revoc certificate, check correcly copied, close GPG tomb
+  keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
+  _verbose "Keygrip: $keygrip"
+  keyring_path="${RAMDISK}/private-keys-v1.d/${keygrip}"
 
   _message "Wiping private GPG key ${keygrip} from keyring"
   _run wipe -rf "${keyring_path}" \
@@ -5336,10 +5340,6 @@ risks_private_remove_command() {
 # :command.function
 risks_private_add_command() {
   # src/private_add_command.sh
-  echo "# this file is located in 'src/private_add_command.sh'"
-  echo "# code for 'risks private add' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
 
   local masterkey_available email uid
   local key_type ssh_key_name   # SSH parameters
@@ -5366,8 +5366,8 @@ risks_private_add_command() {
   if [[ "${args[store]}" == "gpg" ]]; then
       masterkey_available="$(get_master_key_status)"
 
-      if [[ "${args[--sign]}" -eq 0 ]] && [[ "${args[--encr]}" -eq 0 ]]; then
-          _failure "You must specify either or both of --sign and --encr flags for GPG subkeys"
+      if [[ "${args[--sign]}" -eq 0 ]] && [[ "${args[--encrypt]}" -eq 0 ]]; then
+          _failure "You must specify either or both of --sign and --encrypt flags for GPG subkeys"
       fi
   fi
 
@@ -5396,16 +5396,17 @@ risks_private_add_command() {
       _message "Type: ${args[--algo]}"
       _message "Signing: ${args[--sign]} | Encrypting: ${args[--encrypt]}"
 
-      risks_hush_rw_command
+      _run risks_hush_rw_command
 
       # Check master private in ring,
       # If not, open tomb and import master key
-      if [[ $masterkey_available != true ]]; then
+      if [[ "${masterkey_available}" != true ]]; then
           _message "No master key in keyring, importing from tomb"
           risks_private_import_command
       fi
 
       # Generate keys
+      GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
       generate_subkeys "${key_algo}" "${email}" "${expiry}"
 
       # Remove master key if was imported
@@ -5414,7 +5415,7 @@ risks_private_add_command() {
           risks_private_remove_command
       fi
 
-      risks_hush_ro_command
+      _run risks_hush_ro_command
 
       _message "Successfully generated GPG subkey(s)" && return
   fi
@@ -7591,9 +7592,16 @@ risks_private_add_parse_requirements() {
     # :flag.case
     --algo | -a )
 
-      # :flag.case_no_arg
-      args[--algo]=1
-      shift
+      # :flag.case_arg
+      if [[ -n ${2+x} ]]; then
+
+        args[--algo]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--algo requires an argument: --algo, -a ALGO"
+        exit 1
+      fi
       ;;
 
     # :flag.case

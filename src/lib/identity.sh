@@ -123,11 +123,11 @@ _get_expiry ()
     local expiry
 
     if [[ -z "${1}" ]]; then
-        expiry="never"
+        expiry_date="never"
     else
         expiry="${1}"
+        expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")" 
     fi
 
-    expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")" 
     print "${expiry_date}"
 }
