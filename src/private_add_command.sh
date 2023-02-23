@@ -41,7 +41,7 @@ if [[ "${args[store]}" == "ssh" ]]; then
     _message "Generating SSH keypair"
     _message "Type: ${args[--algo]}"
 
-    _run open_tomb "$SSH_TOMB_LABEL" "$IDENTITY"
+    _run open_tomb "$SSH_TOMB_LABEL"
 
     # Generate SSH key.
     _verbose "Generating keys for identity"
