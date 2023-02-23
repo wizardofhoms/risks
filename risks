@@ -5342,10 +5342,9 @@ risks_private_add_command() {
   # src/private_add_command.sh
 
   local masterkey_available email uid
-  local key_type ssh_key_name   # SSH parameters
-  local key_algo expiry         # GPG parameters
+  local ssh_key_name      # SSH parameters
+  local key_algo expiry   # GPG parameters
 
-  #
   # Hush and identity checks
   if ! is_hush_mounted ; then
       _failure "The hush device is not mounted. Mount it first and rerun the command."
@@ -5358,9 +5357,10 @@ risks_private_add_command() {
   fi
 
   key_algo="${args[--algo]-ed25519}"
+  ssh_key_name="${IDENTITY}-${key_algo}-${RANDOM}"
+  expiry="$(_get_expiry "${args[expiry_date]}")"
   uid=$(gpg -K | grep uid | head -n 1)
   email=$(echo "$uid" | grep -E -o "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b")
-  expiry="$(_get_expiry "${args[expiry_date]}")"
 
   # If GPG, need access to GPG tomb, or verify that the master private key is in ring.
   if [[ "${args[store]}" == "gpg" ]]; then
@@ -5374,18 +5374,16 @@ risks_private_add_command() {
   # If SSH ===
   if [[ "${args[store]}" == "ssh" ]]; then
       _message "Generating SSH keypair"
-      _message "Type: ${args[--algo]}"
+      _message "Type: ${key_algo}"
 
       _run open_tomb "$SSH_TOMB_LABEL"
 
       # Generate SSH key.
-      _verbose "Generating keys for identity"
-      _run ssh-keygen -t "${key_type}" -b 4096 -C "$email" -N "" -f "${HOME}"/.ssh/"${ssh_key_name}" # No passphrase
+      _run ssh-keygen -t "${key_algo}" -b 4096 -C "$email" -N "" -f "${HOME}"/.ssh/"${ssh_key_name}" # No passphrase
+      _catch "Failed to generate SSH keys"
+
       _verbose "Making keys immutable"
       sudo chattr +i "${HOME}"/.ssh/"${ssh_key_name}"*
-
-      # Close tomb if was closed and return
-      _run close_tomb "$SSH_TOMB_LABEL" "$IDENTITY"
 
       _message "Successfully generated new SSH keypair" && return
   fi
@@ -5393,7 +5391,7 @@ risks_private_add_command() {
   # If GPG ===
   if [[ "${args[store]}" == "gpg" ]]; then
       _message "Generating GPG subkey"
-      _message "Type: ${args[--algo]}"
+      _message "Type: ${key_algo}"
       _message "Signing: ${args[--sign]} | Encrypting: ${args[--encrypt]}"
 
       _run risks_hush_rw_command

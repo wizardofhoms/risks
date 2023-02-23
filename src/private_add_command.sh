@@ -16,9 +16,10 @@ fi
 
 ## Parameters setup
 key_algo="${args[--algo]-ed25519}"
+ssh_key_name="${IDENTITY}-${key_algo}-${RANDOM}"
+expiry="$(_get_expiry "${args[expiry_date]}")"
 uid=$(gpg -K | grep uid | head -n 1)
 email=$(echo "$uid" | grep -E -o "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b")
-expiry="$(_get_expiry "${args[expiry_date]}")"
     
 
 # If GPG, need access to GPG tomb, or verify that the master private key is in ring.
@@ -43,9 +44,6 @@ if [[ "${args[store]}" == "ssh" ]]; then
 
     _verbose "Making keys immutable"
     sudo chattr +i "${HOME}"/.ssh/"${ssh_key_name}"*
-
-    # Close tomb if was closed and return
-    _run close_tomb "$SSH_TOMB_LABEL" "$IDENTITY"
 
     _message "Successfully generated new SSH keypair" && return
 fi
