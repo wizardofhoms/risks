@@ -220,10 +220,9 @@ cleanup_gpg_init()
 generate_subkeys () 
 {
     local algo="${1}"
-    local email="${2}"
+    local fingerprint="${2}"
     local expiry_date="${3}"
 
-    local fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
     local gpg_base_cmd=(gpg --pinentry-mode loopback --batch --no-tty --yes --passphrase-fd 0 --quick-add-key "${fingerprint}")
 
     # Signing subkey

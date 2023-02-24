@@ -360,7 +360,8 @@ _gpg_generate ()
 
     case $state in
         args)
-            _alternative "algorithms:key algorithm (default ed25519):((rsa dsa elg ecdsa ed25519))"
+            # '_values -s , usage - default sign auth encr::expiration'
+            _alternative "algorithms:key algorithm (default ed25519):((default future-default rsa dsa elg ed25519 cv25519))"
             ;;
         duration)
             _message "quoted, human readable expiry duration for GPG keys (empty: no expiry)" 
