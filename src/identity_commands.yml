@@ -15,10 +15,6 @@ commands:
         required: false 
         help: Human readable, or GPG-compliant expiry duration to use for the GPG subkeys (eg. '1 year', '1 week', etc)
     flags:
-      - &verbose
-        long: --verbose
-        short: -v
-        help: "Show verbose logging"
       - long : --backup
         short: -b
         help: "Device file of the backup drive (must be a whole drive without a partition number, eg. /dev/sdb)"
@@ -29,16 +25,6 @@ commands:
       - long: --mail
         short: -m
         help: "Mail provider to use for the GPG key (appended to the name when no full mail is given as arg)"
-      # - &log
-      #   long: --log
-      #   short: -l
-      #   help: "Log the command's output to the identity log file, or the file path given with -f/--log-file"
-      # - &logfile
-      #   long: --log-file
-      #   short: -f
-      #   help: "Path to log file, defaults to ~/.graveyard/<identity>.log"
-      #   arg: logfile
-      #   required: false
     examples:
       - identity create 'John Doe' john.doe@mail.com '1 year' --backup /dev/xvdj
       - identity create --burner --mail proton.me
@@ -51,8 +37,6 @@ commands:
         required: true 
         help: "Identity to open" 
         validate: identity_exists
-    flags:
-      - *verbose 
     examples:
       - "identity open john_doe       # Opens gpg coffin and mgmt/pass/ssh/signal tombs"
 
@@ -63,8 +47,6 @@ commands:
         required: false 
         help: "Identity to close (optional if an identity is active)."
         validate: identity_exists
-    flags:
-      - *verbose 
 
   - name: delete 
     help: Delete an identity GPG keyring, tomb stores and backup
@@ -73,7 +55,6 @@ commands:
         required: true
         help: 'Name of identity to delete'
     flags:
-      - *verbose 
       - &backup
         long : --backup
         short: -b
@@ -86,8 +67,6 @@ commands:
         required: false 
         help: "Name of identity to backup. (Current identity if not specified)"
         validate: identity_exists 
-    flags:
-      - *verbose
     examples:
       - identity backup john_doe      # Automatically backs john_doe graveyard and GPG coffin
       - identity backup               # Backup the current identity

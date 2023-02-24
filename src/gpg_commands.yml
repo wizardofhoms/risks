@@ -9,10 +9,6 @@ commands:
         help: Key algorithm 
         required: false 
     flags:
-      - &verbose
-        long: --verbose
-        short: -v
-        help: "Show verbose logging"
       - long: --sign
         short: -S
         help: 'If generated key is a GPG subkey, add sign capability'
@@ -33,8 +29,6 @@ commands:
         required: true 
         help: "Identity owning the GPG keyring."
         validate: identity_exists
-    flags:
-      - *verbose 
     examples:
       - "gpg open john_doe            # Opens the GPG keyring for identity 'john_doe'"         
 
@@ -45,8 +39,6 @@ commands:
       required: false 
       help: "Identity owning the GPG keyring (optional)."
       validate: identity_exists
-    flags:
-      - *verbose 
 
   - name: import
     help: 'Import the GPG private key from the backup to the GPG keyring, in read-write mode'
@@ -55,8 +47,6 @@ commands:
         required: true 
         help: "Identity owning the backup."
         validate: identity_exists
-    flags:
-      - *verbose 
 
   - name: remove 
     help: 'Remove the GPG private key from the keyring, and set the hush in read-only mode'

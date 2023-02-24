@@ -9,10 +9,6 @@ commands:
         help: Key algorithm 
         required: false 
     flags:
-      - &verbose
-        long: --verbose
-        short: -v
-        help: "Show verbose logging"
       - long: --bits
         short: -b
         help: 'Key size in bits'

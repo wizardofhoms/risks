@@ -15,6 +15,7 @@ _risks()
         shift words
         # Run the completion for the subcommand
         case "${cmd}" in
+            (help)      _help ;;
             (hush)      _hush ;;
             (backup)    _backup ;;
             (list)      _store_types ;;
@@ -29,28 +30,50 @@ _risks()
             (tomb)      _tomb ;;
         esac
     else
-        local -a subcmds
-        subcmds=(
-            'hush:Format or manage the hush partition mount points and read/write permissions'
-            'backup:Create, manage, restore or use backup devices and partitions'
-            'list:Show currently open data stores'
-            'slam:Close all active identities and unmount hush/backup partitions'
-            'load:Copy some resource to a VM where to use it (completed)'
-            'save:Move some data coming from another VM to a (tomb) directory'
-            'kv:Manage the small key=value store used by other commands/functions'
-            'config:Manage the global risk configuration settings from the CLI'
-            'resolve:Retrieve the encrypted names of identity files'
-            'ssh:Manage SSH-related credentials and settings'
-            'gpg:Manage GPG coffings, keys, passwords and settings'
-            'identity:Create, use and manage identities'
-            'tomb:Create, use and manage tombs (stores)'
-        )
-
-        _describe -t commands 'commands' subcmds
+        local ret=1
+        local line state
+        _arguments -C \
+            "${_flags_base[@]}" \
+            '(- : *)'--version'[Print risks version and exit]' \
+            "1: :_risks_commands" \
+            && ret=0
     fi
 }
 
 # Subcomands ==================================================================================
+
+# Completes subcommands of the risks CLI.
+_risks_commands ()
+{
+    local -a subcmds
+    subcmds=(
+        'help:Show help about a command'
+        'hush:Format or manage the hush partition mount points and read/write permissions'
+        'backup:Create, manage, restore or use backup devices and partitions'
+        'list:Show currently open data stores'
+        'slam:Close all active identities and unmount hush/backup partitions'
+        'load:Copy some resource to a VM where to use it (completed)'
+        'save:Move some data coming from another VM to a (tomb) directory'
+        'kv:Manage the small key=value store used by other commands/functions'
+        'config:Manage the global risk configuration settings from the CLI'
+        'resolve:Retrieve the encrypted names of identity files'
+        'ssh:Manage SSH-related credentials and settings'
+        'gpg:Manage GPG coffings, keys, passwords and settings'
+        'identity:Create, use and manage identities'
+        'tomb:Create, use and manage tombs (stores)'
+    )
+
+    _describe -t commands 'commands' subcmds
+}
+
+# Completion dispatcher for help command.
+_help ()
+{
+    local ret=1
+    local line state
+    _arguments -C \
+        "1: :_risks_commands" && ret=0
+}
 
 # Completes the commands for config
 _config_commands ()
@@ -116,7 +139,6 @@ _hush ()
 
     # Register subcommands and argument patterns
     _arguments -C \
-        "${_flags_base[@]}" \
         "1: :_hush_commands" \
         "*::arg:->args" \
         && ret=0
@@ -127,15 +149,9 @@ _hush ()
             case $line[1] in
             format)
                 _arguments \
-                    "${_flags_base[@]}" \
                     {-S,--size-percent}'[Size of encrypted partition, as a percentage of the entire drive]':'percentage of drive': \
                     {-A,--size-absolute}'[Size of encrypted partition, in absolute terms, WITH unit (eg. 100G, 20M)]':'absolute size with unit (eg. 20M)': \
                     '1:path to hush drive:_path_files -W /dev -g "xvd*" -F exclude_devices -P /dev/' \
-                    && ret=0
-                ;;
-            *)
-                _arguments \
-                    "${_flags_base[@]}" \
                     && ret=0
                 ;;
             esac
@@ -178,17 +194,11 @@ _backup ()
             case $line[1] in
             format|mount)
                 _arguments \
-                    "${_flags_base[@]}" \
                     '1:path to backup drive:_path_files -W /dev -g "xvd*" -F exclude_devices -P /dev/' \
                     && ret=0
                 ;;
             unlock)
                 _message "Identity owning the backup"
-                ;;
-            *)
-                _arguments \
-                    "${_flags_base[@]}" \
-                    && ret=0
                 ;;
             esac
     esac
@@ -312,7 +322,6 @@ _gpg ()
     local ret=1
     local line state
     _arguments -C \
-        "${_flags_base[@]}" \
         "1: :_gpg_commands" \
         "*::arg:->args" \
         && ret=0
@@ -328,7 +337,6 @@ _gpg ()
                 ;;
             import)
                 _arguments \
-                    "${_flags_base[@]}" \
                     '1:Identity owning the backup private key:' \
                     && ret=0
                 ;;
@@ -344,7 +352,6 @@ _gpg ()
 _gpg_generate ()
 {
     _arguments -C \
-        "${_flags_base[@]}" \
         '(-S --sign)'{-S,--sign}'[If generated key is a GPG subkey, add sign capability]' \
         '(-E --encrypt)'{-E,--encrypt}'[If generated key is a GPG subkey, add encrypt capability]' \
         "1::arg:->args" \
@@ -378,7 +385,6 @@ _ssh ()
     local ret=1
     local line state
     _arguments -C \
-        "${_flags_base[@]}" \
         "1: :_ssh_commands" \
         "*::arg:->args" \
         && ret=0
@@ -399,7 +405,6 @@ _ssh_generate ()
     local ret=1
     local line state
     _arguments -C \
-        "${_flags_base[@]}" \
         '(-b --bits)'{-b,--bits}'[Key size in bits]:key size in bits:' \
         '(-f --filename)'{-f,--filename}'[Filename to use for keys]:key filename:' \
         "1::arg:->args" \
@@ -432,7 +437,6 @@ _identity ()
     local ret=1
     local line state
     _arguments -C \
-        "${_flags_base[@]}" \
         "1: :_identity_commands" \
         "*::arg:->args" \
         && ret=0
@@ -448,7 +452,6 @@ _identity ()
                 ;;
             delete)
                 _arguments -C \
-                    "${_flags_base[@]}" \
                     '(-b --backup)'{-b,--backup}'[If a backup device is mounted, also delete all the associated backup data]' \
                     '2:identity to delete:' && ret=0
                 ;;
@@ -461,7 +464,6 @@ _identity_create ()
 {
     local line state
     _arguments -C \
-        "${_flags_base[@]}" \
         '(-b --backup)'{-b,--backup}'[Device file of the backup drive (whole drive without partition number, eg. /dev/sdb)]:path to backup device:_path_files -W /dev -g "xvd*" -F exclude_devices -P /dev/' \
         '(-m --mail)'{-m,--mail}'[Mail provider to use for the GPG key (appended to the name when no full mail is given as arg)]:mail provider (without @):' \
         '(-B --burner)'{-B,--burner}'[Generate a random username, and only generate GPG/Pass stores]' \
@@ -502,7 +504,6 @@ _tomb ()
     local ret=1
     local line state
     _arguments -C \
-        "${_flags_base[@]}" \
         "1: :_tomb_commands" \
         "*::arg:->args" \
         && ret=0
@@ -521,9 +522,8 @@ _tomb ()
                 ;;
             delete)
                 _arguments -C \
-                    "${_flags_base[@]}" \
                     '(-b --backup)'{-b,--backup}'[If a backup device is mounted, also delete all the associated backup data]' \
-                    '2:label of tomb to delete:' && ret=0
+                    '1:label of tomb to delete:' && ret=0
                 ;;
             esac
     esac
@@ -534,10 +534,9 @@ _tomb_create ()
 {
     local line state
     _arguments -C \
-        "${_flags_base[@]}" \
-        "2: :->name" \
-        "3: :->size" \
-        "4:: :->identity"
+        "1: :->name" \
+        "2: :->size" \
+        "3:: :->identity"
 
     case "$state" in
         name)

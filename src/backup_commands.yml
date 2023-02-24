@@ -21,11 +21,6 @@ commands:
         required: true
         help: "Device file of the backup drive (must be a whole drive without a partition number, eg. /dev/sdb)"
         validate: file_exists
-    flags:
-      - &verbose
-        long: --verbose
-        short: -v
-        help: "Show verbose logging"
     examples:
       - backup format /dev/xvdi
 
@@ -38,7 +33,6 @@ commands:
         help: "Name of identity to backup. (Current identity if not specified)"
         validate: identity_exists 
     flags:
-      - *verbose
       - long: --log-file
         short: -f
         help: "Path to log file, defaults to ~/.graveyard/<identity>.log"
@@ -58,14 +52,10 @@ commands:
         required: true 
         help: "Identity owning the backup."
         validate: identity_exists
-    flags:
-      - *verbose
     examples:
       - backup unlock john_doe        # Unlocks the graveyard backup of john_doe 
   - name: lock
     help: 'Lock encryption on the backup of an identity'
-    flags:
-      - *verbose
 
   - name: status
     help: 'Print the status of the backup (mount points, locks, etc)'

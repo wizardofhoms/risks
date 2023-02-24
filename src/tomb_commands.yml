@@ -15,11 +15,6 @@ commands:
         required: false 
         help: "Identity for which to create the tomb. (optional if an identity is active"
         validate: identity_exists
-    flags:
-      - &verbose
-        long: --verbose
-        short: -v
-        help: "Show verbose logging"
     examples:
       - tomb create Data 100 john_doe
 
@@ -33,8 +28,6 @@ commands:
         required: false 
         help: "Identity owning the store. (optional if an identity is active)."
         validate: identity_exists
-    flags:
-      - *verbose 
     examples:
       - "tomb open gpg john_doe            # Opens the GPG keyring for identity 'john_doe'"         
       - "tomb open ssh                     # Opens the ssh tomb for the active identity"
@@ -50,8 +43,6 @@ commands:
         required: false 
         help: "Identity owning the store. (optional if an identity is active)."
         validate: identity_exists
-    flags:
-      - *verbose 
 
   - name: delete 
     help: Delete an identity tomb, and optionally its backup
@@ -60,7 +51,6 @@ commands:
         required: true
         help: "Name/label of the tomb to delete"
     flags:
-      - *verbose 
       - &backup
         long : --backup
         short: -b

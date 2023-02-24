@@ -20,9 +20,9 @@ risks_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks COMMAND\n"
+  printf "  risks [OPTIONS] COMMAND\n"
   printf "  risks [COMMAND] --help | -h\n"
-  printf "  risks --version | -v\n"
+  printf "  risks --version\n"
   echo
   # :command.usage_commands
   printf "%s\n" "$(bold "Commands:")"
@@ -39,17 +39,24 @@ risks_usage() {
   printf "  %s   Manage the small key=value store used by other commands/functions\n" "$(green "kv")      "
   printf "  %s   Manage the risk global configuration\n" "$(green "config")  "
   printf "  %s   Retrieve the encrypted names of identity files\n" "$(green "resolve") "
+  printf "  %s   Show help about a command\n" "$(green "help")    "
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
 
+    # :command.usage_flags
+    # :flag.usage
+    printf "  %s\n" "--verbose, -v"
+    printf "    Show verbose logging\n"
+    echo
+
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
     echo
-    printf "  %s\n" "--version, -v"
+    printf "  %s\n" "--version"
     printf "    Show version number\n"
     echo
 
@@ -233,11 +240,6 @@ risks_hush_format_usage() {
 
     # :command.usage_flags
     # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
-
-    # :flag.usage
     printf "  %s\n" "--size-percent, -P PERCENT"
     printf "    Size of encrypted partition, as a percentage of the entire drive\n"
     printf "    Default: 90\n"
@@ -418,19 +420,13 @@ risks_backup_format_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks backup format DEVICE [OPTIONS]\n"
+  printf "  risks backup format DEVICE\n"
   printf "  risks backup format --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -475,11 +471,6 @@ risks_backup_identity_usage() {
     printf "%s\n" "$(bold "Options:")"
 
     # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
-
     # :flag.usage
     printf "  %s\n" "--log-file, -f LOGFILE"
     printf "    Path to log file, defaults to ~/.graveyard/<identity>.log\n"
@@ -549,19 +540,13 @@ risks_backup_unlock_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks backup unlock IDENTITY [OPTIONS]\n"
+  printf "  risks backup unlock IDENTITY\n"
   printf "  risks backup unlock --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -597,19 +582,13 @@ risks_backup_lock_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks backup lock [OPTIONS]\n"
+  printf "  risks backup lock\n"
   printf "  risks backup lock --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -708,11 +687,6 @@ risks_identity_create_usage() {
 
     # :command.usage_flags
     # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
-
-    # :flag.usage
     printf "  %s\n" "--backup, -b"
     printf "    Device file of the backup drive (must be a whole drive without a partition\n    number, eg. /dev/sdb)\n"
     echo
@@ -773,19 +747,13 @@ risks_identity_open_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks identity open IDENTITY [OPTIONS]\n"
+  printf "  risks identity open IDENTITY\n"
   printf "  risks identity open --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -821,19 +789,13 @@ risks_identity_close_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks identity close [IDENTITY] [OPTIONS]\n"
+  printf "  risks identity close [IDENTITY]\n"
   printf "  risks identity close --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -874,11 +836,6 @@ risks_identity_delete_usage() {
 
     # :command.usage_flags
     # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
-
-    # :flag.usage
     printf "  %s\n" "--backup, -b"
     printf "    If a backup device is mounted, also delete all the associated backup data\n"
     echo
@@ -912,19 +869,13 @@ risks_identity_backup_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks identity backup [IDENTITY] [OPTIONS]\n"
+  printf "  risks identity backup [IDENTITY]\n"
   printf "  risks identity backup --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -1026,19 +977,13 @@ risks_tomb_create_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks tomb create TOMB_NAME SIZE [IDENTITY] [OPTIONS]\n"
+  printf "  risks tomb create TOMB_NAME SIZE [IDENTITY]\n"
   printf "  risks tomb create --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -1084,19 +1029,13 @@ risks_tomb_open_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks tomb open RESOURCE [IDENTITY] [OPTIONS]\n"
+  printf "  risks tomb open RESOURCE [IDENTITY]\n"
   printf "  risks tomb open --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -1139,19 +1078,13 @@ risks_tomb_close_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks tomb close RESOURCE [IDENTITY] [OPTIONS]\n"
+  printf "  risks tomb close RESOURCE [IDENTITY]\n"
   printf "  risks tomb close --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -1196,11 +1129,6 @@ risks_tomb_delete_usage() {
     printf "%s\n" "$(bold "Options:")"
 
     # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
-
     # :flag.usage
     printf "  %s\n" "--backup, -b"
     printf "    If a backup device is mounted, also delete all the associated backup data\n"
@@ -1283,11 +1211,6 @@ risks_gpg_generate_usage() {
 
     # :command.usage_flags
     # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
-
-    # :flag.usage
     printf "  %s\n" "--sign, -S"
     printf "    If generated key is a GPG subkey, add sign capability\n"
     echo
@@ -1336,19 +1259,13 @@ risks_gpg_open_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks gpg open IDENTITY [OPTIONS]\n"
+  printf "  risks gpg open IDENTITY\n"
   printf "  risks gpg open --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -1384,19 +1301,13 @@ risks_gpg_close_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks gpg close [IDENTITY] [OPTIONS]\n"
+  printf "  risks gpg close [IDENTITY]\n"
   printf "  risks gpg close --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -1427,19 +1338,13 @@ risks_gpg_import_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks gpg import IDENTITY [OPTIONS]\n"
+  printf "  risks gpg import IDENTITY\n"
   printf "  risks gpg import --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -1592,11 +1497,6 @@ risks_ssh_generate_usage() {
 
     # :command.usage_flags
     # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
-
-    # :flag.usage
     printf "  %s\n" "--bits, -b"
     printf "    Key size in bits\n"
     echo
@@ -1678,19 +1578,13 @@ risks_slam_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks slam [OPTIONS]\n"
+  printf "  risks slam\n"
   printf "  risks slam --help | -h\n"
   echo
 
   # :command.long_usage
   if [[ -n $long_usage ]]; then
     printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_flags
-    # :flag.usage
-    printf "  %s\n" "--verbose, -v"
-    printf "    Show verbose logging\n"
-    echo
 
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
@@ -2388,6 +2282,43 @@ risks_resolve_key_usage() {
   fi
 }
 
+# :command.usage
+risks_help_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "risks help - Show help about a command\n"
+    echo
+
+  else
+    printf "risks help - Show help about a command\n"
+    echo
+
+  fi
+
+  printf "%s\n" "$(bold "Usage:")"
+  printf "  risks help [COMMAND]\n"
+  printf "  risks help --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "%s\n" "$(bold "Options:")"
+
+    # :command.usage_fixed_flags
+    printf "  %s\n" "--help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_args
+    printf "%s\n" "$(bold "Arguments:")"
+
+    # :argument.usage
+    printf "  %s\n" "$(blue "COMMAND")"
+    printf "    Help subject\n"
+    echo
+
+  fi
+}
+
 # :command.normalize_input
 normalize_input() {
   local arg flags
@@ -2512,7 +2443,7 @@ delete_identity_backup ()
 
     # Delete the identity graveyard in it, and associated fscrypt policy
     if [[ -e "$identity_graveyard_backup" ]]; then
-        _message "Wiping graveyard backup"
+        _info "Wiping graveyard backup"
         sudo chattr -i "${identity_graveyard_backup}"/*
         _run wipe -f -r "$identity_graveyard_backup"
     else
@@ -2836,10 +2767,10 @@ list_coffins()
     fi
 
     if [[ $coffins_num -gt 0 ]]; then
-        _message "Coffins currently opened:"
+        _info "Coffins currently opened:"
         echo "$coffins" | xargs
     else
-        _message "No opened coffins"
+        _info "No opened coffins"
     fi
 }
 
@@ -2880,7 +2811,7 @@ config_init() {
     RISKS_CONFIG_FILE=${RISKS_CONFIG_FILE-${RISKS_DIR}/config.ini}
     [[ -f "$RISKS_CONFIG_FILE" ]] || {
 
-        _message "Writing default configuration file to ${RISKS_CONFIG_FILE}"
+        _info "Writing default configuration file to ${RISKS_CONFIG_FILE}"
 
     cat << EOF > "$RISKS_CONFIG_FILE"
 
@@ -3120,7 +3051,7 @@ EOF
     expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")"
 
     fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
-    _message "Fingerprint: ${fingerprint}"
+    _info "Fingerprint: ${fingerprint}"
 
     local gpg_base_cmd=(gpg --pinentry-mode loopback --batch --no-tty --yes --passphrase-fd 0 --quick-add-key "${fingerprint}")
 
@@ -3253,19 +3184,19 @@ generate_subkeys ()
     local gpg_base_cmd=(gpg --pinentry-mode loopback --batch --no-tty --yes --passphrase-fd 0 --quick-add-key "${fingerprint}")
 
     # Signing subkey
-    if [[ "${args[--sign]}" -eq 1 ]]; then
-        _message "Generating signature subkey-pair"
+    if [[ "${args['--sign']}" -eq 1 ]]; then
+        _info "Generating signature subkey-pair"
         echo "$GPG_PASS" | _run "${gpg_base_cmd[@]}" "${algo}" sign "${expiry_date}" &> /dev/null
         _catch "Failed to generate subkey-pair"
     fi
 
     # Encryption subkey
 
-    if [[ "${args[--encrypt]}" -eq 1 ]]; then
+    if [[ "${args['--encrypt']}" -eq 1 ]]; then
         if [[ "${algo}" == "ed25519" ]]; then
             algo="cv25519"
         fi
-        _message "Generating encryption subkey-pair"
+        _info "Generating encryption subkey-pair"
         echo "$GPG_PASS" | _run "${gpg_base_cmd[@]}" "${algo}" encr "${expiry_date}" &> /dev/null
         _catch "Failed to generate subkey-pair"
     fi
@@ -3434,7 +3365,7 @@ _set_active_identity ()
         _run wipe -s -f -P 10 "${RISKS_IDENTITY_FILE}" || _warning "Failed to wipe identity file !"
 
         _verbose "Identity '${identity}' is now inactive, (name file deleted)"
-        _message "Identity '${identity}' is now INACTIVE"
+        _info "Identity '${identity}' is now INACTIVE"
         return
     fi
 
@@ -3446,7 +3377,7 @@ _set_active_identity ()
     fi
 
     _verbose "Identity '${1}' is now active (name file written)"
-    _message "Identity '${1}' is now ACTIVE"
+    _info "Identity '${1}' is now ACTIVE"
 }
 
 # Returns 0 if an identity is unlocked, 1 if not.
@@ -3508,7 +3439,7 @@ _get_name ()
 {
     local name
 
-    if [[ -z "${1}" ]] && [[ "${args[--burner]}" -eq 0 ]]; then
+    if [[ -z "${1}" ]] && [[ "${args['--burner']}" -eq 0 ]]; then
         _failure "Either an identity name is required, or the --burner flag"
 
     fi
@@ -3516,7 +3447,7 @@ _get_name ()
     # Either use the provided one
     if [[ -n "${1}" ]]; then
         name="${1}"
-    elif [[ "${args[--burner]}" -eq 1 ]]; then
+    elif [[ "${args['--burner']}" -eq 1 ]]; then
         name="$(rig -m | head -n 1)"
         name="${name// /_}"
     fi
@@ -3534,7 +3465,7 @@ _get_mail ()
 
     [[ -n "${email}" ]] && print "${email}" && return
 
-    email="${args[--mail]}"
+    email="${args['--mail']}"
     [[ -n "${email}" ]] && print "${name}@${email}"
 }
 
@@ -3594,7 +3525,7 @@ store_risks_scripts ()
 {
     local udev_rules="$1"
 
-    _message "Copying risks scripts onto the hush partition"
+    _info "Copying risks scripts onto the hush partition"
 
     # Scripts/program
     mkdir -p "$RISKS_SCRIPTS_INSTALL_PATH"
@@ -3667,7 +3598,7 @@ _in_section ()
 
 
 function is_verbose_set () {
-    if [[ "${args[--verbose]}" -eq 1 ]]; then
+    if [[ "${args['--verbose']}" -eq 1 ]]; then
         return 0
     else
         return 1
@@ -3743,7 +3674,7 @@ function _msg()
 
     # If there is a log-file specified with flag --log-file,
     # output the message to it, instead of the current file descriptor
-    logfile="${args[--log-file]}"
+    logfile="${args['--log-file']}"
     if [[ -n "${logfile}" ]]; then
         ${=command} "${progname}" "${pchars}" "${msg}" >> "$logfile"
         return $returncode
@@ -3760,7 +3691,7 @@ function _msg()
     return $returncode
 }
 
-function _message() {
+function _info() {
     local notice="message"
     [[ "$1" = "-n" ]] && shift && notice="inline"
     option_is_set -q || _msg "$notice" "$@"
@@ -3875,7 +3806,7 @@ link_hush_udev_rules ()
 
     # the number in the name. If not found:
     if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}" &> /dev/null ; then
-        _message "No link to hush udev rules detected, setting it persistent and for this session"
+        _info "No link to hush udev rules detected, setting it persistent and for this session"
 
         # - echo the link command into rc.local
         _verbose "Adding the link command to /rw/config/rc.local"
@@ -4232,7 +4163,7 @@ kvset() {
         kv_user_dir=${KV_USER_DIR:-$DEFAULT_KV_USER_DIR}
         test -d "$kv_user_dir" || mkdir "$kv_user_dir"
         echo "$value" > "$kv_user_dir/$key"
-        _message "${key} => ${value}"
+        _info "${key} => ${value}"
     }
 
 # Usage: kvdel <key>
@@ -4244,7 +4175,7 @@ kvdel() {
         }
         kv_user_dir=${KV_USER_DIR:-$DEFAULT_KV_USER_DIR}
         test -f "$kv_user_dir/$key" && rm -f "$kv_user_dir/$key"
-        _message "Deleted key '${key}'"
+        _info "Deleted key '${key}'"
     }
 
 # list all key/value pairs to stdout
@@ -4360,13 +4291,13 @@ delete_tomb()
             read ans
 
             if [[ "$ans" != 'YES' ]]; then
-                _message "Aborting deletion of tomb 'GPG'. Exiting"
+                _info "Aborting deletion of tomb 'GPG'. Exiting"
                 exit 0
             fi
     esac
 
     # Else we are good to go and delete, even if some files will not be found.
-    _message "Deleting tomb $name"
+    _info "Deleting tomb $name"
 
     if [[ -e "$tomb_file_path" ]]; then
         _run wipe -f -r "$tomb_file_path"
@@ -4733,7 +4664,7 @@ risks_hush_mount_command() {
   fi
 
   if is_hush_mounted ; then
-      _message "Sdcard already mounted"
+      _info "Sdcard already mounted"
       play_sound
       return 0
   fi
@@ -4781,9 +4712,9 @@ risks_hush_rw_command() {
   sudo chown "${USER}" "${HUSH_DIR}"
 
   _warning "/----------------------------------------/"
-  _message -n "Warning! HUSH is writable              \n"
-  _message -n "Do not unplug without umounting it !   \n"
-  _message -n "/----------------------------------------/ \n"
+  _info -n "Warning! HUSH is writable              \n"
+  _info -n "Do not unplug without umounting it !   \n"
+  _info -n "/----------------------------------------/ \n"
 
 }
 
@@ -4799,7 +4730,7 @@ risks_hush_ro_command() {
       _failure "/dev/mapper/${SDCARD_ENC_PART_MAPPER} can not be re-mounted with read-only permissions"
   fi
 
-  _message "HUSH is now mounted read-only"
+  _info "HUSH is now mounted read-only"
 
 }
 
@@ -4836,7 +4767,7 @@ risks_hush_umount_command() {
 
   play_sound "unplugged"
 
-  _message "Hush device is unmounted and closed"
+  _info "Hush device is unmounted and closed"
 
 }
 
@@ -4846,7 +4777,7 @@ risks_hush_format_command() {
 
   local sd_drive sd_ext4_drive sd_enc_part mount_point udev_rules uuid
 
-  sd_drive="${args[device]}"        # Device file
+  sd_drive="${args['device']}"        # Device file
 
   sd_ext4_drive="$sd_drive"1        # Dumb partition
   sd_enc_part="$sd_drive"2          # Encrypted partition
@@ -4855,11 +4786,11 @@ risks_hush_format_command() {
   # Sizes: by default 90% of the drive is used as encrypted partition,
   # but flag --percent-size or --absolute-size can modify size.
   # If absolute size was specified, use it and forget all other values
-  if [[ -n "${args[--size-absolute]}" ]]; then
-      enc_part_size="${args[--size-absolute]}"
+  if [[ -n "${args['--size-absolute']}" ]]; then
+      enc_part_size="${args['--size-absolute']}"
       start_enc_sectors="${enc_part_size}"
   else
-      percent_size="${args[--size-percent]}"
+      percent_size="${args['--size-percent']}"
 
       total_size="$(sudo blockdev --getsize "${sd_drive}")"
       enc_part_size="$(( total_size * percent_size / 100 ))"
@@ -4868,11 +4799,11 @@ risks_hush_format_command() {
 
   # Cleanup & making partitions
 
-  _message "Overwriting and partitioning SDCARD"
+  _info "Overwriting and partitioning SDCARD"
   _verbose "Cleaning drive"
   sudo dd if=/dev/urandom of="${sd_drive}" bs=1M status=progress && sync
 
-  _message "Creating partitions"
+  _info "Creating partitions"
   format_hush_partitions "$sd_drive" "$start_enc_sectors"
   _catch "Failed to format partitions"
 
@@ -4885,7 +4816,7 @@ risks_hush_format_command() {
   # Hush partition encryption setup
 
   mkdir "${mount_point}" &> /dev/null
-  _message "Creating LUKS filesystem"
+  _info "Creating LUKS filesystem"
   sudo cryptsetup -v -q -y --cipher aes-xts-plain64 --key-size 512 --hash sha512 \
       --iter-time 5000 --use-random luksFormat "$sd_enc_part"
 
@@ -4898,7 +4829,7 @@ risks_hush_format_command() {
   _verbose "$(sudo cryptsetup status "${SDCARD_ENC_PART_MAPPER}")"
 
   # Ext4 with encryption support (for fscrypt) and fscrypt setup
-  _message "Making filesytem and setting up high-level encryption (fscrypt)"
+  _info "Making filesytem and setting up high-level encryption (fscrypt)"
   _run sudo mkfs.ext4 -m 0 -L "hush" "/dev/mapper/${SDCARD_ENC_PART_MAPPER}"
 
   _catch "Failed to make ext4 filesystem on partition"
@@ -4923,7 +4854,7 @@ risks_hush_format_command() {
   # Prepare a udev command string with correct UUID, to be written
 
   # both on this system and on the hush if used on another computer.
-  _message "Setting Udev rules for hush partition "
+  _info "Setting Udev rules for hush partition "
 
   uuid=$(sudo cryptsetup luksUUID "${sd_enc_part}")
   echo 'SUBSYSTEM=="block", ENV{ID_FS_UUID}=="'"${uuid}"'", SYMLINK+="hush"' >> "${UDEV_RULES_PATH}"
@@ -4943,7 +4874,7 @@ risks_hush_format_command() {
 
   # Setup udev identitiers mapping for hush partition
 
-  _message "Setting Udev rules for hush partition "
+  _info "Setting Udev rules for hush partition "
 
   _catch "Failed to write udev mapper file with SDCard UUID"
 
@@ -4972,11 +4903,11 @@ risks_hush_status_command() {
   attached=$(is_luks_mapper_present "${SDCARD_ENC_PART_MAPPER}")
   mounted=$(is_hush_mounted)
 
-  [[ ! $attached -eq 0 ]] && _message "Hush device is not attached to vault qube" && return
-  [[ ! $mounted -eq 0 ]] && _message "No hush device mounted" && return
+  [[ ! $attached -eq 0 ]] && _info "Hush device is not attached to vault qube" && return
+  [[ ! $mounted -eq 0 ]] && _info "No hush device mounted" && return
 
   # Device is mounted, show read-write permissions and mount points.
-  _message "Hush device mounts:"
+  _info "Hush device mounts:"
   print "$(mount | grep "^/dev/mapper/${SDCARD_ENC_PART_MAPPER}")"
 
 }
@@ -4989,7 +4920,7 @@ risks_backup_mount_command() {
 
   # If we already have a device mounted as backup, fail.
   if ls -1 /dev/mapper/"${BACKUP_MAPPER}" &> /dev/null; then
-      _message "Backup device is already mounted"
+      _info "Backup device is already mounted"
       play_sound
       return 0
   fi
@@ -5006,7 +4937,7 @@ risks_backup_mount_command() {
   _catch "Failed to open LUKS pendrive. Aborting"
   sudo mount /dev/mapper/"${BACKUP_MAPPER}" "$BACKUP_MOUNT_DIR"
 
-  _message "Backup unlocked and mounted on ${BACKUP_MOUNT_DIR}"
+  _info "Backup unlocked and mounted on ${BACKUP_MOUNT_DIR}"
 
 }
 
@@ -5027,7 +4958,7 @@ risks_backup_umount_command() {
 
   play_sound "unplugged"
 
-  _message "Backup device is umounted and closed"
+  _info "Backup device is umounted and closed"
 
 }
 
@@ -5039,14 +4970,14 @@ risks_backup_format_command() {
 
   pendrive="${args[device]}"
 
-  _message "Formatting and encrypting backup drive"
+  _info "Formatting and encrypting backup drive"
 
   # Data cleanup
   _verbose "Overwriting drive data"
   sudo dd if=/dev/urandom of="${pendrive}" bs=1M status=progress && sync
 
   # Encryption setup
-  _message "Setting up LUKS on drive"
+  _info "Setting up LUKS on drive"
   sudo cryptsetup -v -q -y --cipher aes-xts-plain64 --key-size 512 \
       --hash sha512 --iter-time 5000 --use-random luksFormat "${pendrive}"
 
@@ -5058,13 +4989,13 @@ risks_backup_format_command() {
 
   _catch "Failed to open backup LUKS filesystem"
 
-  _message "Making ext4 filesystem on LUKS mapper"
+  _info "Making ext4 filesystem on LUKS mapper"
   _run sudo mkfs.ext4 -m 0 -L "backup" /dev/mapper/"${BACKUP_MAPPER}"
 
   _catch "Failed to make ext4 filesystem on backup"
 
   # fsencrypt setup
-  _message "Enabling filesystem encryption and setting up fscrypt"
+  _info "Enabling filesystem encryption and setting up fscrypt"
   _run sudo /sbin/tune2fs -O encrypt "/dev/mapper/${BACKUP_MAPPER}"
 
   _catch "Failed to enable encryption on ext4 filesystem"
@@ -5074,12 +5005,12 @@ risks_backup_format_command() {
   _catch "Failed to mount partition on ${BACKUP_MOUNT_DIR}"
   sudo chown "${USER}" "${BACKUP_MOUNT_DIR}"
 
-  _message "Setting up fscrypt in backup mount point (${BACKUP_MOUNT_DIR})"
+  _info "Setting up fscrypt in backup mount point (${BACKUP_MOUNT_DIR})"
   echo "N" | sudo fscrypt setup "${BACKUP_MOUNT_DIR}" &> /dev/null
   _catch "Failed to setup fscrypt metadata with root permissions"
 
   # Closing
-  _message "Unmounting backup pendrive"
+  _info "Unmounting backup pendrive"
   risks_backup_umount_command
   _catch "Failed to correctly unmount backup device"
 
@@ -5118,12 +5049,12 @@ risks_backup_identity_command() {
   # Always check that the identity has its own backup directory set up,
   # because backup is not mandatory at identity creation time.
   if [[ ! -e "$identity_graveyard_backup" ]]; then
-      _message "Setting graveyard backup for this identity"
+      _info "Setting graveyard backup for this identity"
       _run setup_identity_backup
       _catch "Failed to setup identity backup graveyard"
   fi
 
-  _message "Backing up current identity data and hush partition"
+  _info "Backing up current identity data and hush partition"
 
   echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard_backup" --quiet
 
@@ -5158,7 +5089,7 @@ risks_backup_identity_command() {
   # And backup hush, since it has new content
   risks_backup_hush_command
 
-  _message "Done backing current identity and hush device"
+  _info "Done backing current identity and hush device"
 
 }
 
@@ -5171,7 +5102,7 @@ risks_backup_hush_command() {
       _failure "Backup device not mounted. Please mount with 'risks backup mount /dev/device'"
   fi
 
-  _message "Backing hush partition"
+  _info "Backing hush partition"
 
   _verbose "Unmounting hush partition"
   risks_hush_umount_command
@@ -5182,7 +5113,7 @@ risks_backup_hush_command() {
   sudo dd if=/dev/hush of="${BACKUP_MOUNT_DIR}/hush.img" status=progress bs=16M
   sudo chattr +i "${BACKUP_MOUNT_DIR}/hush.img" || _warning "No hush.img file found after dd operation"
 
-  _message "Done backing hush partition"
+  _info "Done backing hush partition"
 
 }
 
@@ -5216,7 +5147,7 @@ risks_backup_unlock_command() {
       _failure "This identity has no graveyard on the backup medium"
   fi
 
-  _message "Unlocking identity graveyard backup"
+  _info "Unlocking identity graveyard backup"
   echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard_backup" --quiet
 
 }
@@ -5251,7 +5182,7 @@ risks_backup_lock_command() {
       _failure "This identity has no graveyard on the backup medium"
   fi
 
-  _message "Locking identity graveyard backup"
+  _info "Locking identity graveyard backup"
   _run sudo fscrypt lock "${identity_graveyard_backup}"
 
 }
@@ -5264,15 +5195,15 @@ risks_backup_status_command() {
   local mounted
   mounted=$(is_luks_mapper_present "${BACKUP_MAPPER}")
 
-  [[ ! $mounted -eq 0 ]] && _message "No backup device mounted" && return
+  [[ ! $mounted -eq 0 ]] && _info "No backup device mounted" && return
 
   # Device is mounted, show read-write permissions and mount points.
-  _message "Backup device mounts:"
+  _info "Backup device mounts:"
   print "$(mount | grep "^/dev/mapper/${BACKUP_MAPPER}")"
 
   if _identity_active; then
 
-      _message "Identity backup graveyard status:"
+      _info "Identity backup graveyard status:"
 
       backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
       identity_dir=$(_encrypt_filename "$IDENTITY")
@@ -5315,11 +5246,11 @@ risks_identity_create_command() {
 
 
   _in_section 'risks' 6
-  _message "Starting new identity generation process"
+  _info "Starting new identity generation process"
   _warning "Do not unplug hush and backup devices during the process"
 
-  _message "Using ${name} as identity name"
-  _message "Using ${email} as email"
+  _info "Using ${name} as identity name"
+  _info "Using ${email} as email"
 
   # Use the identity name to set its file encryption key.
   # This call propagates some of those essential variables
@@ -5330,63 +5261,63 @@ risks_identity_create_command() {
   # GPG
 
   #
-  _in_section 'gpg' && _message "Setting up RAMDisk and GPG backend"
+  _in_section 'gpg' && _info "Setting up RAMDisk and GPG backend"
   init_gpg
 
   # Generate GPG keypairs with a different passphrase than the one
   # we use for encrypting file/directory names and contents.
-  _message "Generating GPG keys"
+  _info "Generating GPG keys"
 
   # This new key is also the one provided when using gpgpass command.
   GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
   echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
   _warning "GPG passphrase copied to clipboard with one-time use only"
-  _message -n "Paste it in the coming GPG prompt when creating builtin tombs\n"
+  _info -n "Paste it in the coming GPG prompt when creating builtin tombs\n"
 
   _run gen_gpg_keys "$name" "$email" "$expiry"
 
   # Setup the identity graveyard directory with fscrypt protection
-  _in_section 'coffin' && _message "Creating and setting encrypted identity directory"
+  _in_section 'coffin' && _info "Creating and setting encrypted identity directory"
   new_graveyard
 
   # At this point, we need access to the hush device, so make sure
 
   # it's mounted and that we have read-write permissions.
-  _in_section 'hush' && _message "Mounting hush device with read-write permissions"
+  _in_section 'hush' && _info "Mounting hush device with read-write permissions"
   risks_hush_mount_command
   _run risks_hush_rw_command
 
   # Then only, generate the coffin and copy it into the root graveyard
   # (not the identity's graveyard subdirectory, because we need access to
   # this file BEFORE anything else, since it contains the GPG keyring)
-  _in_section 'coffin' && _message "Creating and testing GPG coffin container"
+  _in_section 'coffin' && _info "Creating and testing GPG coffin container"
   gen_coffin
 
   # Cleaning RAM disk, removing private keys from the keyring and test open/close
 
-  _in_section 'gpg' && _message "Cleaning and backing keyring privates"
+  _in_section 'gpg' && _info "Cleaning and backing keyring privates"
   cleanup_gpg_init "$email"
 
   #
-  _in_section 'pass' && _message "Initializing password-store"
+  _in_section 'pass' && _info "Initializing password-store"
   init_pass "$email"
 
   if [[ "${args['--burner']}" -eq 1 ]]; then
       echo && _success "risks" "Identity (burner) generation complete." && echo
   fi
 
-  _in_section 'ssh' && _message "Generating SSH keypair and multi-key ssh-agent script"
+  _in_section 'ssh' && _info "Generating SSH keypair and multi-key ssh-agent script"
 
   gen_ssh_keys "$email"
 
 
   # config files, etc, and set default key=values
-  _in_section 'mgmt' && _message "Creating management tomb"
+  _in_section 'mgmt' && _info "Creating management tomb"
   init_mgmt
 
   #
   if [[ -n "$pendrive" ]]; then
-      _in_section 'backup' && _message "Setting identity backup and making initial one"
+      _in_section 'backup' && _info "Setting identity backup and making initial one"
 
       risks_backup_mount_command
       _catch "failed to decrypt and mount backup drive"
@@ -5429,19 +5360,19 @@ risks_identity_open_command() {
       _warning "GPG passphrase copied to clipboard with one-time use only"
   fi
 
-  _message "Opening coffin and mounting GPG keyring"
+  _info "Opening coffin and mounting GPG keyring"
   open_coffin
 
-  _message "Opening Management tomb ... "
+  _info "Opening Management tomb ... "
   _run open_tomb "$MGMT_TOMB_LABEL"
 
-  _message "Opening SSH tomb ... "
+  _info "Opening SSH tomb ... "
   _run open_tomb "$SSH_TOMB_LABEL"
 
-  _message "Opening PASS tomb ..."
+  _info "Opening PASS tomb ..."
   _run open_tomb "$PASS_TOMB_LABEL"
 
-  _message "Opening Signal tomb ..."
+  _info "Opening Signal tomb ..."
   _run open_tomb "$SIGNAL_TOMB_LABEL"
 
 }
@@ -5452,13 +5383,13 @@ risks_identity_close_command() {
 
   _set_identity "${args['identity']}"
 
-  _message "Closing PASS tomb ..."
+  _info "Closing PASS tomb ..."
   _run close_tomb "$PASS_TOMB_LABEL"
 
-  _message "Closing SSH tomb ..."
+  _info "Closing SSH tomb ..."
   _run close_tomb "$SSH_TOMB_LABEL"
 
-  _message "Closing Management tomb ..."
+  _info "Closing Management tomb ..."
   _run close_tomb "$MGMT_TOMB_LABEL"
 
   # Finally, find all other tombs...
@@ -5473,11 +5404,11 @@ risks_identity_close_command() {
           continue
       fi
 
-      _message "Closing tomb $tomb_name ..."
+      _info "Closing tomb $tomb_name ..."
       _run tomb close "$tomb_name"
   done <<< "$tombs"
 
-  _message "Closing GPG coffin ..."
+  _info "Closing GPG coffin ..."
   close_coffin
 
 }
@@ -5513,11 +5444,11 @@ risks_identity_delete_command() {
       risks_close_command
   fi
 
-  _message "Starting deletion of identity '$name'"
-  _message "Some of the wiping operations will take some time (several minutes). Please wait."
+  _info "Starting deletion of identity '$name'"
+  _info "Some of the wiping operations will take some time (several minutes). Please wait."
 
   # 1 - Delete the identity graveyard directory, and the associated fscrypt policy
-  _message "Wiping graveyard"
+  _info "Wiping graveyard"
   delete_graveyard
 
   # 2 - Delete the coffin files in the graveyard, and coffin key in hush
@@ -5526,7 +5457,7 @@ risks_identity_delete_command() {
   # since we must delete the coffin key file on it.
   _run risks_hush_rw_command
 
-  _message "Wiping GPG coffin"
+  _info "Wiping GPG coffin"
   delete_coffin
 
   # And reset the hush
@@ -5538,7 +5469,7 @@ risks_identity_delete_command() {
       delete_identity_backup
   fi
 
-  _message "Deleted identity $name"
+  _info "Deleted identity $name"
 
 }
 
@@ -5570,18 +5501,18 @@ risks_tomb_create_command() {
   check_hush_mounted
   _set_identity "${args["identity"]}"
 
-  _message "Creating tomb $label with size ${size}M"
+  _info "Creating tomb $label with size ${size}M"
 
   # This new key is also the one provided when using gpgpass command.
   GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
   echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
   _warning "GPG passphrase copied to clipboard with one-time use only"
-  _message -n "Copy it in the coming GPG prompt when creating the tomb.\n"
+  _info -n "Copy it in the coming GPG prompt when creating the tomb.\n"
 
   _run new_tomb "$label" "$size"
   _catch "Failed to create tomb"
 
-  _message "Done creating tomb."
+  _info "Done creating tomb."
 
 }
 
@@ -5651,11 +5582,11 @@ risks_tomb_delete_command() {
 
   # Delete in backup if specified
   if [[ "${args['--backup']}" -eq 1 ]]; then
-      _message "Deleting tomb backup"
+      _info "Deleting tomb backup"
       delete_tomb_backup "$name"
   fi
 
-  _message "Deleted tomb $name"
+  _info "Deleted tomb $name"
 
 }
 
@@ -5678,16 +5609,16 @@ risks_gpg_generate_command() {
   email=$(echo "$uid" | grep -E -o "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b")
   masterkey_available="$(get_master_key_status)"
 
-  _message "Generating GPG subkey"
-  _message "Type: ${key_algo}"
-  _message "Signing: ${args['--sign']} | Encrypting: ${args['--encrypt']}"
+  _info "Generating GPG subkey"
+  _info "Type: ${key_algo}"
+  _info "Signing: ${args['--sign']} | Encrypting: ${args['--encrypt']}"
 
   _run risks_hush_rw_command
 
   # Check master private in ring,
   # If not, open tomb and import master key
   if [[ "${masterkey_available}" != true ]]; then
-      _message "No master key in keyring, importing from tomb"
+      _info "No master key in keyring, importing from tomb"
       risks_private_import_command
   fi
 
@@ -5697,13 +5628,13 @@ risks_gpg_generate_command() {
 
   # Remove master key if was imported
   if [[ $masterkey_available != true ]]; then
-      _message "Removing master private key from keyring"
+      _info "Removing master private key from keyring"
       risks_private_remove_command
   fi
 
   _run risks_hush_ro_command
 
-  _message "Successfully generated GPG subkey(s)" && return
+  _info "Successfully generated GPG subkey(s)" && return
 
 }
 
@@ -5716,7 +5647,7 @@ risks_gpg_open_command() {
   # Whatever we need to open, we need the hush device for a key.
   check_hush_mounted
 
-  _message "Opening coffin and mounting GPG keyring"
+  _info "Opening coffin and mounting GPG keyring"
   open_coffin
 
 }
@@ -5727,7 +5658,7 @@ risks_gpg_close_command() {
 
   _set_identity "${args['identity']}"
 
-  _message "Closing coffin and GPG keyring"
+  _info "Closing coffin and GPG keyring"
   close_coffin
 
 }
@@ -5760,7 +5691,7 @@ risks_gpg_import_command() {
   # 2 - Set the hush partition read-write and import the corresponding key
   risks_hush_rw_command
 
-  _message "Importing GPG private key in keyring"
+  _info "Importing GPG private key in keyring"
   cp "${keypath}" "${RAMDISK}"/private-keys-v1.d/"${keygrip}"
 
   _run close_tomb "${GPG_TOMB_LABEL}"
@@ -5788,13 +5719,13 @@ risks_gpg_remove_command() {
   _verbose "Keygrip: $keygrip"
   keyring_path="${RAMDISK}/private-keys-v1.d/${keygrip}"
 
-  _message "Wiping private GPG key ${keygrip} from keyring"
+  _info "Wiping private GPG key ${keygrip} from keyring"
   _run wipe -rf "${keyring_path}" \
       || _warning "Failed to delete master private key from keyring !"
 
   risks_hush_ro_command
 
-  _message "Removed private key from keyring"
+  _info "Removed private key from keyring"
 
 }
 
@@ -5828,9 +5759,9 @@ risks_gpg_pass_command() {
   echo -n "$GPG_PASS" | xclip -selection clipboard
   ( sleep "$timeout"; echo -n "" | xclip -selection clipboard;) &
 
-  _message "The passphrase has been saved in clipboard"
-  _message "Press CTRL+SHIFT+C to share the clipboard with another qube."
-  _message "Local clipboard will be erased is $timeout seconds"
+  _info "The passphrase has been saved in clipboard"
+  _info "Press CTRL+SHIFT+C to share the clipboard with another qube."
+  _info "Local clipboard will be erased is $timeout seconds"
 
 }
 
@@ -5854,8 +5785,8 @@ risks_ssh_generate_command() {
   [[ -z ${ssh_key_name} ]] && ssh_key_name="${IDENTITY}-${key_algo}-${RANDOM}"
 
   # Generation
-  _message "Generating SSH keypair"
-  _message "Type: ${key_algo}"
+  _info "Generating SSH keypair"
+  _info "Type: ${key_algo}"
 
   _run open_tomb "$SSH_TOMB_LABEL"
 
@@ -5866,7 +5797,7 @@ risks_ssh_generate_command() {
   _verbose "Making keys immutable"
   sudo chattr +i "${HOME}"/.ssh/"${ssh_key_name}"*
 
-  _message "Successfully generated new SSH keypair" && return
+  _info "Successfully generated new SSH keypair" && return
 
 }
 
@@ -5874,12 +5805,12 @@ risks_ssh_generate_command() {
 risks_list_command() {
   # src/list_command.sh
 
-  resource="${args[resource]}"
+  resource="${args['resource']}"
 
   if [[ -z $resource ]]; then
       list_coffins
       echo
-      _message "Tombs currently opened:"
+      _info "Tombs currently opened:"
       tomb list
       exit $?
   fi
@@ -5890,7 +5821,7 @@ risks_list_command() {
   fi
 
   if [[ "${resource}" == "tombs" ]]; then
-      _message "Tombs currently opened:"
+      _info "Tombs currently opened:"
       tomb list
       exit $?
   fi
@@ -5909,16 +5840,16 @@ risks_slam_command() {
 
   _warning "risks" "Slaming identity $IDENTITY"
 
-  _message "Slaming PASS tomb ..."
+  _info "Slaming PASS tomb ..."
   _run slam_tomb "$PASS_TOMB_LABEL"
 
-  _message "Slaming SSH tomb ..."
+  _info "Slaming SSH tomb ..."
   _run slam_tomb "$SSH_TOMB_LABEL"
 
-  _message "Slaming Management tomb ..."
+  _info "Slaming Management tomb ..."
   _run slam_tomb "$MGMT_TOMB_LABEL"
 
-  _message "Closing GPG coffin ..."
+  _info "Closing GPG coffin ..."
   close_coffin
   # done
 
@@ -5934,17 +5865,17 @@ risks_slam_command() {
           continue
       fi
 
-      _message "Slaming tomb $tomb_name ..."
+      _info "Slaming tomb $tomb_name ..."
       _run tomb slam "$tomb_name"
   done <<< "$tombs"
 
   # 3 - Unmount hush
   echo
-  _message "Unmounting hush partition"
+  _info "Unmounting hush partition"
   _run risks_hush_umount_command
   _catch "Failed to unmount hush partition"
 
-  _message "Umounting backup device"
+  _info "Umounting backup device"
   _run risks_backup_umount_command
   _catch "Failed to umount backup device"
 
@@ -5956,10 +5887,10 @@ risks_load_command() {
 
   local resource dest_vm source_dir
 
-  resource="${args[resource]}"   # Resource is a tomb file (root directory) in ~/.tomb
-  dest_vm="${args[dest_vm]}"
+  resource="${args['resource']}"   # Resource is a tomb file (root directory) in ~/.tomb
+  dest_vm="${args['dest_vm']}"
 
-  _set_identity "${args[identity]}"
+  _set_identity "${args['identity']}"
 
   # Open the related tomb for the tool
 
@@ -5967,13 +5898,13 @@ risks_load_command() {
   _catch "Failed to open tomb"
 
   # Get the source directory, and copy the files to the VM
-  _message "Loading data in tomb $resource to VM $dest_vm"
+  _info "Loading data in tomb $resource to VM $dest_vm"
   source_dir="${HOME}/.tomb/${resource}"
-  _message "$(qvm-copy-to-vm "$dest_vm" "${source_dir}/"'*')"
+  _info "$(qvm-copy-to-vm "$dest_vm" "${source_dir}/"'*')"
 
   # And close tomb if asked to
-  if [[ "${args[--close-tomb]}" -eq 1 ]]; then
-      _message "Closing tomb"
+  if [[ "${args['--close-tomb']}" -eq 1 ]]; then
+      _info "Closing tomb"
       _run close_tomb "$resource"
   fi
 
@@ -5985,11 +5916,11 @@ risks_save_command() {
 
   local source_vm resource source_dir dest_dir
 
-  source_vm="${args[source_vm]}"
+  source_vm="${args['source_vm']}"
 
-  resource="${args[resource]}"   # Resource is a tomb file (root directory) in ~/.tomb
+  resource="${args['resource']}"   # Resource is a tomb file (root directory) in ~/.tomb
 
-  _set_identity "${args[identity]}"
+  _set_identity "${args['identity']}"
 
   # Make the source directory
 
@@ -6008,12 +5939,12 @@ risks_save_command() {
   dest_dir="${HOME}/.tomb/${resource}"
 
   # Or move the data from the directory to the tomb directory
-  _message "Moving data to tomb $resource directory"
+  _info "Moving data to tomb $resource directory"
   mv "${source_dir}/"'*' "$dest_dir"
 
   # And close tomb if asked to
-  if [[ "${args[--close-tomb]}" -eq 1 ]]; then
-      _message "Closing tomb"
+  if [[ "${args['--close-tomb']}" -eq 1 ]]; then
+      _info "Closing tomb"
       _run close_tomb "$resource"
   fi
 
@@ -6022,8 +5953,8 @@ risks_save_command() {
 # :command.function
 risks_kv_set_command() {
   # src/kv_set_command.sh
-  key="${args[key]}"
-  value="${args[value]}"
+  key="${args['key']}"
+  value="${args['value']}"
 
   kvset "${key}" "${value}"
 
@@ -6032,7 +5963,7 @@ risks_kv_set_command() {
 # :command.function
 risks_kv_get_command() {
   # src/kv_get_command.sh
-  key="${args[key]}"
+  key="${args['key']}"
 
   kvget "${key}"
 
@@ -6041,7 +5972,7 @@ risks_kv_get_command() {
 # :command.function
 risks_kv_unset_command() {
   # src/kv_unset_command.sh
-  key="${args[key]}"
+  key="${args['key']}"
 
   kvdel "${key}"
 
@@ -6050,7 +5981,7 @@ risks_kv_unset_command() {
 # :command.function
 risks_kv_list_command() {
   # src/kv_list_command.sh
-  _message "Saved keys:"
+  _info "Saved keys:"
 
   kvlist
 
@@ -6059,7 +5990,7 @@ risks_kv_list_command() {
 # :command.function
 risks_kv_clean_command() {
   # src/kv_clean_command.sh
-  _message "Clearing all keys for the store"
+  _info "Clearing all keys for the store"
 
   kvclear
 
@@ -6071,8 +6002,8 @@ risks_config_set_command() {
 
   local key value
 
-  key="${args[key]}"
-  value="${args[value]}"
+  key="${args['key']}"
+  value="${args['value']}"
 
   config_set "$key" "$value"
 
@@ -6084,7 +6015,7 @@ risks_config_get_command() {
 
   local key
 
-  key="${args[key]}"
+  key="${args['key']}"
 
   config_get "$key"
 
@@ -6096,7 +6027,7 @@ risks_config_unset_command() {
 
   local key
 
-  key="${args[key]}"
+  key="${args['key']}"
 
   config_set "$key" ""
 
@@ -6120,7 +6051,7 @@ risks_config_keys_command() {
 risks_resolve_coffin_command() {
   # src/resolve_coffin_command.sh
 
-  _set_identity "${args[identity]}"
+  _set_identity "${args['identity']}"
 
   coffin_filename=$(_encrypt_filename "${IDENTITY}-gpg.coffin")
   print "${GRAVEYARD}/${coffin_filename}"
@@ -6135,7 +6066,7 @@ risks_resolve_tomb_command() {
 
   _set_identity ""
 
-  resource="${args[tomb_name]}"
+  resource="${args['tomb_name']}"
   tomb_label="${IDENTITY}-${resource}"
 
   identity_graveyard=$(get_identity_graveyard "$IDENTITY")
@@ -6153,11 +6084,35 @@ risks_resolve_key_command() {
 
   _set_identity ""
 
-  resource="${args[tomb_name]}"
+  resource="${args['tomb_name']}"
   tomb_label="${IDENTITY}-${resource}"
 
   tomb_key=$(_encrypt_filename "$tomb_label.key")
   print "${HUSH_DIR}/${tomb_key}"
+
+}
+
+# :command.function
+risks_help_command() {
+  # src/help_command.sh
+  command="${args['command']}"
+  long_usage=yes
+
+  if [[ -z "$command" ]]; then
+    # No command argument, show the global help
+    help_function=risks_usage
+  else
+    # Show the help for the requested command
+    help_function="risks_${command}_usage"
+  fi
+
+  # Call the help function if it exists
+  if [[ $(type "$help_function") ]]; then
+    "$help_function"
+  else
+    echo "No help available for this command"
+    exit 1
+  fi
 
 }
 
@@ -6166,7 +6121,7 @@ parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
     case "${1:-}" in
-      --version | -v)
+      --version)
         version_command
         exit
         ;;
@@ -6175,6 +6130,14 @@ parse_requirements() {
         long_usage=yes
         risks_usage
         exit
+        ;;
+
+      # :flag.case
+      --verbose | -v)
+
+        # :flag.case_no_arg
+        args['--verbose']=1
+        shift
         ;;
 
       *)
@@ -6329,6 +6292,13 @@ parse_requirements() {
       action="resolve"
       shift
       risks_resolve_parse_requirements "$@"
+      shift $#
+      ;;
+
+    help)
+      action="help"
+      shift
+      risks_help_parse_requirements "$@"
       shift $#
       ;;
 
@@ -6671,14 +6641,6 @@ risks_hush_format_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
-
       # :flag.case
       --size-percent | -P)
         # :flag.conflicts
@@ -7052,13 +7014,6 @@ risks_backup_format_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -7089,7 +7044,7 @@ risks_backup_format_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['device']+x} ]]; then
-    printf "missing required argument: DEVICE\nusage: risks backup format DEVICE [OPTIONS]\n" >&2
+    printf "missing required argument: DEVICE\nusage: risks backup format DEVICE\n" >&2
     exit 1
   fi
 
@@ -7120,14 +7075,6 @@ risks_backup_identity_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
-
       # :flag.case
       --log-file | -f)
 
@@ -7241,13 +7188,6 @@ risks_backup_unlock_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -7278,7 +7218,7 @@ risks_backup_unlock_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['identity']+x} ]]; then
-    printf "missing required argument: IDENTITY\nusage: risks backup unlock IDENTITY [OPTIONS]\n" >&2
+    printf "missing required argument: IDENTITY\nusage: risks backup unlock IDENTITY\n" >&2
     exit 1
   fi
 
@@ -7309,13 +7249,6 @@ risks_backup_lock_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -7507,14 +7440,6 @@ risks_identity_create_parse_requirements() {
     key="$1"
     case "$key" in
       # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
-
-      # :flag.case
       --backup | -b)
 
         # :flag.case_no_arg
@@ -7595,13 +7520,6 @@ risks_identity_open_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -7632,7 +7550,7 @@ risks_identity_open_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['identity']+x} ]]; then
-    printf "missing required argument: IDENTITY\nusage: risks identity open IDENTITY [OPTIONS]\n" >&2
+    printf "missing required argument: IDENTITY\nusage: risks identity open IDENTITY\n" >&2
     exit 1
   fi
 
@@ -7663,13 +7581,6 @@ risks_identity_close_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -7725,14 +7636,6 @@ risks_identity_delete_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
-
       # :flag.case
       --backup | -b)
 
@@ -7796,13 +7699,6 @@ risks_identity_backup_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -7990,13 +7886,6 @@ risks_tomb_create_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -8035,11 +7924,11 @@ risks_tomb_create_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['tomb_name']+x} ]]; then
-    printf "missing required argument: TOMB_NAME\nusage: risks tomb create TOMB_NAME SIZE [IDENTITY] [OPTIONS]\n" >&2
+    printf "missing required argument: TOMB_NAME\nusage: risks tomb create TOMB_NAME SIZE [IDENTITY]\n" >&2
     exit 1
   fi
   if [[ -z ${args['size']+x} ]]; then
-    printf "missing required argument: SIZE\nusage: risks tomb create TOMB_NAME SIZE [IDENTITY] [OPTIONS]\n" >&2
+    printf "missing required argument: SIZE\nusage: risks tomb create TOMB_NAME SIZE [IDENTITY]\n" >&2
     exit 1
   fi
 
@@ -8070,13 +7959,6 @@ risks_tomb_open_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -8111,7 +7993,7 @@ risks_tomb_open_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['resource']+x} ]]; then
-    printf "missing required argument: RESOURCE\nusage: risks tomb open RESOURCE [IDENTITY] [OPTIONS]\n" >&2
+    printf "missing required argument: RESOURCE\nusage: risks tomb open RESOURCE [IDENTITY]\n" >&2
     exit 1
   fi
 
@@ -8142,13 +8024,6 @@ risks_tomb_close_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -8183,7 +8058,7 @@ risks_tomb_close_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['resource']+x} ]]; then
-    printf "missing required argument: RESOURCE\nusage: risks tomb close RESOURCE [IDENTITY] [OPTIONS]\n" >&2
+    printf "missing required argument: RESOURCE\nusage: risks tomb close RESOURCE [IDENTITY]\n" >&2
     exit 1
   fi
 
@@ -8214,14 +8089,6 @@ risks_tomb_delete_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
-
       # :flag.case
       --backup | -b)
 
@@ -8388,14 +8255,6 @@ risks_gpg_generate_parse_requirements() {
     key="$1"
     case "$key" in
       # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
-
-      # :flag.case
       --sign | -S)
 
         # :flag.case_no_arg
@@ -8476,13 +8335,6 @@ risks_gpg_open_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -8513,7 +8365,7 @@ risks_gpg_open_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['identity']+x} ]]; then
-    printf "missing required argument: IDENTITY\nusage: risks gpg open IDENTITY [OPTIONS]\n" >&2
+    printf "missing required argument: IDENTITY\nusage: risks gpg open IDENTITY\n" >&2
     exit 1
   fi
 
@@ -8544,13 +8396,6 @@ risks_gpg_close_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -8606,13 +8451,6 @@ risks_gpg_import_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -8643,7 +8481,7 @@ risks_gpg_import_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['identity']+x} ]]; then
-    printf "missing required argument: IDENTITY\nusage: risks gpg import IDENTITY [OPTIONS]\n" >&2
+    printf "missing required argument: IDENTITY\nusage: risks gpg import IDENTITY\n" >&2
     exit 1
   fi
 
@@ -8858,14 +8696,6 @@ risks_ssh_generate_parse_requirements() {
     key="$1"
     case "$key" in
       # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
-
-      # :flag.case
       --bits | -b)
 
         # :flag.case_no_arg
@@ -8980,13 +8810,6 @@ risks_slam_parse_requirements() {
   while [[ $# -gt 0 ]]; do
     key="$1"
     case "$key" in
-      # :flag.case
-      --verbose | -v)
-
-        # :flag.case_no_arg
-        args['--verbose']=1
-        shift
-        ;;
 
       -?*)
         printf "invalid option: %s\n" "$key" >&2
@@ -10127,6 +9950,56 @@ risks_resolve_key_parse_requirements() {
 
 }
 
+# :command.parse_requirements
+risks_help_parse_requirements() {
+  # :command.fixed_flags_filter
+  while [[ $# -gt 0 ]]; do
+    case "${1:-}" in
+      --help | -h)
+        long_usage=yes
+        risks_help_usage
+        exit
+        ;;
+
+      *)
+        break
+        ;;
+
+    esac
+  done
+
+  # :command.command_filter
+  action="help"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+
+      -?*)
+        printf "invalid option: %s\n" "$key" >&2
+        exit 1
+        ;;
+
+      *)
+        # :command.parse_requirements_case
+        # :command.parse_requirements_case_simple
+        if [[ -z ${args['command']+x} ]]; then
+
+          args['command']=$1
+          shift
+        else
+          printf "invalid argument: %s\n" "$key" >&2
+          exit 1
+        fi
+
+        ;;
+
+    esac
+  done
+
+}
+
 # :command.initialize
 initialize() {
   version="0.1.0"
@@ -10162,7 +10035,7 @@ initialize() {
   typeset -rg RISKS_DIR="${HOME}/.risks"
 
   # Create the risk directory if needed
-  [[ -e $RISKS_DIR ]] || { mkdir -p $RISKS_DIR && _message "Creating RISKS directory in $RISKS_DIR" }
+  [[ -e $RISKS_DIR ]] || { mkdir -p $RISKS_DIR && _info "Creating RISKS directory in $RISKS_DIR" }
 
   # Write the default configuration if it does not exist.
   config_init
@@ -10738,6 +10611,15 @@ run() {
         risks_resolve_key_usage
       else
         risks_resolve_key_command
+      fi
+      ;;
+
+    "help")
+      if [[ ${args['--help']:-} ]]; then
+        long_usage=yes
+        risks_help_usage
+      else
+        risks_help_command
       fi
       ;;
 

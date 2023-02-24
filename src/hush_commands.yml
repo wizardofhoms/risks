@@ -20,10 +20,6 @@ commands:
         help: "Device file of the sdcard drive (must be a whole drive without a partition number, eg. /dev/sda)"
         validate: file_exists
     flags:
-      - &verbose
-        long: --verbose
-        short: -v
-        help: "Show verbose logging"
       - long: --size-percent
         short: -P
         arg: percent
