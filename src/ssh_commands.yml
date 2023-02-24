@@ -1,0 +1,21 @@
+name: ssh
+help: Manage SSH-related credentials and settings 
+
+commands:
+  - name: generate 
+    help: 'Generate a new SSH key and add it to the keyring'
+    args:
+      - name: algo
+        help: Key algorithm 
+        required: false 
+    flags:
+      - &verbose
+        long: --verbose
+        short: -v
+        help: "Show verbose logging"
+      - long: --bits
+        short: -b
+        help: 'Key size in bits'
+      - long: --filename
+        short: -f
+        help: 'Specify a filename for the generated keys (overrides the default generated: <identity>-<algo>-<rand_number>)'
