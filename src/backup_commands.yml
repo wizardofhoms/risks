@@ -6,7 +6,7 @@ commands:
   - name: mount
     help: 'Mount the backup partition/device' 
     args:
-      - name: backup_device
+      - name: device
         required: true
         help: "Device file of the backup drive (must be a whole drive without a partition number, eg. /dev/sdb)"
         validate: file_exists
@@ -67,3 +67,5 @@ commands:
     flags:
       - *verbose
 
+  - name: status
+    help: 'Print the status of the backup (mount points, locks, etc)'

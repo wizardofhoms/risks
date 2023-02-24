@@ -119,9 +119,8 @@ delete_tomb_backup ()
     _run sudo fscrypt lock "${identity_graveyard_backup}"
 }
 
-# remove_gpg_private checks that the GPG tomb file is present
-# in the identity backup, and if yes, deletes the GPG tomb from
-# the identity system graveyard.
+# remove_gpg_private checks that the GPG tomb file is present in the identity 
+# backup, and if yes, deletes the GPG tomb from the identity system graveyard.
 # This function requires the identity backup to be mounted and unlocked.
 remove_gpg_private ()
 {

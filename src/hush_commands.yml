@@ -41,3 +41,6 @@ commands:
     examples:
       - "hush format --size-absolute 200M /dev/xvdi   # The encrypted part will be 200M in size"
       - "hush format --size-percent 70 /dev/xvdi      # The encrypted part takes 70% of the drive"
+
+  - name: status
+    help: 'Print the status of the hush device (mount points, etc)'
