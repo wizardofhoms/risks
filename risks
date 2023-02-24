@@ -2591,6 +2591,17 @@ remove_gpg_private ()
     _run sudo chattr +i "${identity_graveyard_backup}"/*
 }
 
+# check_backup_mounted exits the program
+
+# if no backup device is mounted.
+check_backup_mounted ()
+
+{
+    if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+        _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+    fi
+}
+
 # src/lib/cleanup.sh
 
 # Cleanup anything sensitive before exiting.
@@ -5275,40 +5286,259 @@ risks_backup_status_command() {
 # :command.function
 risks_identity_create_command() {
   # src/identity_create_command.sh
-  echo "# this file is located in 'src/identity_create_command.sh'"
-  echo "# code for 'risks identity create' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  local name identity expiry pendrive email
+
+  # Base identity parameters, set globally.
+  name="${args['name']}"
+  identity="${name// /_}"
+  pendrive="${args['--backup']}" # Backup is optional
+
+  name="$(_get_name "${name}")"
+  expiry="$(_get_expiry "${args['expiry_date']}")"
+  email="$(_get_mail "${name}" "${args['email']}")"
+
+
+  # No identity should be active, because some important mount points will be
+  # unaccessible or might risk ending in a dangling state.
+  if _identity_active ; then
+      _failure "An identity seems to be active. Cannot safely create a new one."
+  fi
+
+  # Check the hush device is, if mounted, on a read-only state at this point.
+  # We fail if it's read-write, because we should assume another process is
+  # currently writing to it.
+  if is_hush_mounted && [[ -w "$HUSH_DIR" ]]; then
+      _failure "Hush is currently mounted read-write. \n \
+          Please ensure nothing is writing to it and set it to read-only first"
+  fi
+
+
+  _in_section 'risks' 6
+  _message "Starting new identity generation process"
+  _warning "Do not unplug hush and backup devices during the process"
+
+  _message "Using ${name} as identity name"
+  _message "Using ${email} as email"
+
+  # Use the identity name to set its file encryption key.
+  # This call propagates some of those essential variables
+
+  # so that all functions can use them.
+  _set_identity "$identity"
+
+  # GPG
+
+  #
+  _in_section 'gpg' && _message "Setting up RAMDisk and GPG backend"
+  init_gpg
+
+  # Generate GPG keypairs with a different passphrase than the one
+  # we use for encrypting file/directory names and contents.
+  _message "Generating GPG keys"
+
+  # This new key is also the one provided when using gpgpass command.
+  GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
+  echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
+  _warning "GPG passphrase copied to clipboard with one-time use only"
+  _message -n "Paste it in the coming GPG prompt when creating builtin tombs\n"
+
+  _run gen_gpg_keys "$name" "$email" "$expiry"
+
+  # Setup the identity graveyard directory with fscrypt protection
+  _in_section 'coffin' && _message "Creating and setting encrypted identity directory"
+  new_graveyard
+
+  # At this point, we need access to the hush device, so make sure
+
+  # it's mounted and that we have read-write permissions.
+  _in_section 'hush' && _message "Mounting hush device with read-write permissions"
+  risks_hush_mount_command
+  _run risks_hush_rw_command
+
+  # Then only, generate the coffin and copy it into the root graveyard
+  # (not the identity's graveyard subdirectory, because we need access to
+  # this file BEFORE anything else, since it contains the GPG keyring)
+  _in_section 'coffin' && _message "Creating and testing GPG coffin container"
+  gen_coffin
+
+  # Cleaning RAM disk, removing private keys from the keyring and test open/close
+
+  _in_section 'gpg' && _message "Cleaning and backing keyring privates"
+  cleanup_gpg_init "$email"
+
+  #
+  _in_section 'pass' && _message "Initializing password-store"
+  init_pass "$email"
+
+  if [[ "${args['--burner']}" -eq 1 ]]; then
+      echo && _success "risks" "Identity (burner) generation complete." && echo
+  fi
+
+  _in_section 'ssh' && _message "Generating SSH keypair and multi-key ssh-agent script"
+
+  gen_ssh_keys "$email"
+
+
+  # config files, etc, and set default key=values
+  _in_section 'mgmt' && _message "Creating management tomb"
+  init_mgmt
+
+  #
+  if [[ -n "$pendrive" ]]; then
+      _in_section 'backup' && _message "Setting identity backup and making initial one"
+
+      risks_backup_mount_command
+      _catch "failed to decrypt and mount backup drive"
+
+      # Some setup is needed for this identity to have access to its backup
+      _verbose "Setting graveyard backup for this identity"
+      _run setup_identity_backup
+      _catch "Failed to setup identity backup graveyard"
+
+      # And then actually back it up
+      risks_backup_identity_command
+      _catch "Failed to correctly backup data"
+
+      # Remove the GPG tomb from the user graveyard.
+      risks_backup_unlock_command
+      remove_gpg_private
+      risks_backup_lock_command
+
+      risks_backup_umount_command
+  fi
+
+
+  echo && _success "risks" "Identity generation complete." && echo
 
 }
 
 # :command.function
 risks_identity_open_command() {
   # src/identity_open_command.sh
-  echo "# this file is located in 'src/identity_open_command.sh'"
-  echo "# code for 'risks identity open' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  _set_identity "${args['identity']}"
+  check_hush_mounted
+
+  # Then derive the gpg pass phrase from it, with one-time use,
+  # needed for all tombs, no matter how many. Only ask for it
+  # if it is not yet in the GPG agent cache.
+  if ! is_gpg_passphrase_cached ; then
+      GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
+      echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
+      _warning "GPG passphrase copied to clipboard with one-time use only"
+  fi
+
+  _message "Opening coffin and mounting GPG keyring"
+  open_coffin
+
+  _message "Opening Management tomb ... "
+  _run open_tomb "$MGMT_TOMB_LABEL"
+
+  _message "Opening SSH tomb ... "
+  _run open_tomb "$SSH_TOMB_LABEL"
+
+  _message "Opening PASS tomb ..."
+  _run open_tomb "$PASS_TOMB_LABEL"
+
+  _message "Opening Signal tomb ..."
+  _run open_tomb "$SIGNAL_TOMB_LABEL"
 
 }
 
 # :command.function
 risks_identity_close_command() {
   # src/identity_close_command.sh
-  echo "# this file is located in 'src/identity_close_command.sh'"
-  echo "# code for 'risks identity close' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  _set_identity "${args['identity']}"
+
+  _message "Closing PASS tomb ..."
+  _run close_tomb "$PASS_TOMB_LABEL"
+
+  _message "Closing SSH tomb ..."
+  _run close_tomb "$SSH_TOMB_LABEL"
+
+  _message "Closing Management tomb ..."
+  _run close_tomb "$MGMT_TOMB_LABEL"
+
+  # Finally, find all other tombs...
+  tombs=$(tomb list 2>&1 \
+      | sed -n '0~4p' \
+      | awk -F" " '{print $(3)}' \
+      | rev | cut -c2- | rev | cut -c2-)
+
+  # ... and close them
+  while read -r tomb_name ; do
+      if [[ -z $tomb_name ]]; then
+          continue
+      fi
+
+      _message "Closing tomb $tomb_name ..."
+      _run tomb close "$tomb_name"
+  done <<< "$tombs"
+
+  _message "Closing GPG coffin ..."
+  close_coffin
 
 }
 
 # :command.function
 risks_identity_delete_command() {
   # src/identity_delete_command.sh
-  echo "# this file is located in 'src/identity_delete_command.sh'"
-  echo "# code for 'risks identity delete' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  name="${args['name']}"
+
+  check_hush_mounted
+
+  # If the user wants to delete in the backup, immediately check
+  # that a medium is mounted, and fail if not. Normally not finding
+  # one is not a problem, as the user could rerun the same command
+  # with the backup mounted: since the first steps (system graveyard
+  # and coffin) will not throw an irrecoverable error, it will simply
+  # go through to the backup wipe step.
+  # Still, fail now so that users don't panic with some data being wiped and some not
+  if [[ ${args['--backup']} -eq 1 ]] && ! ls -1 /dev/mapper/"${BACKUP_MAPPER}" &> /dev/null; then
+      _failure "User specified to also delete on backup, but none is mounted. \
+          Mount one with 'risks backup mount <dev> and rerun this command"
+  fi
+
+  # Set the identity variables needed by all functions...
+  _set_identity "${args['name']}"
+
+  # ... but close the identity itself. We set the resource to delete for this command.
+
+  if _identity_active && [[ "$(cat "${RISKS_IDENTITY_FILE}")" == "$name" ]]; then
+      args["resource"]="identity"
+      args["identity"]="$name"
+      risks_close_command
+  fi
+
+  _message "Starting deletion of identity '$name'"
+  _message "Some of the wiping operations will take some time (several minutes). Please wait."
+
+  # 1 - Delete the identity graveyard directory, and the associated fscrypt policy
+  _message "Wiping graveyard"
+  delete_graveyard
+
+  # 2 - Delete the coffin files in the graveyard, and coffin key in hush
+  # Set the hush device with read-write permissions,
+
+  # since we must delete the coffin key file on it.
+  _run risks_hush_rw_command
+
+  _message "Wiping GPG coffin"
+  delete_coffin
+
+  # And reset the hush
+  _run risks_hush_ro_command
+
+  # 3 - Delete the identity graveyard backup.
+  # The function called takes care of mounting/unmounting, etc.
+  if [[ "${args['--backup']}" -eq 1 ]]; then
+      delete_identity_backup
+  fi
+
+  _message "Deleted identity $name"
 
 }
 
@@ -5333,40 +5563,99 @@ risks_identity_active_command() {
 # :command.function
 risks_tomb_create_command() {
   # src/tomb_create_command.sh
-  echo "# this file is located in 'src/tomb_create_command.sh'"
-  echo "# code for 'risks tomb create' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  label="${args['tomb_name']}"
+  size="${args['size']}"
+
+  check_hush_mounted
+  _set_identity "${args["identity"]}"
+
+  _message "Creating tomb $label with size ${size}M"
+
+  # This new key is also the one provided when using gpgpass command.
+  GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
+  echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
+  _warning "GPG passphrase copied to clipboard with one-time use only"
+  _message -n "Copy it in the coming GPG prompt when creating the tomb.\n"
+
+  _run new_tomb "$label" "$size"
+  _catch "Failed to create tomb"
+
+  _message "Done creating tomb."
 
 }
 
 # :command.function
 risks_tomb_open_command() {
   # src/tomb_open_command.sh
-  echo "# this file is located in 'src/tomb_open_command.sh'"
-  echo "# code for 'risks tomb open' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  resource="${args['resource']}"
+
+  _set_identity "${args['identity']}"
+  check_hush_mounted
+
+  # Then derive the gpg pass phrase from it, with one-time use,
+  # needed for all tombs, no matter how many. Only ask for it
+  # if it is not yet in the GPG agent cache.
+  if ! is_gpg_passphrase_cached ; then
+      GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
+      echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
+      _warning "GPG passphrase copied to clipboard with one-time use only"
+  fi
+
+  _run open_tomb "$resource"
 
 }
 
 # :command.function
 risks_tomb_close_command() {
   # src/tomb_close_command.sh
-  echo "# this file is located in 'src/tomb_close_command.sh'"
-  echo "# code for 'risks tomb close' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  resource="${args['resource']}"
+
+  _set_identity "${args['identity']}"
+
+  close_tomb "$resource"
+  exit $?
 
 }
 
 # :command.function
 risks_tomb_delete_command() {
   # src/tomb_delete_command.sh
-  echo "# this file is located in 'src/tomb_delete_command.sh'"
-  echo "# code for 'risks tomb delete' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  name="${args['tomb_name']}"
+
+  check_hush_mounted
+
+  # Check the backup medium is here if asked to delete it also.
+  if [[ "${args['--backup']}" -eq 1 ]]; then
+      if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+          _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+      fi
+  fi
+
+  _set_identity "${args['identity']}"
+
+  # Set the hush device with read-write permissions,
+
+  # since we must delete the tomb key file on it.
+  _run risks_hush_rw_command
+
+  # This call handles everything, including confirmation
+  # when sensitive tombs are to be deleted.
+  delete_tomb "$name"
+
+  # And reset the hush
+  _run risks_hush_ro_command
+
+  # Delete in backup if specified
+  if [[ "${args['--backup']}" -eq 1 ]]; then
+      _message "Deleting tomb backup"
+      delete_tomb_backup "$name"
+  fi
+
+  _message "Deleted tomb $name"
 
 }
 
@@ -5421,50 +5710,127 @@ risks_gpg_generate_command() {
 # :command.function
 risks_gpg_open_command() {
   # src/gpg_open_command.sh
-  echo "# this file is located in 'src/gpg_open_command.sh'"
-  echo "# code for 'risks gpg open' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  _set_identity "${args['identity']}"
+
+  # Whatever we need to open, we need the hush device for a key.
+  check_hush_mounted
+
+  _message "Opening coffin and mounting GPG keyring"
+  open_coffin
 
 }
 
 # :command.function
 risks_gpg_close_command() {
   # src/gpg_close_command.sh
-  echo "# this file is located in 'src/gpg_close_command.sh'"
-  echo "# code for 'risks gpg close' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  _set_identity "${args['identity']}"
+
+  _message "Closing coffin and GPG keyring"
+  close_coffin
 
 }
 
 # :command.function
 risks_gpg_import_command() {
   # src/gpg_import_command.sh
-  echo "# this file is located in 'src/gpg_import_command.sh'"
-  echo "# code for 'risks gpg import' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  local keygrip keypath
+
+  _set_identity "${args['identity']}"
+
+  # Hush/backup and identity checks
+  check_hush_mounted
+  check_backup_mounted
+  check_identity_active
+
+  # 1 - Open the GPG tomb in the backup, and verify target files are here.
+  _run open_tomb_backup "$GPG_TOMB_LABEL"
+
+  keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
+  _verbose "Keygrip: $keygrip"
+  keypath="${HOME}/.tomb/${GPG_TOMB_LABEL}/${keygrip}"
+
+  if [[ ! -e "${keypath}" ]]; then
+      close_tomb "${GPG_TOMB_LABEL}"
+      _failure "Private key ${keygrip} not found in ${GPG_TOMB_LABEL} tomb"
+  fi
+
+  # 2 - Set the hush partition read-write and import the corresponding key
+  risks_hush_rw_command
+
+  _message "Importing GPG private key in keyring"
+  cp "${keypath}" "${RAMDISK}"/private-keys-v1.d/"${keygrip}"
+
+  _run close_tomb "${GPG_TOMB_LABEL}"
 
 }
 
 # :command.function
 risks_gpg_remove_command() {
   # src/gpg_remove_command.sh
-  echo "# this file is located in 'src/gpg_remove_command.sh'"
-  echo "# code for 'risks gpg remove' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+
+  local keygrip keypath
+
+  _set_identity "${args['identity']}"
+
+  # Backup/hush and identity checks
+  check_hush_mounted
+  check_backup_mounted
+  check_identity_active
+
+  # 2 - Set the partition read-write and remove from the gpg keyring
+  risks_hush_rw_command
+
+  # 3 - Copy/check the private key and revoc certificate, check correcly copied, close GPG tomb
+  keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
+  _verbose "Keygrip: $keygrip"
+  keyring_path="${RAMDISK}/private-keys-v1.d/${keygrip}"
+
+  _message "Wiping private GPG key ${keygrip} from keyring"
+  _run wipe -rf "${keyring_path}" \
+      || _warning "Failed to delete master private key from keyring !"
+
+  risks_hush_ro_command
+
+  _message "Removed private key from keyring"
 
 }
 
 # :command.function
 risks_gpg_pass_command() {
   # src/gpg_pass_command.sh
-  echo "# this file is located in 'src/gpg_pass_command.sh'"
-  echo "# code for 'risks gpg pass' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+  # gpgpass essentially wraps a call to spectre with our identity parameters.
+  # Note that this function cannot fail because of "a wrong password".
+  #
+  # If a second, non-nil argument is passed, we print the passphrase:
+
+  # this is used when some commands need both the passphrase as an input
+  # to decrypt something (like files) and the user needs them for GPG prompts
+
+  declare timeout
+
+  # Identity is optionality specified as an argument
+  _set_identity "${args['identity']}"
+
+  # Since we did not give any input (master) passphrase to this call,
+  # spectre will prompt us for an input one. This input is already known
+  # to us, since we have used the same when generating the GPG keys.
+  #
+  # In addition: this call cannot fail because of "a wrong" passphrase.
+  # It will just output something, which will or will not (if actually incorrect)
+  # work when pasted in further GPG passphrase prompts.
+  GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
+
+  timeout="${args['--timeout']-$GPGPASS_TIMEOUT}"
+
+  echo -n "$GPG_PASS" | xclip -selection clipboard
+  ( sleep "$timeout"; echo -n "" | xclip -selection clipboard;) &
+
+  _message "The passphrase has been saved in clipboard"
+  _message "Press CTRL+SHIFT+C to share the clipboard with another qube."
+  _message "Local clipboard will be erased is $timeout seconds"
 
 }
 

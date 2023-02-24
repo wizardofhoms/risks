@@ -29,12 +29,6 @@ commands:
 - import: src/ssh_commands.yml
 - import: src/list_command.yml
 - import: src/slam_command.yml
-# - import: src/create_commands.yml
-# - import: src/open_command.yml
-# - import: src/close_command.yml
-# - import: src/gpgpass_command.yml
-# - import: src/delete_commands.yml
-# - import: src/private_commands.yml
   # Data/tools commands
 - import: src/load_command.yml
 - import: src/save_command.yml

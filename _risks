@@ -18,16 +18,11 @@ _risks()
             (hush)      _hush ;;
             (backup)    _backup ;;
             (list)      _store_types ;;
-            (gpgpass)   _gpgpass ;;
-            (create)    _create ;;
-            (open)      _open ;;
-            (close)     _close ;;
             (load)      _load ;;
             (save)      _save ;;
             (kv)        _kv ;;
             (config)    _config ;;
             (delete)    _delete ;;
-            (private)   _private ;;
             (resolve)   _resolve ;;
             (ssh)       _ssh ;;
             (gpg)       _gpg ;;
@@ -39,18 +34,12 @@ _risks()
         subcmds=(
             'hush:Format or manage the hush partition mount points and read/write permissions'
             'backup:Create, manage, restore or use backup devices and partitions'
-            'create:Create new identities or associated data stores/tombs'
-            'open:Open an identity or some of its associated data stores'
-            'close:Close an identity or some of its associated data stores'
             'list:Show currently open data stores'
             'slam:Close all active identities and unmount hush/backup partitions'
-            'gpgpass:Copy the identity GPG passphrase to the clipboard'
             'load:Copy some resource to a VM where to use it (completed)'
             'save:Move some data coming from another VM to a (tomb) directory'
             'kv:Manage the small key=value store used by other commands/functions'
             'config:Manage the global risk configuration settings from the CLI'
-            'delete:Delete an identity or one of its associated stores/tombs'
-            'private:Manage private keys for an identity'
             'resolve:Retrieve the encrypted names of identity files'
             'ssh:Manage SSH-related credentials and settings'
             'gpg:Manage GPG coffings, keys, passwords and settings'
@@ -110,6 +99,7 @@ _hush_commands ()
     local -a hushcmds 
     hushcmds=(
         'format:Format a drive for storing identity secrets (GPG/coffin/age keys)'
+        'status:Print the status of the hush device (mount points, etc)'
         'mount:Mount the hush drive'
         'umount:Unmount the hush drive'
         'rw:Set read-write permissions on the hush partition'
@@ -165,6 +155,7 @@ _backup_commands ()
         "hush:Backup only the raw hush device image"
         "unlock:Unlock encryption on the backup of an identity"
         "lock:Lock encryption on the backup of an identity"
+        "status:Print the status of the backup (mount points, locks, etc)"
     )
 
     _describe -t commands 'backup commands' subcmds && ret=0
@@ -202,125 +193,6 @@ _backup ()
                 ;;
             esac
     esac
-}
-
-# Completion for all arguments needed when creating a new store 
-_create () 
-{
-    local line state
-    _arguments -C \
-        "1: :->stores" \
-        "*:arg:->identities"
-
-    case "$state" in
-        stores)
-            _arguments '1:stores:(identity tomb)' && ret=0
-            ;;
-        identities)
-            case $words[2] in
-                tomb)
-                    _create_tomb
-                    ;;
-            esac
-            ;;
-    esac
-}
-
-# Completion for arguments needed when creating a new tomb
-_create_tomb () 
-{
-    local line state
-    _arguments -C \
-        "${_flags_base[@]}" \
-        "2: :->name" \
-        "3: :->size" \
-        "4:: :->identity"
-
-    case "$state" in
-        name)
-            _message "Name of tomb to use" 
-            ;;
-        size)
-            _message "Tomb size in MB" 
-            ;;
-        identity)
-            _message "Optional, identity to use instead of the active one"
-            ;;
-    esac
-}
-
-# Completion dispatcher for the delete command
-_delete ()
-{
-    local line state
-
-    _arguments -C \
-        "*:arg:->identities" \
-        "1: :->stores" \
-
-    case "$state" in
-        stores)
-            _arguments -C \
-                '1:stores:(identity tomb)' \
-                && ret=0
-            ;;
-        identities)
-            case $words[2] in
-                identity)
-                    _arguments -C \
-                        "${_flags_base[@]}" \
-                        '(-b --backup)'{-b,--backup}'[If a backup device is mounted, also delete all the associated backup data]' \
-                        '2:identity to delete:' && ret=0
-                    ;;
-                tomb)
-                    _arguments -C \
-                        "${_flags_base[@]}" \
-                        '(-b --backup)'{-b,--backup}'[If a backup device is mounted, also delete all the associated backup data]' \
-                        '2:label of tomb to delete:' && ret=0
-                    ;;
-            esac
-            ;;
-    esac
-}
-
-# Completion dispatcher for open command
-_open ()
-{
-    local ret=1
-    local line state
-
-    # Register subcommands and argument patterns
-    _arguments -C \
-        "${_flags_base[@]}" \
-        "1: :_builtin_stores" \
-        "2::arg:->args" \
-        && ret=0
-
-    # Arguments completion
-    case $state in
-        args)
-            case $line[1] in
-            identity|gpg)
-                _message "identity name"
-            ;;
-            *)
-                _message "identity name (optional)"
-            ;;
-            esac
-    esac
-}
-
-# Completion dispatcher for close command
-_close ()
-{
-    local ret=1
-    local line state
-
-    # Register subcommands and argument patterns
-    _arguments -C \
-        "${_flags_base[@]}" \
-        "1: :_open_stores" \
-        && ret=0
 }
 
 # Completion for kv command (key=value store)]
@@ -383,77 +255,6 @@ _save ()
         '3::identity name (optional if active):'
 }
 
-_gpgpass ()
-{
-    _arguments \
-        {-t,--timeout}'[Clear the clipboard after this many seconds]':'clipboard wipe timeout (in seconds)': \
-        '1::identity name (optional if active):'
-}
-
-# Completes the commands for private, without parameters
-_private_commands () 
-{
-    local -a subcmds 
-    subcmds=(
-        "add:Add a key to one of the cryptographic stores"
-        "import:Import the GPG master private key from the backup to the GPG keyring, in read-write mode"
-        "remove:Remove the GPG master private key from the keyring, and set the hush in read-only mode"
-    )
-
-    _describe -t commands 'private commands' subcmds && ret=0
-}
-
-# Completion dispatcher for private subcommand
-_private ()
-{
-    local ret=1
-    local line state
-    _arguments -C \
-        "1: :_private_commands" \
-        "*::arg:->args" \
-        && ret=0
-
-    case $state in
-        args)
-            case $line[1] in
-            add)
-                _create_subkey
-                ;;
-            import)
-                _arguments \
-                    "${_flags_base[@]}" \
-                    '1:Identity owning the backup private key:' \
-                    && ret=0
-                ;;
-            esac
-    esac
-}
-
-# Completion for private add command
-_create_subkey () 
-{
-    local line state
-    _arguments -C \
-        "${_flags_base[@]}" \
-        '(-a --algo)'{-a,--algo}'[Key algorithm to use]:key algorithm:((rsa dsa ecdsa ed25519))' \
-        '(-S --sign)'{-S,--sign}'[If generated key is a GPG subkey, add sign capability]' \
-        '(-E --encrypt)'{-E,--encrypt}'[If generated key is a GPG subkey, add encrypt capability]' \
-        "1: :->keys" \
-        "2:arg:->duration"
-
-    case "$state" in
-        keys)
-            _alternative 'keys:key types:(( \
-                gpg\:"Create a GPG subkey" \
-                ssh\:"Create an SSH keypair" \
-                ))' && ret=0
-            ;;
-        duration)
-            _message "quoted, human readable expiry duration for GPG keys (empty: no expiry)" 
-            ;;
-    esac
-}
-
 # Completes the commands for resolve, without parameters
 _resolve_commands () 
 {
@@ -513,8 +314,6 @@ _gpg ()
     local line state
     _arguments -C \
         "${_flags_base[@]}" \
-        '(-S --sign)'{-S,--sign}'[If generated key is a GPG subkey, add sign capability]' \
-        '(-E --encrypt)'{-E,--encrypt}'[If generated key is a GPG subkey, add encrypt capability]' \
         "1: :_gpg_commands" \
         "*::arg:->args" \
         && ret=0
@@ -524,6 +323,9 @@ _gpg ()
             case $line[1] in
             generate)
                 _gpg_generate
+                ;;
+            open)
+                _message "identity name"
                 ;;
             import)
                 _arguments \
@@ -572,8 +374,28 @@ _ssh_commands ()
 }
 
 # Completion dispatcher for ssh subcommand
-# TODO: Change structure like gpg_generate
-_ssh ()
+_ssh () 
+{
+    local ret=1
+    local line state
+    _arguments -C \
+        "${_flags_base[@]}" \
+        "1: :_ssh_commands" \
+        "*::arg:->args" \
+        && ret=0
+
+    case $state in
+        args)
+            case $line[1] in
+            generate)
+                _ssh_generate
+                ;;
+            esac
+    esac
+}
+
+# Completion dispatcher for ssh subcommand
+_ssh_generate ()
 {
     local ret=1
     local line state
@@ -581,8 +403,7 @@ _ssh ()
         "${_flags_base[@]}" \
         '(-b --bits)'{-b,--bits}'[Key size in bits]:key size in bits:' \
         '(-f --filename)'{-f,--filename}'[Filename to use for keys]:key filename:' \
-        "1: :_ssh_commands" \
-        "2::arg:->args" \
+        "1::arg:->args" \
         && ret=0
 
     case $state in
@@ -623,8 +444,14 @@ _identity ()
             create)
                 _identity_create
                 ;;
-            open|delete)
+            open)
                 _message "identity name"
+                ;;
+            delete)
+                _arguments -C \
+                    "${_flags_base[@]}" \
+                    '(-b --backup)'{-b,--backup}'[If a backup device is mounted, also delete all the associated backup data]' \
+                    '2:identity to delete:' && ret=0
                 ;;
             esac
     esac
