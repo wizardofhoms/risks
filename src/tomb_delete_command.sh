@@ -5,9 +5,7 @@ check_hush_mounted
 
 # Check the backup medium is here if asked to delete it also.
 if [[ "${args['--backup']}" -eq 1 ]]; then
-    if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
-        _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
-    fi
+    check_backup_mounted
 fi
 
 _set_identity "${args['identity']}"

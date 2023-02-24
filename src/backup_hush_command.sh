@@ -1,8 +1,6 @@
 
 # if backup is not found, fail and ask to mount
-if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
-    _failure "Backup device not mounted. Please mount with 'risks backup mount /dev/device'"
-fi
+check_backup_mounted
 
 _info "Backing hush partition"
 

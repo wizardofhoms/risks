@@ -6,7 +6,6 @@ _set_identity "${args['identity']}"
 # Backup/hush and identity checks
 check_hush_mounted
 check_backup_mounted
-check_identity_active
 
 # 2 - Set the partition read-write and remove from the gpg keyring
 risks_hush_rw_command

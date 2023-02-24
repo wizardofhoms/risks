@@ -26,5 +26,10 @@ while read -r tomb_name ; do
     _run tomb close "$tomb_name"
 done <<< "$tombs"
 
+# Close graveyard backup if open
+if is_luks_mapper_present "$BACKUP_MAPPER" ; then
+    risks_backup_lock_command
+fi
+
 _info "Closing GPG coffin ..."
 close_coffin

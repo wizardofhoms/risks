@@ -582,21 +582,7 @@ _store_types ()
 # generally known and non-standard mount paths
 _builtin_stores ()
 {
-    # local -a builtin_stores 
-    # builtin_stores=(
-    #     'identity:"All datastores for given identity"' 
-    #     'gpg:"GPG coffin"' 
-    #     'mgmt:"Management tomb"' 
-    #     'pass:"Password-store tomb"' 
-    #     'ssh:"SSH keys tomb"' 
-    # )
-    #
-    # This line has a bug where completion descriptions are not justified
-    # _alternative "builtin_stores:builtin stores:((${builtin_stores[@]/:/\\:}))"
-
     _alternative 'builtin_stores:builtin stores:(( \
-        identity\:"All datastores for given identity" \
-        gpg\:"GPG coffin" \
         mgmt\:"Management tomb" \
         pass\:"Password-store tomb" \
         ssh\:"SSH keys tomb" \
@@ -617,6 +603,10 @@ _open_stores ()
         | sed -n '1~4p' \
         | awk -F" " '{print $(6)}' \
         | grep -Ev "($exclude_builtins)")
+
+    if [[ $tombs_mounts == "any" ]]; then
+        return
+    fi
 
     for tomb in "${tombs_mounts[@]}" ; do
         if [[ -n $tomb ]]; then

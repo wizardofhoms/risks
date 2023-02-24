@@ -44,6 +44,21 @@ get_passphrase ()
     print "$passphrase"
 }
 
+# unlock_directory uses the current identity 
+# to unlock an fscrypt-encrypted directory.
+unlock_directory ()
+{
+    [[ ! -e "$1" ]] && return
+    echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$1" --quiet
+}
+
+# lock_directory locks an fscrypt-encrypted directory.
+lock_directory ()
+{
+    [[ ! -e "$1" ]] && return
+    _run sudo fscrypt lock "${1}"
+}
+
 ## ====================== TAKEN FROM TOMB CODE ======================== ##
 
 # _is_found() {

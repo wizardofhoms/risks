@@ -6,7 +6,6 @@ _set_identity "${args['identity']}"
 # Hush/backup and identity checks
 check_hush_mounted
 check_backup_mounted
-check_identity_active
 
 # 1 - Open the GPG tomb in the backup, and verify target files are here.
 _run open_tomb_backup "$GPG_TOMB_LABEL"

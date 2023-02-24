@@ -3918,6 +3918,22 @@ get_passphrase ()
     print "$passphrase"
 }
 
+# unlock_directory uses the current identity
+
+# to unlock an fscrypt-encrypted directory.
+unlock_directory ()
+{
+    [[ ! -e "$1" ]] && return
+    echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$1" --quiet
+}
+
+# lock_directory locks an fscrypt-encrypted directory.
+lock_directory ()
+{
+    [[ ! -e "$1" ]] && return
+    _run sudo fscrypt lock "${1}"
+}
+
 
 # _is_found() {
 # 	# returns 0 if binary is found in path
@@ -4968,7 +4984,7 @@ risks_backup_format_command() {
   # Easily cleanup, format, luks-encrypt and filesystem setup for a USB drive
   # to be used as a backup medium for risks data.
 
-  pendrive="${args[device]}"
+  pendrive="${args['device']}"
 
   _info "Formatting and encrypting backup drive"
 
@@ -5028,20 +5044,11 @@ risks_backup_identity_command() {
   local identity_graveyard_backup # Full path to identity graveyard backup
   local identity_dir              # The encrypted graveyard directory for the identity
 
-  backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
-
-  # Ensure a backup is mounted
-  if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
-      _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
-  fi
-
-  # Ensure we have an active identity, which will be detected in this call
   _set_identity
 
-  if ! _identity_active ; then
-      _failure "This command requires an identity to be active"
-  fi
+  check_backup_mounted
 
+  backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
   identity_dir=$(_encrypt_filename "$IDENTITY")
   identity_graveyard="${GRAVEYARD}/${identity_dir}"
   identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
@@ -5098,9 +5105,7 @@ risks_backup_hush_command() {
   # src/backup_hush_command.sh
 
   # if backup is not found, fail and ask to mount
-  if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
-      _failure "Backup device not mounted. Please mount with 'risks backup mount /dev/device'"
-  fi
+  check_backup_mounted
 
   _info "Backing hush partition"
 
@@ -5125,30 +5130,23 @@ risks_backup_unlock_command() {
   local identity_graveyard_backup # Full path to identity graveyard backup
   local identity_dir              # The encrypted graveyard directory for the identity
 
-  backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
-
-  # Ensure a backup is mounted
-  if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
-      _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
-  fi
-
-  # Ensure we have an active identity, which will be detected in this call
   _set_identity
 
-  if ! _identity_active ; then
-      _failure "This command requires an identity to be active"
-  fi
+  check_backup_mounted
+  check_identity_active
 
+  backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
   identity_dir=$(_encrypt_filename "$IDENTITY")
   identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
   # If the identity has no backup, exit.
   if [[ ! -e "$identity_graveyard_backup" ]]; then
-      _failure "This identity has no graveyard on the backup medium"
+      _info "This identity has no graveyard on the backup medium"
+      return
   fi
 
   _info "Unlocking identity graveyard backup"
-  echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard_backup" --quiet
+  unlock_directory "${identity_graveyard_backup}"
 
 }
 
@@ -5160,30 +5158,24 @@ risks_backup_lock_command() {
   local identity_graveyard_backup # Full path to identity graveyard backup
   local identity_dir              # The encrypted graveyard directory for the identity
 
-  backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
-
-  # Ensure a backup is mounted
-  if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
-      _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
-  fi
-
-  # Ensure we have an active identity, which will be detected in this call
   _set_identity
 
-  if ! _identity_active ; then
-      _failure "This command requires an identity to be active"
-  fi
+  check_backup_mounted
+  check_identity_active
 
+  backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
   identity_dir=$(_encrypt_filename "$IDENTITY")
   identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
   # If the identity has no backup, exit.
   if [[ ! -e "$identity_graveyard_backup" ]]; then
-      _failure "This identity has no graveyard on the backup medium"
+      _info "This identity has no graveyard on the backup medium"
+
+      return
   fi
 
   _info "Locking identity graveyard backup"
-  _run sudo fscrypt lock "${identity_graveyard_backup}"
+  lock_directory "${identity_graveyard_backup}"
 
 }
 
@@ -5408,6 +5400,11 @@ risks_identity_close_command() {
       _run tomb close "$tomb_name"
   done <<< "$tombs"
 
+  # Close graveyard backup if open
+  if is_luks_mapper_present "$BACKUP_MAPPER" ; then
+      risks_backup_lock_command
+  fi
+
   _info "Closing GPG coffin ..."
   close_coffin
 
@@ -5476,10 +5473,7 @@ risks_identity_delete_command() {
 # :command.function
 risks_identity_backup_command() {
   # src/identity_backup_command.sh
-  echo "# this file is located in 'src/identity_backup_command.sh'"
-  echo "# code for 'risks identity backup' goes here"
-  echo "# you can edit it freely and regenerate (it will not be overwritten)"
-  inspect_args
+  risks_backup_identity_command
 
 }
 
@@ -5561,9 +5555,7 @@ risks_tomb_delete_command() {
 
   # Check the backup medium is here if asked to delete it also.
   if [[ "${args['--backup']}" -eq 1 ]]; then
-      if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
-          _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
-      fi
+      check_backup_mounted
   fi
 
   _set_identity "${args['identity']}"
@@ -5597,7 +5589,6 @@ risks_gpg_generate_command() {
 
   _set_identity ""
   check_hush_mounted
-  check_identity_active
 
   if [[ "${args['--sign']}" -eq 0 ]] && [[ "${args['--encrypt']}" -eq 0 ]]; then
       _failure "You must specify either or both of --sign and --encrypt flags for GPG subkeys"
@@ -5674,7 +5665,6 @@ risks_gpg_import_command() {
   # Hush/backup and identity checks
   check_hush_mounted
   check_backup_mounted
-  check_identity_active
 
   # 1 - Open the GPG tomb in the backup, and verify target files are here.
   _run open_tomb_backup "$GPG_TOMB_LABEL"
@@ -5709,7 +5699,6 @@ risks_gpg_remove_command() {
   # Backup/hush and identity checks
   check_hush_mounted
   check_backup_mounted
-  check_identity_active
 
   # 2 - Set the partition read-write and remove from the gpg keyring
   risks_hush_rw_command
@@ -5773,7 +5762,6 @@ risks_ssh_generate_command() {
 
   _set_identity ""
   check_hush_mounted
-  check_identity_active
 
   # Parameters setup
   key_algo="${args['--algo']-ed25519}"
@@ -5869,7 +5857,12 @@ risks_slam_command() {
       _run tomb slam "$tomb_name"
   done <<< "$tombs"
 
-  # 3 - Unmount hush
+  # Close graveyard backup if open
+  if is_luks_mapper_present "$BACKUP_MAPPER" ; then
+      risks_backup_lock_command
+  fi
+
+  # 3 - Unmount hush and backup
   echo
   _info "Unmounting hush partition"
   _run risks_hush_umount_command

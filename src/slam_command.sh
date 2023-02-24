@@ -33,7 +33,12 @@ while read -r tomb_name ; do
     _run tomb slam "$tomb_name"
 done <<< "$tombs"
 
-# 3 - Unmount hush
+# Close graveyard backup if open
+if is_luks_mapper_present "$BACKUP_MAPPER" ; then
+    risks_backup_lock_command
+fi
+
+# 3 - Unmount hush and backup
 echo
 _info "Unmounting hush partition"
 _run risks_hush_umount_command

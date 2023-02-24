@@ -1,7 +1,7 @@
 # Easily cleanup, format, luks-encrypt and filesystem setup for a USB drive
 # to be used as a backup medium for risks data.
 
-pendrive="${args[device]}"
+pendrive="${args['device']}"
 
 _info "Formatting and encrypting backup drive"
 

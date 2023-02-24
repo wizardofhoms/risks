@@ -4,20 +4,10 @@ local identity_graveyard        # The full path to the identity system graveyard
 local identity_graveyard_backup # Full path to identity graveyard backup
 local identity_dir              # The encrypted graveyard directory for the identity
 
-backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
-
-# Ensure a backup is mounted
-if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
-    _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
-fi
-
-# Ensure we have an active identity, which will be detected in this call
 _set_identity 
+check_backup_mounted
 
-if ! _identity_active ; then
-    _failure "This command requires an identity to be active"
-fi
-
+backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
 identity_dir=$(_encrypt_filename "$IDENTITY")
 identity_graveyard="${GRAVEYARD}/${identity_dir}"
 identity_graveyard_backup="${backup_graveyard}/${identity_dir}"

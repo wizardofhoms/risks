@@ -2,7 +2,6 @@ local masterkey_available email uid key_algo expiry
 
 _set_identity ""
 check_hush_mounted
-check_identity_active
 
 if [[ "${args['--sign']}" -eq 0 ]] && [[ "${args['--encrypt']}" -eq 0 ]]; then
     _failure "You must specify either or both of --sign and --encrypt flags for GPG subkeys"
