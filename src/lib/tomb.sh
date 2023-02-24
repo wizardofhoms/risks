@@ -85,13 +85,13 @@ delete_tomb()
             read ans
 
             if [[ "$ans" != 'YES' ]]; then
-                _message "Aborting deletion of tomb 'GPG'. Exiting"
+                _info "Aborting deletion of tomb 'GPG'. Exiting"
                 exit 0
             fi
     esac
 
     # Else we are good to go and delete, even if some files will not be found.
-    _message "Deleting tomb $name"
+    _info "Deleting tomb $name"
 
     if [[ -e "$tomb_file_path" ]]; then
         _run wipe -f -r "$tomb_file_path"

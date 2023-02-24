@@ -98,7 +98,7 @@ EOF
     ## 2 - Subjeys creation 
     expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")" 
     fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
-    _message "Fingerprint: ${fingerprint}"
+    _info "Fingerprint: ${fingerprint}"
 
     local gpg_base_cmd=(gpg --pinentry-mode loopback --batch --no-tty --yes --passphrase-fd 0 --quick-add-key "${fingerprint}")
 
@@ -227,18 +227,18 @@ generate_subkeys ()
     local gpg_base_cmd=(gpg --pinentry-mode loopback --batch --no-tty --yes --passphrase-fd 0 --quick-add-key "${fingerprint}")
 
     # Signing subkey
-    if [[ "${args[--sign]}" -eq 1 ]]; then
-        _message "Generating signature subkey-pair"
+    if [[ "${args['--sign']}" -eq 1 ]]; then
+        _info "Generating signature subkey-pair"
         echo "$GPG_PASS" | _run "${gpg_base_cmd[@]}" "${algo}" sign "${expiry_date}" &> /dev/null
         _catch "Failed to generate subkey-pair"
     fi
 
     # Encryption subkey 
-    if [[ "${args[--encrypt]}" -eq 1 ]]; then
+    if [[ "${args['--encrypt']}" -eq 1 ]]; then
         if [[ "${algo}" == "ed25519" ]]; then
             algo="cv25519"
         fi
-        _message "Generating encryption subkey-pair"
+        _info "Generating encryption subkey-pair"
         echo "$GPG_PASS" | _run "${gpg_base_cmd[@]}" "${algo}" encr "${expiry_date}" &> /dev/null
         _catch "Failed to generate subkey-pair"
     fi

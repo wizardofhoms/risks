@@ -3,7 +3,7 @@ local pendrive="${args['device']}"
 
 # If we already have a device mounted as backup, fail.
 if ls -1 /dev/mapper/"${BACKUP_MAPPER}" &> /dev/null; then
-    _message "Backup device is already mounted"
+    _info "Backup device is already mounted"
     play_sound
     return 0
 fi
@@ -21,4 +21,4 @@ sudo cryptsetup open --type luks "${pendrive}" "$BACKUP_MAPPER"
 _catch "Failed to open LUKS pendrive. Aborting"
 sudo mount /dev/mapper/"${BACKUP_MAPPER}" "$BACKUP_MOUNT_DIR"
 
-_message "Backup unlocked and mounted on ${BACKUP_MOUNT_DIR}"
+_info "Backup unlocked and mounted on ${BACKUP_MOUNT_DIR}"

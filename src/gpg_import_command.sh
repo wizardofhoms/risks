@@ -23,7 +23,7 @@ fi
 # 2 - Set the hush partition read-write and import the corresponding key
 risks_hush_rw_command
 
-_message "Importing GPG private key in keyring"
+_info "Importing GPG private key in keyring"
 cp "${keypath}" "${RAMDISK}"/private-keys-v1.d/"${keygrip}" 
 
 _run close_tomb "${GPG_TOMB_LABEL}"

@@ -25,11 +25,11 @@ if _identity_active && [[ "$(cat "${RISKS_IDENTITY_FILE}")" == "$name" ]]; then
     risks_close_command
 fi
 
-_message "Starting deletion of identity '$name'"
-_message "Some of the wiping operations will take some time (several minutes). Please wait."
+_info "Starting deletion of identity '$name'"
+_info "Some of the wiping operations will take some time (several minutes). Please wait."
 
 # 1 - Delete the identity graveyard directory, and the associated fscrypt policy
-_message "Wiping graveyard"
+_info "Wiping graveyard"
 delete_graveyard
 
 # 2 - Delete the coffin files in the graveyard, and coffin key in hush
@@ -37,7 +37,7 @@ delete_graveyard
 # since we must delete the coffin key file on it.
 _run risks_hush_rw_command
 
-_message "Wiping GPG coffin"
+_info "Wiping GPG coffin"
 delete_coffin
 
 # And reset the hush
@@ -49,4 +49,4 @@ if [[ "${args['--backup']}" -eq 1 ]]; then
     delete_identity_backup
 fi
 
-_message "Deleted identity $name"
+_info "Deleted identity $name"

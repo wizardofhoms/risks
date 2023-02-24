@@ -34,7 +34,7 @@ store_risks_scripts ()
 {
     local udev_rules="$1"
 
-    _message "Copying risks scripts onto the hush partition"
+    _info "Copying risks scripts onto the hush partition"
 
     # Scripts/program
     mkdir -p "$RISKS_SCRIPTS_INSTALL_PATH"

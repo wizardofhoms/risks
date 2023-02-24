@@ -27,7 +27,7 @@ fi
 typeset -rg RISKS_DIR="${HOME}/.risks"  
 
 # Create the risk directory if needed
-[[ -e $RISKS_DIR ]] || { mkdir -p $RISKS_DIR && _message "Creating RISKS directory in $RISKS_DIR" }
+[[ -e $RISKS_DIR ]] || { mkdir -p $RISKS_DIR && _info "Creating RISKS directory in $RISKS_DIR" }
 
 # Write the default configuration if it does not exist.
 config_init

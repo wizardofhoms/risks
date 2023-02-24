@@ -16,16 +16,16 @@ email=$(echo "$uid" | grep -E -o "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2
 masterkey_available="$(get_master_key_status)"
     
 
-_message "Generating GPG subkey"
-_message "Type: ${key_algo}"
-_message "Signing: ${args['--sign']} | Encrypting: ${args['--encrypt']}"
+_info "Generating GPG subkey"
+_info "Type: ${key_algo}"
+_info "Signing: ${args['--sign']} | Encrypting: ${args['--encrypt']}"
 
 _run risks_hush_rw_command
 
 # Check master private in ring,
 # If not, open tomb and import master key
 if [[ "${masterkey_available}" != true ]]; then
-    _message "No master key in keyring, importing from tomb"
+    _info "No master key in keyring, importing from tomb"
     risks_private_import_command
 fi
 
@@ -35,10 +35,10 @@ generate_subkeys "${key_algo}" "${email}" "${expiry}"
 
 # Remove master key if was imported
 if [[ $masterkey_available != true ]]; then
-    _message "Removing master private key from keyring"
+    _info "Removing master private key from keyring"
     risks_private_remove_command
 fi
 
 _run risks_hush_ro_command 
 
-_message "Successfully generated GPG subkey(s)" && return
+_info "Successfully generated GPG subkey(s)" && return

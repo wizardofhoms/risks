@@ -21,7 +21,7 @@ _in_section ()
 ## Functions ##
 
 function is_verbose_set () {
-    if [[ "${args[--verbose]}" -eq 1 ]]; then
+    if [[ "${args['--verbose']}" -eq 1 ]]; then
         return 0
     else
         return 1
@@ -96,7 +96,7 @@ function _msg()
 
     # If there is a log-file specified with flag --log-file,
     # output the message to it, instead of the current file descriptor
-    logfile="${args[--log-file]}"
+    logfile="${args['--log-file']}"
     if [[ -n "${logfile}" ]]; then
         ${=command} "${progname}" "${pchars}" "${msg}" >> "$logfile"
         return $returncode
@@ -113,7 +113,7 @@ function _msg()
     return $returncode
 }
 
-function _message() {
+function _info() {
     local notice="message"
     [[ "$1" = "-n" ]] && shift && notice="inline"
     option_is_set -q || _msg "$notice" "$@"

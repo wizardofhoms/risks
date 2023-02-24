@@ -3,7 +3,7 @@ local tomb_file tomb_label resource
 
 _set_identity "" 
 
-resource="${args[tomb_name]}"
+resource="${args['tomb_name']}"
 tomb_label="${IDENTITY}-${resource}"
 
 identity_graveyard=$(get_identity_graveyard "$IDENTITY")

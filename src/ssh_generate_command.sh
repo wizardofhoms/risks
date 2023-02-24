@@ -15,8 +15,8 @@ ssh_key_name="${args['--filename']}"
 [[ -z ${ssh_key_name} ]] && ssh_key_name="${IDENTITY}-${key_algo}-${RANDOM}"
 
 # Generation
-_message "Generating SSH keypair"
-_message "Type: ${key_algo}"
+_info "Generating SSH keypair"
+_info "Type: ${key_algo}"
 
 _run open_tomb "$SSH_TOMB_LABEL"
 
@@ -27,4 +27,4 @@ _catch "Failed to generate SSH keys"
 _verbose "Making keys immutable"
 sudo chattr +i "${HOME}"/.ssh/"${ssh_key_name}"*
 
-_message "Successfully generated new SSH keypair" && return
+_info "Successfully generated new SSH keypair" && return

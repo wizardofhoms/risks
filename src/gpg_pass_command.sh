@@ -24,6 +24,6 @@ timeout="${args['--timeout']-$GPGPASS_TIMEOUT}"
 echo -n "$GPG_PASS" | xclip -selection clipboard
 ( sleep "$timeout"; echo -n "" | xclip -selection clipboard;) &
 
-_message "The passphrase has been saved in clipboard"
-_message "Press CTRL+SHIFT+C to share the clipboard with another qube."
-_message "Local clipboard will be erased is $timeout seconds"       
+_info "The passphrase has been saved in clipboard"
+_info "Press CTRL+SHIFT+C to share the clipboard with another qube."
+_info "Local clipboard will be erased is $timeout seconds"       

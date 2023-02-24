@@ -195,9 +195,9 @@ list_coffins()
     fi
 
     if [[ $coffins_num -gt 0 ]]; then
-        _message "Coffins currently opened:"
+        _info "Coffins currently opened:"
         echo "$coffins" | xargs
     else
-        _message "No opened coffins"
+        _info "No opened coffins"
     fi
 }

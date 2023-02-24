@@ -22,7 +22,6 @@ _risks()
             (save)      _save ;;
             (kv)        _kv ;;
             (config)    _config ;;
-            (delete)    _delete ;;
             (resolve)   _resolve ;;
             (ssh)       _ssh ;;
             (gpg)       _gpg ;;

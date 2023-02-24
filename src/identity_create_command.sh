@@ -31,11 +31,11 @@ fi
 ## Start work ============
 
 _in_section 'risks' 6
-_message "Starting new identity generation process"
+_info "Starting new identity generation process"
 _warning "Do not unplug hush and backup devices during the process"
 
-_message "Using ${name} as identity name"
-_message "Using ${email} as email"
+_info "Using ${name} as identity name"
+_info "Using ${email} as email"
 
 # Use the identity name to set its file encryption key.
 # This call propagates some of those essential variables 
@@ -44,63 +44,63 @@ _set_identity "$identity"
 
 # GPG 
 #
-_in_section 'gpg' && _message "Setting up RAMDisk and GPG backend"
+_in_section 'gpg' && _info "Setting up RAMDisk and GPG backend"
 init_gpg
 
 # Generate GPG keypairs with a different passphrase than the one
 # we use for encrypting file/directory names and contents.
-_message "Generating GPG keys"
+_info "Generating GPG keys"
 
 # This new key is also the one provided when using gpgpass command.
 GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
 echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
 _warning "GPG passphrase copied to clipboard with one-time use only"
-_message -n "Paste it in the coming GPG prompt when creating builtin tombs\n"
+_info -n "Paste it in the coming GPG prompt when creating builtin tombs\n"
 
 _run gen_gpg_keys "$name" "$email" "$expiry"
 
 # Setup the identity graveyard directory with fscrypt protection
-_in_section 'coffin' && _message "Creating and setting encrypted identity directory"
+_in_section 'coffin' && _info "Creating and setting encrypted identity directory"
 new_graveyard
 
 # At this point, we need access to the hush device, so make sure 
 # it's mounted and that we have read-write permissions.
-_in_section 'hush' && _message "Mounting hush device with read-write permissions"
+_in_section 'hush' && _info "Mounting hush device with read-write permissions"
 risks_hush_mount_command
 _run risks_hush_rw_command
 
 # Then only, generate the coffin and copy it into the root graveyard
 # (not the identity's graveyard subdirectory, because we need access to
 # this file BEFORE anything else, since it contains the GPG keyring)
-_in_section 'coffin' && _message "Creating and testing GPG coffin container"
+_in_section 'coffin' && _info "Creating and testing GPG coffin container"
 gen_coffin
 
 # Cleaning RAM disk, removing private keys from the keyring and test open/close 
-_in_section 'gpg' && _message "Cleaning and backing keyring privates"
+_in_section 'gpg' && _info "Cleaning and backing keyring privates"
 cleanup_gpg_init "$email"
 
 
 ## Builtin tombs
 #
-_in_section 'pass' && _message "Initializing password-store"
+_in_section 'pass' && _info "Initializing password-store"
 init_pass "$email"
 
 if [[ "${args['--burner']}" -eq 1 ]]; then
     echo && _success "risks" "Identity (burner) generation complete." && echo
 fi
 
-_in_section 'ssh' && _message "Generating SSH keypair and multi-key ssh-agent script" 
+_in_section 'ssh' && _info "Generating SSH keypair and multi-key ssh-agent script" 
 gen_ssh_keys "$email"
 
 ## Create a tomb to use for admin storage: 
 # config files, etc, and set default key=values
-_in_section 'mgmt' && _message "Creating management tomb"
+_in_section 'mgmt' && _info "Creating management tomb"
 init_mgmt
 
 ## Backup
 #
 if [[ -n "$pendrive" ]]; then
-    _in_section 'backup' && _message "Setting identity backup and making initial one"
+    _in_section 'backup' && _info "Setting identity backup and making initial one"
 
     risks_backup_mount_command
     _catch "failed to decrypt and mount backup drive"

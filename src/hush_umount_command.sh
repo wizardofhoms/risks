@@ -28,4 +28,4 @@ fi
 
 play_sound "unplugged"
 
-_message "Hush device is unmounted and closed"
+_info "Hush device is unmounted and closed"

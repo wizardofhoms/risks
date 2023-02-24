@@ -25,5 +25,5 @@ if [[ ! -e "$identity_graveyard_backup" ]]; then
     _failure "This identity has no graveyard on the backup medium"
 fi
 
-_message "Locking identity graveyard backup"
+_info "Locking identity graveyard backup"
 _run sudo fscrypt lock "${identity_graveyard_backup}"

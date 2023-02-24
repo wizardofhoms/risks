@@ -25,12 +25,12 @@ identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 # Always check that the identity has its own backup directory set up,
 # because backup is not mandatory at identity creation time.
 if [[ ! -e "$identity_graveyard_backup" ]]; then
-    _message "Setting graveyard backup for this identity"
+    _info "Setting graveyard backup for this identity"
     _run setup_identity_backup
     _catch "Failed to setup identity backup graveyard"
 fi
 
-_message "Backing up current identity data and hush partition"
+_info "Backing up current identity data and hush partition"
 
 ## First make sure the backup directory for the identity is unlocked
 echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard_backup" --quiet
@@ -64,5 +64,5 @@ _run sudo fscrypt lock "${identity_graveyard_backup}"
 # And backup hush, since it has new content
 risks_backup_hush_command
 
-_message "Done backing current identity and hush device"
+_info "Done backing current identity and hush device"
 

@@ -25,8 +25,8 @@ _run risks_hush_ro_command
 
 # Delete in backup if specified
 if [[ "${args['--backup']}" -eq 1 ]]; then
-    _message "Deleting tomb backup"
+    _info "Deleting tomb backup"
     delete_tomb_backup "$name"
 fi
 
-_message "Deleted tomb $name"
+_info "Deleted tomb $name"

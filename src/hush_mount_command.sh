@@ -5,7 +5,7 @@ if ! is_named_partition_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
 fi
 
 if is_hush_mounted ; then
-    _message "Sdcard already mounted"
+    _info "Sdcard already mounted"
     play_sound
     return 0
 fi

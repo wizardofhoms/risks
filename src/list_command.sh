@@ -1,10 +1,10 @@
 
-resource="${args[resource]}"
+resource="${args['resource']}"
 
 if [[ -z $resource ]]; then
     list_coffins
     echo
-    _message "Tombs currently opened:"
+    _info "Tombs currently opened:"
     tomb list
     exit $?
 fi
@@ -15,7 +15,7 @@ if [[ "${resource}" == "coffins" ]]; then
 fi
 
 if [[ "${resource}" == "tombs" ]]; then
-    _message "Tombs currently opened:"
+    _info "Tombs currently opened:"
     tomb list
     exit $?
 fi

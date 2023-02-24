@@ -28,7 +28,7 @@ _set_active_identity ()
         _run wipe -s -f -P 10 "${RISKS_IDENTITY_FILE}" || _warning "Failed to wipe identity file !"
 
         _verbose "Identity '${identity}' is now inactive, (name file deleted)"
-        _message "Identity '${identity}' is now INACTIVE"
+        _info "Identity '${identity}' is now INACTIVE"
         return
     fi
 
@@ -39,7 +39,7 @@ _set_active_identity ()
     fi
 
     _verbose "Identity '${1}' is now active (name file written)"
-    _message "Identity '${1}' is now ACTIVE"
+    _info "Identity '${1}' is now ACTIVE"
 }
 
 # Returns 0 if an identity is unlocked, 1 if not.
@@ -97,14 +97,14 @@ _get_name ()
 {
     local name
 
-    if [[ -z "${1}" ]] && [[ "${args[--burner]}" -eq 0 ]]; then
+    if [[ -z "${1}" ]] && [[ "${args['--burner']}" -eq 0 ]]; then
         _failure "Either an identity name is required, or the --burner flag" 
     fi
 
     # Either use the provided one
     if [[ -n "${1}" ]]; then
         name="${1}"
-    elif [[ "${args[--burner]}" -eq 1 ]]; then
+    elif [[ "${args['--burner']}" -eq 1 ]]; then
         name="$(rig -m | head -n 1)"
         name="${name// /_}"
     fi
@@ -121,7 +121,7 @@ _get_mail ()
 
     [[ -n "${email}" ]] && print "${email}" && return
 
-    email="${args[--mail]}"
+    email="${args['--mail']}"
     [[ -n "${email}" ]] && print "${name}@${email}"
 }
 

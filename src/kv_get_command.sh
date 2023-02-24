@@ -1,3 +1,3 @@
-key="${args[key]}"
+key="${args['key']}"
 
 kvget "${key}"

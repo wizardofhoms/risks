@@ -1,3 +1,3 @@
-_message "Saved keys:"
+_info "Saved keys:"
 
 kvlist

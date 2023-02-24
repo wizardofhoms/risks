@@ -4,7 +4,7 @@ if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
     _failure "Backup device not mounted. Please mount with 'risks backup mount /dev/device'"
 fi
 
-_message "Backing hush partition"
+_info "Backing hush partition"
 
 _verbose "Unmounting hush partition"
 risks_hush_umount_command
@@ -15,4 +15,4 @@ fi
 sudo dd if=/dev/hush of="${BACKUP_MOUNT_DIR}/hush.img" status=progress bs=16M
 sudo chattr +i "${BACKUP_MOUNT_DIR}/hush.img" || _warning "No hush.img file found after dd operation"
 
-_message "Done backing hush partition"
+_info "Done backing hush partition"

@@ -34,7 +34,7 @@ kvset() {
         kv_user_dir=${KV_USER_DIR:-$DEFAULT_KV_USER_DIR}
         test -d "$kv_user_dir" || mkdir "$kv_user_dir"
         echo "$value" > "$kv_user_dir/$key"
-        _message "${key} => ${value}"
+        _info "${key} => ${value}"
     }
 
 # Usage: kvdel <key>
@@ -46,7 +46,7 @@ kvdel() {
         }
         kv_user_dir=${KV_USER_DIR:-$DEFAULT_KV_USER_DIR}
         test -f "$kv_user_dir/$key" && rm -f "$kv_user_dir/$key"
-        _message "Deleted key '${key}'"
+        _info "Deleted key '${key}'"
     }
 
 # list all key/value pairs to stdout

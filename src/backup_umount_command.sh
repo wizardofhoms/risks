@@ -12,4 +12,4 @@ fi
 
 play_sound "unplugged"
 
-_message "Backup device is umounted and closed"
+_info "Backup device is umounted and closed"

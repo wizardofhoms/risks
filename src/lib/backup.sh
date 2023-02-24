@@ -74,7 +74,7 @@ delete_identity_backup ()
 
     # Delete the identity graveyard in it, and associated fscrypt policy
     if [[ -e "$identity_graveyard_backup" ]]; then
-        _message "Wiping graveyard backup"
+        _info "Wiping graveyard backup"
         sudo chattr -i "${identity_graveyard_backup}"/*
         _run wipe -f -r "$identity_graveyard_backup"
     else
