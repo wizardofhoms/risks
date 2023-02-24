@@ -1,0 +1,67 @@
+name: tomb
+help: Create, use and manage tombs (stores)
+
+commands:
+  - name: create
+    help: 'Create a new tomb' 
+    args:
+      - name: tomb_name 
+        required: true
+        help: "Name/label to use for the tomb"
+      - name: size
+        required: true
+        help: "Size (in MB) of the tomb"
+      - name: identity 
+        required: false 
+        help: "Identity for which to create the tomb. (optional if an identity is active"
+        validate: identity_exists
+    flags:
+      - &verbose
+        long: --verbose
+        short: -v
+        help: "Show verbose logging"
+    examples:
+      - tomb create Data 100 john_doe
+
+  - name: open
+    help: Open an identity tomb
+    args:
+      - name: resource 
+        help: 'Datastore (tomb) or full identity (coffin/GPG/SSH,etc) to open'
+        required: true
+      - name: identity 
+        required: false 
+        help: "Identity owning the store. (optional if an identity is active)."
+        validate: identity_exists
+    flags:
+      - *verbose 
+    examples:
+      - "tomb open gpg john_doe            # Opens the GPG keyring for identity 'john_doe'"         
+      - "tomb open ssh                     # Opens the ssh tomb for the active identity"
+      - "tomb open pass [identity]         # Opens the password-store for active identity"
+
+  - name: close 
+    help: Close an identity tomb
+    args:
+      - name: resource 
+        help: 'Datastore (tomb) or full identity (coffin/GPG/SSH,etc) to close'
+        required: true
+      - name: identity 
+        required: false 
+        help: "Identity owning the store. (optional if an identity is active)."
+        validate: identity_exists
+    flags:
+      - *verbose 
+
+  - name: delete 
+    help: Delete an identity tomb, and optionally its backup
+    args:
+      - name: tomb_name 
+        required: true
+        help: "Name/label of the tomb to delete"
+    flags:
+      - *verbose 
+      - &backup
+        long : --backup
+        short: -b
+        help: "If a backup device is mounted, also delete all the associated backup data"
