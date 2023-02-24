@@ -57,3 +57,30 @@ EOF
     _verbose "Closing SSH tomb file"
     _run close_tomb "$SSH_TOMB_LABEL"
 }
+
+# get_key_size sets the key size in bits depending
+# on the algorithm passed as parameter. If the size
+# given as argument is larger than the algo size max,
+# the algorithm size maximum is used instead.
+# $1 - Algorithm
+# $2 - Size to use if possible
+# Returns "-b <size" compatible with ssh-keygen
+get_key_size () {
+    local algo="${1}"
+    local key_size="${2}"
+    local max
+
+    # Set max length per key algo 
+    if [[ "$algo" == "rsa" ]]; then
+        max=4096
+    elif [[ "$algo" == "ecdsa" ]]; then
+        max=384
+    elif [[ "$algo" == "dsa" ]]; then
+        max=2048
+    fi
+
+    # Return the correct size
+    [[ -z $max ]] && return
+    [[ "${key_size}" -gt "${max}" ]] && print "-b ${max}"
+    print "-b ${key_size}"
+}

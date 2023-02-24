@@ -59,6 +59,15 @@ _identity_active ()
     return 0
 }
 
+# check_identity_active exits the program 
+# if there is identity, active or specified. 
+check_identity_active ()
+{
+    if ! _identity_active ; then
+        _failure "This command requires an identity to be active"
+    fi
+}
+
 # Given an argument potentially containing the active identity, checks
 # that either an identity is active, or that the argument is not empty.
 # $1 - An identity name

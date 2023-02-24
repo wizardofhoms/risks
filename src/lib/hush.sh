@@ -24,3 +24,12 @@ w
 
 EOF
 }
+
+# check_hush_mounted exits the program 
+# if the hush device is not mounted.
+check_hush_mounted ()
+{
+    if ! is_hush_mounted ; then
+        _failure "The hush device is not mounted. Mount it first and rerun the command."
+    fi
+}

@@ -148,3 +148,12 @@ remove_gpg_private ()
     _run sudo mv "${tomb_file_path}" "${identity_graveyard_backup}" 
     _run sudo chattr +i "${identity_graveyard_backup}"/*
 }
+
+# check_backup_mounted exits the program 
+# if no backup device is mounted.
+check_backup_mounted () 
+{
+    if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+        _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
+    fi
+}

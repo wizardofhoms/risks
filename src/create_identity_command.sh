@@ -114,6 +114,11 @@ if [[ -n "$pendrive" ]]; then
     risks_backup_identity_command
     _catch "Failed to correctly backup data"
 
+    # Remove the GPG tomb from the user graveyard.
+    risks_backup_unlock_command
+    remove_gpg_private
+    risks_backup_lock_command
+
     risks_backup_umount_command
 fi
 

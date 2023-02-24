@@ -23,14 +23,18 @@ commands:
 - import: src/hush_commands.yml
 - import: src/backup_commands.yml
   # Identity/stores management commands
-- import: src/create_commands.yml
-- import: src/open_command.yml
-- import: src/close_command.yml
+- import: src/identity_commands.yml
+- import: src/tomb_commands.yml
+- import: src/gpg_commands.yml
+- import: src/ssh_commands.yml
 - import: src/list_command.yml
 - import: src/slam_command.yml
-- import: src/gpgpass_command.yml
-- import: src/delete_commands.yml
-- import: src/private_commands.yml
+# - import: src/create_commands.yml
+# - import: src/open_command.yml
+# - import: src/close_command.yml
+# - import: src/gpgpass_command.yml
+# - import: src/delete_commands.yml
+# - import: src/private_commands.yml
   # Data/tools commands
 - import: src/load_command.yml
 - import: src/save_command.yml
@@ -38,7 +42,3 @@ commands:
 - import: src/config_commands.yml
 - import: src/resolve_commands.yml
 
-# Hidden commands
-- name: identity 
-  help: Prints the active identity as a raw string, to be used by prompts.
-  private: true

@@ -1,6 +1,5 @@
 
 local masterkey_available email uid
-local ssh_key_name      # SSH parameters
 local key_algo expiry   # GPG parameters
 
 # Hush and identity checks
@@ -16,7 +15,6 @@ fi
 
 ## Parameters setup
 key_algo="${args[--algo]-ed25519}"
-ssh_key_name="${IDENTITY}-${key_algo}-${RANDOM}"
 expiry="$(_get_expiry "${args[expiry_date]}")"
 uid=$(gpg -K | grep uid | head -n 1)
 email=$(echo "$uid" | grep -E -o "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b")
@@ -30,24 +28,6 @@ if [[ "${args[store]}" == "gpg" ]]; then
         _failure "You must specify either or both of --sign and --encrypt flags for GPG subkeys"
     fi
 fi
-
-# If SSH ===
-if [[ "${args[store]}" == "ssh" ]]; then
-    _message "Generating SSH keypair"
-    _message "Type: ${key_algo}"
-
-    _run open_tomb "$SSH_TOMB_LABEL"
-
-    # Generate SSH key.
-    _run ssh-keygen -t "${key_algo}" -b 4096 -C "$email" -N "" -f "${HOME}"/.ssh/"${ssh_key_name}" # No passphrase
-    _catch "Failed to generate SSH keys"
-
-    _verbose "Making keys immutable"
-    sudo chattr +i "${HOME}"/.ssh/"${ssh_key_name}"*
-
-    _message "Successfully generated new SSH keypair" && return
-fi
-
 
 # If GPG ===
 if [[ "${args[store]}" == "gpg" ]]; then
