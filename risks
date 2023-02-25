@@ -3177,10 +3177,9 @@ generate_subkeys ()
 
 {
     local algo="${1}"
-    local email="${2}"
+    local fingerprint="${2}"
     local expiry_date="${3}"
 
-    local fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
     local gpg_base_cmd=(gpg --pinentry-mode loopback --batch --no-tty --yes --passphrase-fd 0 --quick-add-key "${fingerprint}")
 
     # Signing subkey
@@ -4754,6 +4753,12 @@ risks_hush_ro_command() {
 risks_hush_umount_command() {
   # src/hush_umount_command.sh
 
+  # No identity should be active
+  if _identity_active; then
+      _failure "An identity is active, close it first and rerun the command."
+  fi
+
+  # Nothing to do if no hush mounted.
   if ! is_named_partition_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
       _failure "Device mapper /dev/mapper/${SDCARD_ENC_PART_MAPPER} not found.\n \
           Be sure you have attached your hush partition."
@@ -4761,17 +4766,14 @@ risks_hush_umount_command() {
 
   # Check there is a hush device mounted
   if is_hush_mounted ; then
+      if is_hush_read_write ; then
+          _failure "Hush device is currently mounted with read-write permissions. \
+              Please ensure not process is writing to it, and mount it read-only."
+      fi
+
       if ! sudo umount -f "${HUSH_DIR}" ; then
           _failure "/dev/mapper/${SDCARD_ENC_PART_MAPPER} can not be umounted from ${HUSH_DIR}"
       fi
-  fi
-
-  # Check that the hush is not mounted with read-write permissions.
-  # If yes, do not proceed further, as some other process might be
-  # writing to it.
-  if is_hush_read_write ; then
-      _failure "Hush device is currently mounted with read-write permissions. \
-          Please ensure not process is writing to it, and mount it read-only."
   fi
 
   # Finally try to umount it and close the LUKS filesystem
@@ -5585,7 +5587,7 @@ risks_tomb_delete_command() {
 # :command.function
 risks_gpg_generate_command() {
   # src/gpg_generate_command.sh
-  local masterkey_available email uid key_algo expiry
+  local masterkey_available email uid key_algo expiry fingerprint expert
 
   _set_identity ""
   check_hush_mounted
@@ -5599,6 +5601,8 @@ risks_gpg_generate_command() {
   uid=$(gpg -K | grep uid | head -n 1)
   email=$(echo "$uid" | grep -E -o "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b")
   masterkey_available="$(get_master_key_status)"
+  fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
+  [[ "${args['--expert']}" -eq 1 ]] && expert="--expert"
 
   _info "Generating GPG subkey"
   _info "Type: ${key_algo}"
@@ -5613,9 +5617,18 @@ risks_gpg_generate_command() {
       risks_private_import_command
   fi
 
-  # Generate keys
   GPG_PASS=$(get_passphrase "$GPG_TOMB_LABEL")
-  generate_subkeys "${key_algo}" "${email}" "${expiry}"
+
+  if [[ "${args['--interactive']}" -eq 1 ]]; then
+      # If user wants to do this interactively, start the GPG prompt.
+      _info "Starting GPG prompt for key generation"
+      _warning "Copying GPG passphrase to clipboard"
+      echo -n "$GPG_PASS" | xclip -selection clipboard
+      gpg --edit-key "${fingerprint}" "${expert}"
+  else
+      # Or generate keys unattended
+      generate_subkeys "${key_algo}" "${fingerprint}" "${expiry}"
+  fi
 
   # Remove master key if was imported
   if [[ $masterkey_available != true ]]; then

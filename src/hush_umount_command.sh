@@ -1,4 +1,10 @@
 
+# No identity should be active
+if _identity_active; then
+    _failure "An identity is active, close it first and rerun the command."
+fi
+
+# Nothing to do if no hush mounted.
 if ! is_named_partition_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
     _failure "Device mapper /dev/mapper/${SDCARD_ENC_PART_MAPPER} not found.\n \
         Be sure you have attached your hush partition."
@@ -6,17 +12,14 @@ fi
 
 # Check there is a hush device mounted
 if is_hush_mounted ; then
+    if is_hush_read_write ; then
+        _failure "Hush device is currently mounted with read-write permissions. \
+            Please ensure not process is writing to it, and mount it read-only."
+    fi
+
     if ! sudo umount -f "${HUSH_DIR}" ; then
         _failure "/dev/mapper/${SDCARD_ENC_PART_MAPPER} can not be umounted from ${HUSH_DIR}"
     fi
-fi
-
-# Check that the hush is not mounted with read-write permissions.
-# If yes, do not proceed further, as some other process might be
-# writing to it.
-if is_hush_read_write ; then
-    _failure "Hush device is currently mounted with read-write permissions. \
-        Please ensure not process is writing to it, and mount it read-only."
 fi
 
 # Finally try to umount it and close the LUKS filesystem
