@@ -157,3 +157,22 @@ check_backup_mounted ()
         _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
     fi
 }
+
+# backup_is_unlocked returns 0 if the identity backup
+# is currently unlocked, or 1 if closed.
+backup_is_unlocked ()
+{
+    [[ -z "$IDENTITY" ]] && return 1
+    [[ ! $(is_luks_mounted "${BACKUP_MAPPER}") ]] && return 1
+
+    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+
+    backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
+    identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
+
+    unlocked=$(sudo fscrypt status "${identity_graveyard_backup}" | head -n 5 | tail -n 1 | awk '{print $2}')
+
+    [[ $unlocked == "yes" ]] && return 0
+    [[ $unlocked == "no" ]] && return 1 
+}
