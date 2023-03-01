@@ -31,5 +31,5 @@ release:
 	sed -i 's#^.*\benv\b.*$$#env: development#' settings.yml
 
 	# Signatures
-	qubes-gpg-client-wrapper --detach-sign risq > risq.gpg
-	sha256sum risq > risq.sha
+	qubes-gpg-client-wrapper --detach-sign risks > risks.gpg
+	sha256sum risks > risks.sha
