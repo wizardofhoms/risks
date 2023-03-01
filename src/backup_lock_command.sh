@@ -3,8 +3,12 @@ local backup_graveyard          # Where the graveyard root directory is in the b
 local identity_graveyard_backup # Full path to identity graveyard backup
 local identity_dir              # The encrypted graveyard directory for the identity
 
+if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+    _info "No mounted backup medium found."
+    return
+fi
+
 _set_identity 
-check_backup_mounted
 check_identity_active
 
 backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
