@@ -1,16 +1,13 @@
 
 local name identity expiry pendrive email
 
-# Base identity parameters, set globally.
-name="${args['name']}"
-identity="${name// /_}"
-pendrive="${args['--backup']}" # Backup is optional
-
 ## Pre-run parameters setup
+name="${args['name']}"
 name="$(_get_name "${name}")"
+identity="${name// /_}"
 expiry="$(_get_expiry "${args['expiry_date']}")"
 email="$(_get_mail "${name}" "${args['email']}")"
-
+pendrive="${args['--backup']}" # Backup is optional
 
 ## Pre-run checks ========
 
@@ -34,8 +31,8 @@ _in_section 'risks' 6
 _info "Starting new identity generation process"
 _warning "Do not unplug hush and backup devices during the process"
 
-_info "Using ${name} as identity name"
-_info "Using ${email} as email"
+_info "Using ${fg_bold[green]}${name}${reset_color} as identity name"
+_info "Using ${fg_bold[green]}${email}${reset_color} as email"
 
 # Use the identity name to set its file encryption key.
 # This call propagates some of those essential variables 
@@ -87,6 +84,7 @@ init_pass "$email"
 
 if [[ "${args['--burner']}" -eq 1 ]]; then
     echo && _success "risks" "Identity (burner) generation complete." && echo
+    return
 fi
 
 _in_section 'ssh' && _info "Generating SSH keypair and multi-key ssh-agent script" 

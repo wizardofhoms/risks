@@ -122,7 +122,11 @@ _get_mail ()
     [[ -n "${email}" ]] && print "${email}" && return
 
     email="${args['--mail']}"
+
+    # Return either the mail flag with the name 
     [[ -n "${email}" ]] && print "${name}@${email}"
+    # Or the lowercase name without spaces
+    print "${name// /_}"
 }
 
 # _get_expiry returns a correctly formatted expiry date for a GPG key.

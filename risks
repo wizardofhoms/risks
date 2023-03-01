@@ -3485,7 +3485,12 @@ _get_mail ()
     [[ -n "${email}" ]] && print "${email}" && return
 
     email="${args['--mail']}"
+
+    # Return either the mail flag with the name
+
     [[ -n "${email}" ]] && print "${name}@${email}"
+    # Or the lowercase name without spaces
+    print "${name// /_}"
 }
 
 # _get_expiry returns a correctly formatted expiry date for a GPG key.
@@ -5259,14 +5264,12 @@ risks_identity_create_command() {
 
   local name identity expiry pendrive email
 
-  # Base identity parameters, set globally.
   name="${args['name']}"
-  identity="${name// /_}"
-  pendrive="${args['--backup']}" # Backup is optional
-
   name="$(_get_name "${name}")"
+  identity="${name// /_}"
   expiry="$(_get_expiry "${args['expiry_date']}")"
   email="$(_get_mail "${name}" "${args['email']}")"
+  pendrive="${args['--backup']}" # Backup is optional
 
 
   # No identity should be active, because some important mount points will be
@@ -5343,6 +5346,7 @@ risks_identity_create_command() {
 
   if [[ "${args['--burner']}" -eq 1 ]]; then
       echo && _success "risks" "Identity (burner) generation complete." && echo
+      return
   fi
 
   _in_section 'ssh' && _info "Generating SSH keypair and multi-key ssh-agent script"
@@ -5492,7 +5496,7 @@ risks_identity_delete_command() {
   _info "Some of the wiping operations will take some time (several minutes). Please wait."
 
   # 1 - Delete the identity graveyard directory, and the associated fscrypt policy
-  _info "Wiping graveyard"
+  _info "Wiping graveyard ($(get_identity_graveyard "$IDENTITY"))"
   delete_graveyard
 
   # 2 - Delete the coffin files in the graveyard, and coffin key in hush

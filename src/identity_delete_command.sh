@@ -29,7 +29,7 @@ _info "Starting deletion of identity '$name'"
 _info "Some of the wiping operations will take some time (several minutes). Please wait."
 
 # 1 - Delete the identity graveyard directory, and the associated fscrypt policy
-_info "Wiping graveyard"
+_info "Wiping graveyard ($(get_identity_graveyard "$IDENTITY"))"
 delete_graveyard
 
 # 2 - Delete the coffin files in the graveyard, and coffin key in hush
