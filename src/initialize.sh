@@ -35,7 +35,7 @@ config_init
 # Create a symbolic link to the udev rules file we store
 # in the risks directory. This is only done once, when we
 # don't detect our symlink to the /etc/udev/rules.d/hush.rules
-link_hush_udev_rules
+device.link_hush_udev_rules
 
 # Default filesystem settings from configuration file ----------------------------------------------
 
@@ -80,5 +80,3 @@ export PASSWORD_STORE_GENERATED_LENGTH=20
 typeset -gH IDENTITY
 typeset -gH FILE_ENCRYPTION_KEY
 typeset -gH GPG_PASS
-
-

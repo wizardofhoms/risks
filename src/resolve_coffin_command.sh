@@ -1,5 +1,5 @@
 
-_set_identity "${args['identity']}"
+identity.set "${args['identity']}"
 
-coffin_filename=$(_encrypt_filename "${IDENTITY}-gpg.coffin")
+coffin_filename=$(crypt.filename "${IDENTITY}-gpg.coffin")
 print "${GRAVEYARD}/${coffin_filename}"

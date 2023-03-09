@@ -1,10 +1,10 @@
 
 local tomb_key tomb_label
 
-_set_identity "" 
+identity.set "" 
 
 resource="${args['tomb_name']}"
 tomb_label="${IDENTITY}-${resource}"
 
-tomb_key=$(_encrypt_filename "$tomb_label.key")
+tomb_key=$(crypt.filename "$tomb_label.key")
 print "${HUSH_DIR}/${tomb_key}"

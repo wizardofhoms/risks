@@ -4,7 +4,7 @@ local source_vm resource source_dir dest_dir
 source_vm="${args['source_vm']}"    
 resource="${args['resource']}"   # Resource is a tomb file (root directory) in ~/.tomb
 
-_set_identity "${args['identity']}"
+identity.set "${args['identity']}"
 
 # Make the source directory 
 # Don't do anything if the directory does not exist
@@ -14,7 +14,7 @@ if [[ ! -d $source_dir ]]; then
 fi
 
 # Open the related tomb for the tool 
-_run open_tomb "$resource"
+_run tomb.open "$resource"
 _catch "Failed to open tomb"
 
 # And make the destination directory
@@ -27,5 +27,5 @@ mv "${source_dir}/"'*' "$dest_dir"
 # And close tomb if asked to
 if [[ "${args['--close-tomb']}" -eq 1 ]]; then
     _info "Closing tomb"
-    _run close_tomb "$resource"
+    _run tomb.close "$resource"
 fi

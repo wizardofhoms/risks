@@ -72,7 +72,7 @@ uuid=$(sudo cryptsetup luksUUID "${sd_enc_part}")
 echo 'SUBSYSTEM=="block", ENV{ID_FS_UUID}=="'"${uuid}"'", SYMLINK+="hush"' >> "${UDEV_RULES_PATH}"
 
 # Write our risks scripts in a special directory on the hush, and close the device.
-store_risks_scripts "$udev_rules"
+hush.write_risks_scripts "$udev_rules"
 
 # Note that even if we fail to umount at $mount_point, we still try to cryptsetup close hush.
 _verbose "Closing and unmounting device"

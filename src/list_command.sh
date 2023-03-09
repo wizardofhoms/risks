@@ -2,7 +2,7 @@
 resource="${args['resource']}"
 
 if [[ -z $resource ]]; then
-    list_coffins
+    gpg.list_coffins
     echo
     _info "Tombs currently opened:"
     tomb list
@@ -10,7 +10,7 @@ if [[ -z $resource ]]; then
 fi
 
 if [[ "${resource}" == "coffins" ]]; then
-    list_coffins
+    gpg.list_coffins
     exit $?
 fi
 
