@@ -1,8 +1,8 @@
 
-# _set_file_encryption_key is only called once per risks run,
-# and does not need any password prompt to be used: it just generates
-# a deterministic key based on known inputs.
-_set_file_encryption_key ()
+# crypt.set_file_obfs_key is only called once per risks run,
+# and does not need any password prompt to be used: it just 
+# generates a deterministic key based on known inputs.
+function crypt.set_file_obfs_key ()
 {
     local identity="$1"
     local key
@@ -10,9 +10,10 @@ _set_file_encryption_key ()
     print "$key"
 }
 
-# _encrypt_filename takes a filename as input, and uses the currently 
+# crypt.filename takes a filename as input, and uses the currently 
 # set identity to produce an random name to use as a file/directory name.
-_encrypt_filename ()
+# $1 - Name/string to obfuscate.
+function crypt.filename ()
 {
     local filename="$1"
     local encrypted
@@ -27,9 +28,10 @@ _encrypt_filename ()
     print "${encrypted}"
 }
 
-# Returns a spectre-generated secret key, given a single name as argument.
-# Uses the current IDENTITY as set by _set_identity <identity_name>
-get_passphrase ()
+# crypt.passphrase returns a spectre-generated secret key.
+# Uses the current IDENTITY as set by identity.set <identity_name>
+# $1 - spectre password value / seed input
+function crypt.passphrase ()
 {
     local passname="${1}"
 
@@ -44,16 +46,16 @@ get_passphrase ()
     print "$passphrase"
 }
 
-# unlock_directory uses the current identity 
+# crypt.unlock_directory uses the current identity 
 # to unlock an fscrypt-encrypted directory.
-unlock_directory ()
+function crypt.unlock_directory ()
 {
     [[ ! -e "$1" ]] && return
     echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$1" --quiet
 }
 
-# lock_directory locks an fscrypt-encrypted directory.
-lock_directory ()
+# crypt.lock_directory locks an fscrypt-encrypted directory.
+function crypt.lock_directory ()
 {
     [[ ! -e "$1" ]] && return
     _run sudo fscrypt lock "${1}"

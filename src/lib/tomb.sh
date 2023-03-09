@@ -1,5 +1,8 @@
 
-get_tomb_mapper()
+# tomb.get_mapper returns the LUKS mapper of a tomb.
+# Returns the mapper name if found, or 'none'.
+# $1 - Name of tomb.
+function tomb.get_mapper ()
 {
     if ls -1 /dev/mapper/tomb.* &> /dev/null ;  then
         ls -1 /dev/mapper/tomb.* | grep "${1}"
@@ -8,8 +11,10 @@ get_tomb_mapper()
     fi
 }
 
-# Generates a new tomb for a given identity
-new_tomb()
+# tomb.create generates a new tomb for a given identity.
+# $1 - Name of identity owning the tomb.
+# $2 - Size (in megabytes) of the tomb.
+function tomb.create ()
 {
     local name="$1"
     local size="$2"
@@ -23,17 +28,17 @@ new_tomb()
 
     # Filenames
     tomb_label="${IDENTITY}-${name}"
-    tomb_file=$(_encrypt_filename "$tomb_label")
+    tomb_file=$(crypt.filename "$tomb_label")
 
-    tomb_key=$(_encrypt_filename "${tomb_label}.key")
+    tomb_key=$(crypt.filename "${tomb_label}.key")
     tomb_key_path="${HUSH_DIR}/${tomb_key}"
 
-    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+    identity_graveyard=$(graveyard.identity_directory "$IDENTITY")
     tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
 
     # First make sure GPG keyring is accessible
     _verbose "Opening identity $IDENTITY"
-    open_coffin
+    gpg.open_coffin
 
     # And get the email recipient
     uid=$(gpg -K | grep uid | head -n 1)
@@ -54,8 +59,9 @@ new_tomb()
     _run risks_hush_ro_command
 }
 
-# Deletes a tomb and its associated key in the hush device.
-delete_tomb()
+# tomb.delete deletes a tomb in the identity graveyard,
+# and its associated key in the hush device.
+function tomb.delete ()
 {
     local name="$1"
 
@@ -68,12 +74,12 @@ delete_tomb()
 
     # Prepare filenames
     tomb_label="${IDENTITY}-${name}"
-    tomb_file=$(_encrypt_filename "$tomb_label")
+    tomb_file=$(crypt.filename "$tomb_label")
 
-    tomb_key=$(_encrypt_filename "${tomb_label}.key")
+    tomb_key=$(crypt.filename "${tomb_label}.key")
     tomb_key_path="${HUSH_DIR}/${tomb_key}"
 
-    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+    identity_graveyard=$(graveyard.identity_directory "$IDENTITY")
     tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
 
     # A few special cases need confirmation from the user, 
@@ -107,11 +113,12 @@ delete_tomb()
     fi 
 }
 
-# open_tomb_path accepts an arbitrary tomb path to open.
+# tomb.open_path accepts an arbitrary tomb path to open.
 # $1 - Resource name
 # $2 - Tomb file path
 # $3 - Tomb key path
-open_tomb_path () {
+function tomb.open_path () 
+{
     local resource="${1}"
     local tomb_file_path="${2}"
     local tomb_key_path="${3}"
@@ -142,13 +149,13 @@ open_tomb_path () {
     # checks if the gpg coffin is mounted, and open it first:
     # this also have for effect to unlock the identity's graveyard.
     local coffin_name
-    coffin_name=$(_encrypt_filename "coffin-${IDENTITY}-gpg")
-    if ! is_luks_mounted "/dev/mapper/${coffin_name}" ; then
-        open_coffin
+    coffin_name=$(crypt.filename "coffin-${IDENTITY}-gpg")
+    if ! device.luks_is_mounted "/dev/mapper/${coffin_name}" ; then
+        gpg.open_coffin
     fi
 
     if [[ "${mapper}" != "none" ]]; then
-        if is_luks_mounted "/dev/mapper/tomb.${tomb_file}" ; then
+        if device.luks_is_mounted "/dev/mapper/tomb.${tomb_file}" ; then
             _verbose "Tomb ${tomb_label} is already open and mounted"
             return 0
         fi
@@ -184,12 +191,12 @@ open_tomb_path () {
     fi
 }
 
-# open_tomb requires a cleartext resource name that the function will encrypt 
+# tomb.open requires a cleartext resource name that the function will encrypt 
 # to resolve the correct tomb file. The name is both used as a mount directory, 
 # as well as to determine when some special tombs need to be mounted on non-standard 
 # mount points, like gpg/ssh.
 # $1 - Name of the tomb
-open_tomb()
+function tomb.open ()
 {
     local resource="${1}"
 
@@ -202,22 +209,23 @@ open_tomb()
 
     # Filenames
     tomb_label="${IDENTITY}-${resource}"
-    tomb_file=$(_encrypt_filename "$tomb_label")
+    tomb_file=$(crypt.filename "$tomb_label")
 
-    tomb_key=$(_encrypt_filename "$tomb_label.key")
+    tomb_key=$(crypt.filename "$tomb_label.key")
     tomb_key_path="${HUSH_DIR}/${tomb_key}"
 
-    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+    identity_graveyard=$(graveyard.identity_directory "$IDENTITY")
     tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
 
     # Open the target
     open_tomb_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
 }
 
-# open_tomb_backup opens a target tomb from the 
+# tomb.open_backup opens a target tomb from the 
 # user backup graveyard instead of the system one.
 # This function assumes the backup is accessible.
-open_tomb_backup () {
+function tomb.open_backup () 
+{
     local resource="${1}"
 
     local tomb_label        # Cleartext identifier name of the tomb
@@ -230,22 +238,22 @@ open_tomb_backup () {
     # Filenames
     tomb_label="${IDENTITY}-${resource}"
 
-    tomb_key=$(_encrypt_filename "$tomb_label.key")
+    tomb_key=$(crypt.filename "$tomb_label.key")
     tomb_key_path="${HUSH_DIR}/${tomb_key}"
 
     backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
-    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_dir=$(crypt.filename "$IDENTITY")
     identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
-    tomb_file=$(_encrypt_filename "$tomb_label")
+    tomb_file=$(crypt.filename "$tomb_label")
     tomb_file_path="${identity_graveyard_backup}/${tomb_file}.tomb"
 
     # Open the target
     open_tomb_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
 }
 
-
-close_tomb()
+# tomb.close attempts to close an open tomb.
+function tomb.close ()
 {
     local resource="${1}"
 
@@ -254,7 +262,7 @@ close_tomb()
 
     # Filenames
     tomb_label="${IDENTITY}-${resource}"
-    tomb_file=$(_encrypt_filename "${tomb_label}")
+    tomb_file=$(crypt.filename "${tomb_label}")
 
     if ! get_tomb_mapper "${tomb_file}" &> /dev/null ; then
         _verbose "Tomb ${IDENTITY}-${resource} is already closed"
@@ -285,15 +293,16 @@ close_tomb()
     esac
 }
 
-# Identical to close_tomb, but slamming it, so all processes making use of it are killed
-slam_tomb()
+# tomb.slam is identical to tomb.close, but slamming it, 
+# so all processes making use of it are killed
+function tomb.slam ()
 {
     local resource="${1}"
 
     # Filenames
     # local FULL_name="${IDENTITY}-${resource}"
     tomb_label="${IDENTITY}-${resource}"
-    tomb_file=$(_encrypt_filename "${tomb_label}")
+    tomb_file=$(crypt.filename "${tomb_label}")
 
     if ! get_tomb_mapper "${tomb_file}" &> /dev/null ; then
         _verbose "Tomb ${IDENTITY}-${resource} is already closed"

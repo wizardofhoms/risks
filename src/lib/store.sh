@@ -1,16 +1,19 @@
 
 # print to stderr, red color
-kv_echo_err() {
+function kv.echo_err () 
+{
     echo -e "\e[01;31m$@\e[0m" >&2
 }
 
 # Usage: kv_validate_key <key>
-kv_validate_key() {
+function kv.validate_key () 
+{
     [[ "$1" =~ ^[0-9a-zA-Z._:-]+$  ]]
 }
 
 # Usage: kvget <key>
-kvget() {
+function kv.get () 
+{
     key="$1"
     kv_validate_key "$key" || {
         _failure "db" 'invalid param "key"'
@@ -24,7 +27,8 @@ kvget() {
     }
 
 # Usage: kvset <key> [value] 
-kvset() {
+function kv.set () 
+{
     key="$1"
     value="$2"
     kv_validate_key "$key" || {
@@ -38,7 +42,8 @@ kvset() {
     }
 
 # Usage: kvdel <key>
-kvdel() {
+function kv.del () 
+{
     key="$1"
     kv_validate_key "$key" || {
         _failure "db" 'invalid param "key"'
@@ -51,7 +56,8 @@ kvdel() {
 
 # list all key/value pairs to stdout
 # Usage: kvlist
-kvlist() {
+function kv.list () 
+{
     kv_user_dir=${KV_USER_DIR:-$DEFAULT_KV_USER_DIR}
     for i in "$kv_user_dir/"*; do
         if [ -f "$i" ]; then
@@ -63,6 +69,7 @@ kvlist() {
 
 # clear all key/value pairs in database
 # Usage: kvclear
-kvclear() {
+function kv.clear () 
+{
     rm -rf "${KV_USER_DIR:-$DEFAULT_KV_USER_DIR}"
 }

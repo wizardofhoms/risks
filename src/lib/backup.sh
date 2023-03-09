@@ -1,6 +1,7 @@
 
-# The identity needs its own backup directory.
-setup_identity_backup () 
+# backup.setup_identity creates a graveyard backup directory 
+# for the identity, and sets up fscrypt encryption for it.
+function backup.setup_identity () 
 {
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
     local identity_dir              # The encrypted graveyard directory for the identity
@@ -11,7 +12,7 @@ setup_identity_backup ()
     _verbose "Creating identity graveyard directory on backup"
 
     # The directory name in cleartext is simply the identity name
-    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_dir=$(crypt.filename "$IDENTITY")
     identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
     _verbose "Creating directory $identity_graveyard_backup"
@@ -26,10 +27,10 @@ setup_identity_backup ()
     _catch "Failed to encrypt identity graveyard in backup"
 }
 
-# backup_identity_gpg simply copies the raw coffin file in the graveyard backup directory root,
-# since like on the system graveyard, one must access it without having access to the graveyard in
-# the first place.
-backup_identity_gpg () 
+# backup.write_gpg copies the raw coffin file in the graveyard backup directory root,
+# since like on the system graveyard (parent directory of the identity graveyard backup), 
+# since one must access it without having access to the graveyard in the first place.
+function backup.write_gpg () 
 {
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
     local identity_dir              # The encrypted graveyard directory for the identity
@@ -40,10 +41,10 @@ backup_identity_gpg ()
     backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
 
     # The directory name in cleartext is simply the identity name
-    coffin_file=$(_encrypt_filename "${IDENTITY}-gpg.coffin")
+    coffin_file=$(crypt.filename "${IDENTITY}-gpg.coffin")
     coffin_path="${GRAVEYARD}/${coffin_file}"
 
-    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_dir=$(crypt.filename "$IDENTITY")
     coffin_backup_path="${backup_graveyard}/${identity_dir}/${coffin_file}"
 
     if [[ -e ${coffin_backup_path} ]]; then
@@ -54,10 +55,10 @@ backup_identity_gpg ()
     sudo chattr +i "${coffin_backup_path}" 
 }
 
-# delete_identity_backup wipes all the data stored in a backup medium
+# backup.delete_identity wipes all the data stored in a backup medium
 # for a given identity. This does not include the associated identity's
 # secrets in the raw hush image, if any exists.
-delete_identity_backup ()
+function backup.delete_identity ()
 {
     # Prepare filenames
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
@@ -65,7 +66,7 @@ delete_identity_backup ()
     local identity_dir              # The encrypted graveyard directory for the identity
 
     backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
-    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_dir=$(crypt.filename "$IDENTITY")
     identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
     ## First make sure the backup directory for the identity is unlocked
@@ -82,9 +83,9 @@ delete_identity_backup ()
     fi
 }
 
-# delete_tomb_backup wipes a single tomb from the graveyard backup of an identity.
+# backup.delete_tomb wipes a single tomb from the graveyard backup of an identity.
 # $1 - Cleartext label/name of the tomb to delete.
-delete_tomb_backup ()
+function backup.delete_tomb ()
 {
     # Graveyard paths 
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
@@ -92,7 +93,7 @@ delete_tomb_backup ()
     local identity_dir              # The encrypted graveyard directory for the identity
 
     backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
-    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_dir=$(crypt.filename "$IDENTITY")
     identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
     # Tomb file
@@ -103,7 +104,7 @@ delete_tomb_backup ()
     local tomb_file_path    # Absolute path to the tomb file
 
     tomb_label="${IDENTITY}-${name}"
-    tomb_file=$(_encrypt_filename "$tomb_label")
+    tomb_file=$(crypt.filename "$tomb_label")
     tomb_file_path="${identity_graveyard_backup}/${tomb_file}.tomb"
 
     ## First make sure the backup directory for the identity is unlocked
@@ -119,10 +120,10 @@ delete_tomb_backup ()
     _run sudo fscrypt lock "${identity_graveyard_backup}"
 }
 
-# remove_gpg_private checks that the GPG tomb file is present in the identity 
+# backup.move_gpg_master_key checks that the GPG tomb file is present in the identity 
 # backup, and if yes, deletes the GPG tomb from the identity system graveyard.
 # This function requires the identity backup to be mounted and unlocked.
-remove_gpg_private ()
+function backup.move_gpg_master_key ()
 {
     local tomb_label                # Cleartext identifier name of the tomb
     local tomb_file                 # Encrypted name of the tomb, for the tomb file itself
@@ -130,14 +131,14 @@ remove_gpg_private ()
     local identity_graveyard        # The full path to the identity system graveyard.
     local identity_graveyard_backup # Full path to identity graveyard backup
 
-    identity_dir=$(_encrypt_filename "$IDENTITY")
-    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+    identity_dir=$(crypt.filename "$IDENTITY")
+    identity_graveyard=$(graveyard.identity_directory "$IDENTITY")
 
     backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
     identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
     tomb_label="${IDENTITY}-${GPG_TOMB_LABEL}"
-    tomb_file=$(_encrypt_filename "$tomb_label")
+    tomb_file=$(crypt.filename "$tomb_label")
     tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
 
     # Nothing to do if the tomb is not here. 
@@ -149,24 +150,22 @@ remove_gpg_private ()
     _run sudo chattr +i "${identity_graveyard_backup}"/*
 }
 
-# check_backup_mounted exits the program 
-# if no backup device is mounted.
-check_backup_mounted () 
+# backup.fail_device_unmounted exits the program if no backup device is mounted.
+function backup.fail_device_unmounted () 
 {
-    if ! is_luks_mapper_present "$BACKUP_MAPPER" ; then
+    if ! device.luks_mapper_found "$BACKUP_MAPPER" ; then
         _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
     fi
 }
 
-# backup_is_unlocked returns 0 if the identity backup
-# is currently unlocked, or 1 if closed.
-backup_is_unlocked ()
+# backup.device_unlocked returns 0 if the identity backup is currently unlocked, or 1 if closed.
+function backup.device_unlocked ()
 {
     [[ -z "$IDENTITY" ]] && return 1
-    [[ ! $(is_luks_mounted "${BACKUP_MAPPER}") ]] && return 1
+    [[ ! $(device.luks_is_mounted "${BACKUP_MAPPER}") ]] && return 1
 
-    identity_dir=$(_encrypt_filename "$IDENTITY")
-    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+    identity_dir=$(crypt.filename "$IDENTITY")
+    identity_graveyard=$(graveyard.identity_directory "$IDENTITY")
 
     backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
     identity_graveyard_backup="${backup_graveyard}/${identity_dir}"

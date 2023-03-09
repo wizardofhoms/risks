@@ -1,6 +1,7 @@
 
 # Return 0 if is set, 1 otherwise
-option_is_set() {
+function option_is_set () 
+{
     local -i r	 # the return code (0 = set, 1 = unset)
 
     [[ -n ${(k)OPTS[$1]} ]];
@@ -15,7 +16,7 @@ option_is_set() {
 
 # Plays sounds
 # Package `sox` provides the "play" program: sudo apt-get install sox
-play_sound()
+function play_sound ()
 {
     if [ ${SDCARD_QUIET} -gt 0 ] || [ ! -x "$(command -v play)" ]; then
         return 1
@@ -46,7 +47,7 @@ play_sound()
 # config file, and optionally overrides it if the flag is set.
 # $1 - Flag argument
 # $2 - Key name in config
-config_or_flag () 
+function config_or_flag () 
 {
     local value config_value
 

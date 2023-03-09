@@ -1,6 +1,8 @@
 
-# Generate SSH keypair and sets up scripts for loading multiple keypairs
-gen_ssh_keys()
+# ssh.setup generates an SSH keypair and sets up scripts for 
+# loading multiple keypairs from the identity SSH tomb.
+# $1 - Email recipient to use for SSH keypair.
+function ssh.setup ()
 {
     local email="$1"
 
@@ -65,7 +67,8 @@ EOF
 # $1 - Algorithm
 # $2 - Size to use if possible
 # Returns "-b <size" compatible with ssh-keygen
-get_key_size () {
+function ssh.set_key_size () 
+{
     local algo="${1}"
     local key_size="${2}"
     local max

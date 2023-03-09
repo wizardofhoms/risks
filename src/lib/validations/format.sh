@@ -11,7 +11,7 @@ validate_partition_size () {
 
 # Checks a given device path is encrypted.
 validate_is_luks_device () {
-    if ! is_encrypted_block  "$1" ; then
+    if ! function device.is_encrypted_block  "$1" ; then
         echo "Path $1 seems not to be a LUKS filesystem."
     fi
 }

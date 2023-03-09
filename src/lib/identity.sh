@@ -1,26 +1,28 @@
 
-# _set_identity is used to propagate our various IDENTITY related variables
+# identity.set is used to propagate our various IDENTITY related variables
 # so that all functions that will be subsequently called can access them.
-#
 # This function also takes care of checking if there is already an active
 # identity that should be used, in case the argument is empty or none.
 #
 # $1 - The identity to use.
-_set_identity () {
+function identity.set () 
+{
     local identity="$1"
 
     # This will throw an error if we don't have an identity from any source.
-    IDENTITY=$(_identity_active_or_specified "$identity")
+    IDENTITY=$(identity.active_or_specified "$identity")
     _catch "Command requires either an identity to be active or given as argument"
 
     # Then set the file encryption key for for it.
-    FILE_ENCRYPTION_KEY=$(_set_file_encryption_key "$IDENTITY")
+    FILE_ENCRYPTION_KEY=$(crypt.set_file_obfs_key "$IDENTITY")
 }
 
-# Upon unlocking a given identity, sets the name as an ENV 
-# variable that we can use in further functions and commands.
+# identity.set_active sets the name as an ENV variable that we can use in further functions and commands. 
+# This function slightly differs from identity.set in that it does not set the active identity and its 
+# values in the script run itself: it only populates stuff that is to be used in other calls of risks.
+#
 # $1 - The name to use. If empty, just resets the identity.
-_set_active_identity ()
+function identity.set_active ()
 {
     # If the identity is empty, wipe the identity file
     if [[ -z ${1} ]] && [[ -e ${RISKS_IDENTITY_FILE} ]]; then
@@ -42,8 +44,8 @@ _set_active_identity ()
     _info "Identity '${1}' is now ACTIVE"
 }
 
-# Returns 0 if an identity is unlocked, 1 if not.
-_identity_active () 
+# identity.active returns 0 if an identity is unlocked, 1 if not.
+function identity.active () 
 {
     local identity
 
@@ -59,26 +61,27 @@ _identity_active ()
     return 0
 }
 
-# check_identity_active exits the program 
-# if there is identity, active or specified. 
-check_identity_active ()
+# identity.fail_none_active exits the program if there is no identity active or specified with args. 
+function identity.fail_none_active ()
 {
-    if ! _identity_active ; then
+    if ! identity.active ; then
         _failure "This command requires an identity to be active"
     fi
 }
 
-# Given an argument potentially containing the active identity, checks
-# that either an identity is active, or that the argument is not empty.
+# identity.active_or_specified checks that either an identity is active, 
+# or that the passed argument is not empty. If the identity is not empty
+# it is echoed back to the caller.
+#
 # $1 - An identity name
-# Exits the program if none is specified, or echoes the identity if found.
+#
 # Returns:
 # 0 - Identity is non-nil, provided either from arg or by the active
 # 1 - None have been given
-_identity_active_or_specified ()
+function identity.active_or_specified ()
 {
     if [[ -z "${1}" ]] ; then
-        if ! _identity_active ; then
+        if ! identity.active ; then
             return 1
         fi
     fi
@@ -91,9 +94,9 @@ _identity_active_or_specified ()
     print "$(cat "${RISKS_IDENTITY_FILE}")"
 }
 
-# _get_name either returns the name given as parameter, or
+# identity.get_args_name either returns the name given as parameter, or
 # generates a random (burner) one and prints it to the screen.
-_get_name () 
+function identity.get_args_name () 
 {
     local name
 
@@ -112,9 +115,9 @@ _get_name ()
     print "${name}"
 }
 
-# _get_mail returns a correctly formatted mail given either a fully specified 
+# identity.get_args_mail returns a correctly formatted mail given either a fully specified 
 # one as positional, or a generated/concatenated one from the username argument.
-_get_mail ()
+function identity.get_args_mail ()
 {
     local name="$1"
     local email="$2"
@@ -129,9 +132,9 @@ _get_mail ()
     print "${name// /_}"
 }
 
-# _get_expiry returns a correctly formatted expiry date for a GPG key.
+# identity.get_args_expiry returns a correctly formatted expiry date for a GPG key.
 # If no arguments are passed to the call, the expiry date is never.
-_get_expiry () 
+function identity.get_args_expiry () 
 {
     local expiry
 

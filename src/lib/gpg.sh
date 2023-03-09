@@ -1,6 +1,7 @@
 
-# Create a RAMDisk and setup the GPG directory in it, with configuration files
-init_gpg()
+# gpg.setup_keyring creates a RAMDisk and sets up the GPG directory/keyring 
+# in it, with configuration files related to usage/display/generation stuff.
+function gpg.setup_keyring ()
 {
     ## Creating
     _verbose 'Creating directory & setting permissions'
@@ -62,8 +63,11 @@ s2k-count 65011712
 EOF
 }
 
-# Create key pairs for a given identity, based on a premade batch file
-gen_gpg_keys()
+# gpg.generate_keys creates master/subkey pairs for a new identity.
+# $1 - Name of the GPG owner
+# $2 - Email recipient
+# $3 - Subkeys expiry date 
+function gpg.generate_keys ()
 {
     local name="$1"
     local email="$2"
@@ -118,20 +122,20 @@ EOF
     _verbose "$(tree "${RAMDISK}")"
 }
 
-# A rather complete function performing several important, but quite unrelated, tasks:
+# gpg.cleanup_keyring performs several important, but quite unrelated, tasks:
 # - Moves the GPG keyring of an identity into its coffin
 # - Checks visually that files are where expected (if verbose flag set)
 # - Removes the private keys from the keyring that is to be used daily
-cleanup_gpg_init()
+function gpg.cleanup_keyring ()
 {
     local email="$1"
 
     local tmp_filename tmp_dir coffin_name
 
     # Filenames
-    tmp_filename=$(_encrypt_filename "${IDENTITY}-gpg")
+    tmp_filename=$(crypt.filename "${IDENTITY}-gpg")
     tmp_dir="/tmp/${tmp_filename}"
-    coffin_name=$(_encrypt_filename "coffin-${IDENTITY}-gpg")
+    coffin_name=$(crypt.filename "coffin-${IDENTITY}-gpg")
 
     # Making tmp directory
     _verbose "Creating temp directory and mounting coffin"
@@ -163,14 +167,14 @@ cleanup_gpg_init()
     _verbose "Checking directory contents"
     _verbose "$(tree "$HUSH_DIR" "$GRAVEYARD")"
     _verbose "Should look like this:           \n\n \
-    /home/user/.hush                           \n    \
-    ├── fjdri3kff2i4rjkFA (joe-gpg.key)        \n    \
-    /home/user/.graveyard                      \n    \
-    ├── fejk38RjhfEf13 (joe-gpg.coffin)        \n"
+        /home/user/.hush                           \n    \
+        ├── fjdri3kff2i4rjkFA (joe-gpg.key)        \n    \
+        /home/user/.graveyard                      \n    \
+        ├── fejk38RjhfEf13 (joe-gpg.coffin)        \n"
 
     _verbose "Test opening and closing coffin for $IDENTITY"
-    close_coffin
-    open_coffin
+    gpg.close_coffin
+    gpg.open_coffin
 
     ## 6 - Removing GPG private keys 
     _verbose "Removing GPG private keys"
@@ -215,9 +219,11 @@ cleanup_gpg_init()
     rm -rf "$tmp_dir"
 }
 
-# utility function only compatibly with "private add gpg" command.
-# Generates the subkeys depending on which parameters are passed.
-generate_subkeys () 
+# gpg.generate_subkeys generates some subkeys depending on which parameters are passed.
+# $1 - Key algorithm to use
+# $2 - Fingerprint of the master key
+# $3 - Expiry date of the subkeys to generate.
+function gpg.generate_subkeys ()
 {
     local algo="${1}"
     local fingerprint="${2}"
@@ -241,13 +247,10 @@ generate_subkeys ()
         echo "$GPG_PASS" | _run "${gpg_base_cmd[@]}" "${algo}" encr "${expiry_date}" &> /dev/null
         _catch "Failed to generate subkey-pair"
     fi
-
-
 }
 
-# is_gpg_passphrase_cached returns 0 if the 
-# gpg-agent has the private cached, or 1 if not.
-is_gpg_passphrase_cached ()
+# gpg.passphrase_is_cached returns 0 if the gpg-agent has the private cached, or 1 if not.
+function gpg.passphrase_is_cached ()
 {
     local key
     key=$(gpg-connect-agent 'keyinfo --list' /bye 2>/dev/null | awk 'BEGIN{CACHED=0} /^S/ {if($7==1){CACHED=1}} END{if($0!=""){print CACHED} else {print "none"}}')
@@ -262,9 +265,10 @@ is_gpg_passphrase_cached ()
     return 1
 }
 
-# get_master_key_status returns true if the master private 
+# gpg.master_key_status returns true if the master private 
 # GPG key is present in the keyring, or false if it's absent.
-get_master_key_status () {
+function gpg.master_key_status () 
+{
     local key_status masterkey_available
 
     key_status="$(gpg --list-secret-keys | head -n 3 | tail -n 1 | awk '{print $1;}')"

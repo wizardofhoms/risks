@@ -6,14 +6,14 @@ validate_identity_exists () {
     local identity="$1"
 
     # This might be empty if none have been found, since the _failure
-    # call in _identity_active_or_specified is executed in a subshell.
+    # call in identity.active_or_specified is executed in a subshell.
     # We don't care.
-    IDENTITY=$(_identity_active_or_specified "$identity")
-    FILE_ENCRYPTION_KEY=$(_set_file_encryption_key "$IDENTITY")
+    IDENTITY=$(identity.active_or_specified "$identity")
+    FILE_ENCRYPTION_KEY=$(crypt.set_file_obfs_key "$IDENTITY")
 
     # Stat the coffin
     local coffin_filename coffin_file
-    coffin_filename=$(_encrypt_filename "${IDENTITY}-gpg.coffin")
+    coffin_filename=$(crypt.filename "${IDENTITY}-gpg.coffin")
     coffin_file="${GRAVEYARD}/${coffin_filename}"
 
     if [[ ! -e $coffin_file ]]; then

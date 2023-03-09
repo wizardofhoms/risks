@@ -1,7 +1,7 @@
 
-# new_graveyard generates a private directory in the
+# graveyard.create generates a private directory in the
 # graveyard for a given identity, with fscrypt support.
-new_graveyard ()
+function graveyard.create ()
 {
     local identity_dir identity_graveyard
 
@@ -12,7 +12,7 @@ new_graveyard ()
     fi
 
     # The directory name in cleartext is simply the identity name
-    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_dir=$(crypt.filename "$IDENTITY")
     identity_graveyard="${GRAVEYARD}/${identity_dir}"
 
     # Make the directory
@@ -23,14 +23,14 @@ new_graveyard ()
     _verbose "Setting up fscrypt protectors on directory"
     echo "$FILE_ENCRYPTION_KEY" | sudo fscrypt encrypt "$identity_graveyard" \
         --quiet --source=custom_passphrase --name="$identity_dir"
-}
+    }
 
-# delete_graveyard wipes the graveyard directory of an identity
-delete_graveyard()
+# graveyard.delete wipes the graveyard directory of an identity.
+function graveyard.delete ()
 {
     local identity_graveyard
 
-    identity_graveyard=$(get_identity_graveyard "$IDENTITY")
+    identity_graveyard=$(graveyard.identity_directory "$IDENTITY")
 
     ## First make sure the backup directory for the identity is unlocked
     ## We won't lock it, since after that function runs it won't exist anymore.
@@ -40,17 +40,17 @@ delete_graveyard()
     _run wipe -f -r "$identity_graveyard"
 }
 
-# get_identity_graveyard returns the path to an identity's graveyard directory,
+# graveyard.identity_directory returns the path to an identity's graveyard directory,
 # and decrypts (gives access to) this directory, since this function was called
 # because we need some resource stored within.
-get_identity_graveyard ()
+function graveyard.identity_directory ()
 {
     local identity="$1"
 
     local identity_dir identity_graveyard
 
     # Compute the directory names and absolute paths
-    identity_dir=$(_encrypt_filename "${identity}")
+    identity_dir=$(crypt.filename "${identity}")
     identity_graveyard="${GRAVEYARD}/${identity_dir}"
 
     print "${identity_graveyard}"

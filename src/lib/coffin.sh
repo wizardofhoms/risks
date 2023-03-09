@@ -1,16 +1,17 @@
 
-# Generates, setup and formats a LUKS partition to be used as a coffin identity files
-gen_coffin() 
+# gpg.generate_coffin sets up, generates and formats a LUKS partition 
+# to be used as a container of the identity GPG keyring.
+function gpg.generate_coffin ()
 {
     local key_filename key_file coffin_filename coffin_file coffin_name identity_fs
 
     # Filenames
-    key_filename=$(_encrypt_filename "${IDENTITY}-gpg.key")
+    key_filename=$(crypt.filename "${IDENTITY}-gpg.key")
     key_file="${HUSH_DIR}/${key_filename}"
-    coffin_filename=$(_encrypt_filename "${IDENTITY}-gpg.coffin")
+    coffin_filename=$(crypt.filename "${IDENTITY}-gpg.coffin")
     coffin_file="${GRAVEYARD}/${coffin_filename}"
-    coffin_name=$(_encrypt_filename "coffin-${IDENTITY}-gpg")
-    identity_fs=$(_encrypt_filename "${IDENTITY}-gpg")
+    coffin_name=$(crypt.filename "coffin-${IDENTITY}-gpg")
+    identity_fs=$(crypt.filename "${IDENTITY}-gpg")
 
     ## Key
     _verbose "Generating coffin key (compatible with QRCode printing)"
@@ -54,13 +55,14 @@ gen_coffin()
     _catch "Failed to make ext4 filesystem on coffin partition"
 }
 
-# Delete a coffin and its key
-delete_coffin()
+# gpg.delete_coffin deletes a coffin file in the system graveyard,
+# and its corresponding decryption key in the hush device.
+function gpg.delete_coffin ()
 {
     local key_filename key_file coffin_filename coffin_file
 
     # Coffin
-    coffin_filename=$(_encrypt_filename "${IDENTITY}-gpg.coffin")
+    coffin_filename=$(crypt.filename "${IDENTITY}-gpg.coffin")
     coffin_file="${GRAVEYARD}/${coffin_filename}"
 
     if [[ -e "$coffin_file" ]]; then
@@ -70,7 +72,7 @@ delete_coffin()
     fi
 
     # Key
-    key_filename=$(_encrypt_filename "${IDENTITY}-gpg.key")
+    key_filename=$(crypt.filename "${IDENTITY}-gpg.key")
     key_file="${HUSH_DIR}/${key_filename}"
 
     if [[ -e "$key_file" ]]; then 
@@ -81,8 +83,9 @@ delete_coffin()
     fi
 }
 
-# open_coffin requires both an identity name and its corresponding passphrase
-open_coffin()
+# gpg.open_coffin opens/mounts the identity GPG keyring coffin file.
+# It requires an identity to be set, and its corresponding passphrase
+function gpg.open_coffin ()
 {
     local key_filename          # Encrypted name for the key file
     local key_file              # Absolute path to this key
@@ -91,11 +94,11 @@ open_coffin()
     local mapper                # LUKS Mapper name
     local mount_dir             # Mount point to use for the coffin mapper
 
-    key_filename=$(_encrypt_filename "${IDENTITY}-gpg.key")
+    key_filename=$(crypt.filename "${IDENTITY}-gpg.key")
     key_file="${HUSH_DIR}/${key_filename}"
-    coffin_filename=$(_encrypt_filename "${IDENTITY}-gpg.coffin")
+    coffin_filename=$(crypt.filename "${IDENTITY}-gpg.coffin")
     coffin_file="${GRAVEYARD}/${coffin_filename}"
-    mapper=$(_encrypt_filename "coffin-${IDENTITY}-gpg")
+    mapper=$(crypt.filename "coffin-${IDENTITY}-gpg")
 
     mount_dir="${HOME}/.gnupg"
 
@@ -103,12 +106,12 @@ open_coffin()
         _failure "I'm looking for $coffin_file but no coffin file found in $GRAVEYARD"
     fi
 
-    if is_luks_mounted "/dev/mapper/${mapper}" ; then
+    if device.luks_is_mounted "/dev/mapper/${mapper}" ; then
         _verbose "Coffin file $coffin_file is already open and mounted"
         return 0
     fi
 
-    if ! is_luks_open "${mapper}"; then
+    if ! device.luks_is_opened "${mapper}"; then
         if ! _run sudo cryptsetup open --type luks "$coffin_file" "$mapper" --key-file "$key_file" ; then
             _failure "I can not open the coffin file $coffin_file"
         fi
@@ -126,11 +129,11 @@ open_coffin()
     sudo chmod 0700 "$mount_dir"
 
     # Set the identity as active, and unlock access to its GRAVEYARD directory
-    _set_active_identity "$IDENTITY"
+    identity.set_active "$IDENTITY"
 
     local identity_dir identity_graveyard
 
-    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_dir=$(crypt.filename "$IDENTITY")
     identity_graveyard="${GRAVEYARD}/$identity_dir"
 
     # Ask fscrypt to let us access it. While this will actually decrypt the files'
@@ -142,13 +145,14 @@ open_coffin()
     _verbose "Identity directory ($identity_graveyard) is unlocked"
 }
 
-close_coffin()
+# gpg.close umounts/closes the identity GPG keyring coffin file.
+function gpg.close_coffin ()
 {
     local coffin_filename coffin_file mapper mount_dir
 
-    coffin_filename=$(_encrypt_filename "${IDENTITY}-gpg.coffin")
+    coffin_filename=$(crypt.filename "${IDENTITY}-gpg.coffin")
     coffin_file="${GRAVEYARD}/${coffin_filename}"
-    mapper=$(_encrypt_filename "coffin-${IDENTITY}-gpg")
+    mapper=$(crypt.filename "coffin-${IDENTITY}-gpg")
 
     mount_dir="${HOME}/.gnupg"
 
@@ -156,13 +160,13 @@ close_coffin()
     # without anyone to ask for them.... security they said
     gpgconf --kill gpg-agent
 
-    if is_luks_mounted "/dev/mapper/${mapper}" ; then
+    if device.luks_is_mounted "/dev/mapper/${mapper}" ; then
         if ! _run sudo umount "${mount_dir}" ; then
             _failure "Coffin file ${coffin_file} can not be umounted from ${mount_dir}"
         fi
     fi
 
-    if is_luks_open "$mapper"; then
+    if device.luks_is_opened "$mapper"; then
         if ! _run sudo cryptsetup close /dev/mapper/"${mapper}" ; then
             _failure "Coffin file $coffin_file can not be closed"
         fi
@@ -174,15 +178,16 @@ close_coffin()
     local identity_dir identity_graveyard
 
     # Lock the identity's graveyard directory
-    identity_dir=$(_encrypt_filename "$IDENTITY")
+    identity_dir=$(crypt.filename "$IDENTITY")
     identity_graveyard="${GRAVEYARD}/${identity_dir}"
     _run sudo fscrypt lock "${identity_graveyard}"
 
-    _set_active_identity # An empty  identity will trigger a wiping of the file 
+    identity.set_active # An empty  identity will trigger a wiping of the file 
     _verbose "Coffin file $coffin_file has been closed"
 }
 
-list_coffins()
+# gpg.list_coffins prints a list of all currently mounted GPG coffin files.
+function gpg.list_coffins ()
 {
     local coffins_num=0
     local coffins
