@@ -7,7 +7,7 @@ function ssh.setup ()
     local email="$1"
 
     _verbose "Creating and opening tomb file for SSH"
-    _run new_tomb "$SSH_TOMB_LABEL" 20 "$IDENTITY"
+    _run tomb.create "$SSH_TOMB_LABEL" 20 "$IDENTITY"
     _run tomb.open "$SSH_TOMB_LABEL"
 
     # Write multi-key loading script

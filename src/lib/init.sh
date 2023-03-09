@@ -8,7 +8,7 @@ function tomb.create_password_store ()
     local email="${1}"
 
     _verbose "Creating tomb file for pass"
-    _run new_tomb "$PASS_TOMB_LABEL" 20 "$IDENTITY"
+    _run tomb.create "$PASS_TOMB_LABEL" 20 "$IDENTITY"
     _verbose "Opening password store"
     _run tomb.open "$PASS_TOMB_LABEL" "$IDENTITY"
     _verbose "Initializating password store with recipient $email"
@@ -22,7 +22,7 @@ function tomb.create_password_store ()
 function tomb.create_management ()
 {
     _verbose "Creating tomb file for management (key=value store, etc)"
-    _run new_tomb "$MGMT_TOMB_LABEL" 10 "$IDENTITY"
+    _run tomb.create "$MGMT_TOMB_LABEL" 10 "$IDENTITY"
     _verbose "Opening management tomb"
     _run tomb.open "$MGMT_TOMB_LABEL" "${IDENTITY}"
     _verbose "Closing management tomb"

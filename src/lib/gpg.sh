@@ -186,7 +186,7 @@ function gpg.cleanup_keyring ()
 
     # Creating tomb file for private keys and moving them
     _verbose "Creating tomb file for for storing GPG privates"
-    _run new_tomb "$GPG_TOMB_LABEL" $tomb_size
+    _run tomb.create "$GPG_TOMB_LABEL" $tomb_size
     _verbose "Opening tomb file"
     _run tomb.open "$GPG_TOMB_LABEL"
 

@@ -83,9 +83,9 @@ function backup.delete_identity ()
     fi
 }
 
-# backup.tomb.delete wipes a single tomb from the graveyard backup of an identity.
+# backup.tomb_delete wipes a single tomb from the graveyard backup of an identity.
 # $1 - Cleartext label/name of the tomb to delete.
-function backup.tomb.delete ()
+function backup.tomb_delete ()
 {
     # Graveyard paths 
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
