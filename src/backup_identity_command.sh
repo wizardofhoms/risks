@@ -4,11 +4,11 @@ local identity_graveyard        # The full path to the identity system graveyard
 local identity_graveyard_backup # Full path to identity graveyard backup
 local identity_dir              # The encrypted graveyard directory for the identity
 
-_set_identity 
-check_backup_mounted
+identity.set 
+backup.fail_device_unmounted
 
 backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
-identity_dir=$(_encrypt_filename "$IDENTITY")
+identity_dir=$(crypt.filename "$IDENTITY")
 identity_graveyard="${GRAVEYARD}/${identity_dir}"
 identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
@@ -16,7 +16,7 @@ identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 # because backup is not mandatory at identity creation time.
 if [[ ! -e "$identity_graveyard_backup" ]]; then
     _info "Setting graveyard backup for this identity"
-    _run setup_identity_backup
+    _run backup.setup_identity
     _catch "Failed to setup identity backup graveyard"
 fi
 
@@ -27,7 +27,7 @@ echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard_back
 
 # Backup the GPG coffin for this identity
 _verbose "Backing GPG" 
-_run backup_identity_gpg "${BACKUP_MOUNT_DIR}/graveyard" 
+_run backup.write_gpg "${BACKUP_MOUNT_DIR}/graveyard" 
 
 # Graveyard backup for this identity.
 _verbose "Backing graveyard files"
@@ -42,7 +42,7 @@ _run sudo chattr +i "${identity_graveyard_backup}"/* \
     || _verbose "No files in backup/graveyard for which to change immutability properties"
 
 # Remove the GPG tomb containing master private and revoc
-remove_gpg_private
+backup.move_gpg_master_key
 
 # Testing the full backup 
 _verbose "Printing directory tree in identity backup graveyard"

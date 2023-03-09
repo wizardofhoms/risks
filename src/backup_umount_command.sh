@@ -1,5 +1,5 @@
 # If identity graveyard backup is unlocked, close it
-if backup_is_unlocked; then
+if backup.device_unlocked; then
     risks_backup_lock_command
 fi
 
@@ -9,7 +9,7 @@ if [[ -e "$BACKUP_MOUNT_DIR" ]] ; then
     fi
 fi
 
-if is_luks_mapper_present "${BACKUP_MAPPER}" ; then
+if device.luks_mapper_found "${BACKUP_MAPPER}" ; then
     if ! sudo cryptsetup close "${BACKUP_MAPPER}" ; then
         _failure "Backup LUKS can not be closed"
     fi

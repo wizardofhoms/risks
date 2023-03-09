@@ -1,6 +1,6 @@
 
 # if backup is not found, fail and ask to mount
-check_backup_mounted
+backup.fail_device_unmounted
 
 _info "Backing hush partition"
 
