@@ -188,7 +188,7 @@ function gpg.cleanup_keyring ()
     _verbose "Creating tomb file for for storing GPG privates"
     _run new_tomb "$GPG_TOMB_LABEL" $tomb_size
     _verbose "Opening tomb file"
-    _run open_tomb "$GPG_TOMB_LABEL"
+    _run tomb.open "$GPG_TOMB_LABEL"
 
     keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
     _verbose "Keygrip: $keygrip"
@@ -213,7 +213,7 @@ function gpg.cleanup_keyring ()
     _verbose "Printing GPG keyring. Should have 'sec#' instead of 'pub'"
     _verbose "$(gpg -K)"
     _verbose "Closing GPG tomb file"
-    _run close_tomb "$GPG_TOMB_LABEL" "$IDENTITY"
+    _run tomb.close "$GPG_TOMB_LABEL" "$IDENTITY"
 
     # Cleanup files
     rm -rf "$tmp_dir"

@@ -124,7 +124,7 @@ function tomb.open_path ()
     local tomb_key_path="${3}"
     local tomb_file="${tomb_file_path:t}"
 
-    mapper=$(get_tomb_mapper "$tomb_file")
+    mapper=$(tomb.get_mapper "$tomb_file")
 
     # Some resources need to have fixed mount points, 
     # like the few below that are not matched by the wildcard.
@@ -218,7 +218,7 @@ function tomb.open ()
     tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
 
     # Open the target
-    open_tomb_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
+    tomb.open_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
 }
 
 # tomb.open_backup opens a target tomb from the 
@@ -249,7 +249,7 @@ function tomb.open_backup ()
     tomb_file_path="${identity_graveyard_backup}/${tomb_file}.tomb"
 
     # Open the target
-    open_tomb_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
+    tomb.open_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
 }
 
 # tomb.close attempts to close an open tomb.
@@ -264,7 +264,7 @@ function tomb.close ()
     tomb_label="${IDENTITY}-${resource}"
     tomb_file=$(crypt.filename "${tomb_label}")
 
-    if ! get_tomb_mapper "${tomb_file}" &> /dev/null ; then
+    if ! tomb.get_mapper "${tomb_file}" &> /dev/null ; then
         _verbose "Tomb ${IDENTITY}-${resource} is already closed"
         return 0
     fi
@@ -304,7 +304,7 @@ function tomb.slam ()
     tomb_label="${IDENTITY}-${resource}"
     tomb_file=$(crypt.filename "${tomb_label}")
 
-    if ! get_tomb_mapper "${tomb_file}" &> /dev/null ; then
+    if ! tomb.get_mapper "${tomb_file}" &> /dev/null ; then
         _verbose "Tomb ${IDENTITY}-${resource} is already closed"
         return 0
     fi

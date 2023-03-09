@@ -1,7 +1,7 @@
 
 name="${args['name']}"
 
-check_hush_mounted
+hush.fail_device_unmounted
 
 # If the user wants to delete in the backup, immediately check
 # that a medium is mounted, and fail if not. Normally not finding
@@ -16,10 +16,10 @@ if [[ ${args['--backup']} -eq 1 ]] && ! ls -1 /dev/mapper/"${BACKUP_MAPPER}" &> 
 fi
 
 # Set the identity variables needed by all functions...
-_set_identity "${args['name']}"
+identity.set "${args['name']}"
 
 # ... but close the identity itself. We set the resource to delete for this command. 
-if _identity_active && [[ "$(cat "${RISKS_IDENTITY_FILE}")" == "$name" ]]; then
+if identity.active && [[ "$(cat "${RISKS_IDENTITY_FILE}")" == "$name" ]]; then
     args["resource"]="identity"
     args["identity"]="$name"
     risks_close_command
@@ -29,8 +29,8 @@ _info "Starting deletion of identity '$name'"
 _info "Some of the wiping operations will take some time (several minutes). Please wait."
 
 # 1 - Delete the identity graveyard directory, and the associated fscrypt policy
-_info "Wiping graveyard ($(get_identity_graveyard "$IDENTITY"))"
-delete_graveyard
+_info "Wiping graveyard ($(graveyard.identity_directory "$IDENTITY"))"
+graveyard.delete
 
 # 2 - Delete the coffin files in the graveyard, and coffin key in hush
 # Set the hush device with read-write permissions, 
@@ -38,7 +38,7 @@ delete_graveyard
 _run risks_hush_rw_command
 
 _info "Wiping GPG coffin"
-delete_coffin
+gpg.delete_coffin
 
 # And reset the hush
 _run risks_hush_ro_command
@@ -46,7 +46,7 @@ _run risks_hush_ro_command
 # 3 - Delete the identity graveyard backup.
 # The function called takes care of mounting/unmounting, etc.
 if [[ "${args['--backup']}" -eq 1 ]]; then
-    delete_identity_backup
+    backup.delete_identity
 fi
 
 _info "Deleted identity $name"

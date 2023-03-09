@@ -8,7 +8,7 @@ function ssh.setup ()
 
     _verbose "Creating and opening tomb file for SSH"
     _run new_tomb "$SSH_TOMB_LABEL" 20 "$IDENTITY"
-    _run open_tomb "$SSH_TOMB_LABEL"
+    _run tomb.open "$SSH_TOMB_LABEL"
 
     # Write multi-key loading script
     _verbose "Writing multiple SSH-keypairs loading script (ssh-add)"
@@ -57,7 +57,7 @@ EOF
     _verbose "Making keys immutable"
     sudo chattr +i "${HOME}"/.ssh/id_ed25519*
     _verbose "Closing SSH tomb file"
-    _run close_tomb "$SSH_TOMB_LABEL"
+    _run tomb.close "$SSH_TOMB_LABEL"
 }
 
 # get_key_size sets the key size in bits depending

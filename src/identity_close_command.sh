@@ -1,14 +1,14 @@
 
-_set_identity "${args['identity']}"
+identity.set "${args['identity']}"
 
 _info "Closing PASS tomb ..."
-_run close_tomb "$PASS_TOMB_LABEL"
+_run tomb.close "$PASS_TOMB_LABEL"
 
 _info "Closing SSH tomb ..."
-_run close_tomb "$SSH_TOMB_LABEL"
+_run tomb.close "$SSH_TOMB_LABEL"
 
 _info "Closing Management tomb ..."
-_run close_tomb "$MGMT_TOMB_LABEL"
+_run tomb.close "$MGMT_TOMB_LABEL"
 
 # Finally, find all other tombs...
 tombs=$(tomb list 2>&1 \
@@ -27,9 +27,9 @@ while read -r tomb_name ; do
 done <<< "$tombs"
 
 # Close graveyard backup if open
-if is_luks_mapper_present "$BACKUP_MAPPER" ; then
+if device.luks_mapper_found "$BACKUP_MAPPER" ; then
     risks_backup_lock_command
 fi
 
 _info "Closing GPG coffin ..."
-close_coffin
+gpg.close_coffin
