@@ -1,11 +1,11 @@
 
 local keygrip keypath
 
-_set_identity "${args['identity']}"
+identity.set "${args['identity']}"
 
 # Backup/hush and identity checks
-check_hush_mounted
-check_backup_mounted
+hush.fail_device_unmounted
+backup.fail_device_unmounted
 
 # 2 - Set the partition read-write and remove from the gpg keyring
 risks_hush_rw_command

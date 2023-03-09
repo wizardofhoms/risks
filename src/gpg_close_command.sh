@@ -1,6 +1,6 @@
 
-_set_identity "${args['identity']}"
+identity.set "${args['identity']}"
 
 _info "Closing coffin and GPG keyring"
-close_coffin
+gpg.close_coffin
 
