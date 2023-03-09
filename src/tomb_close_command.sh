@@ -1,7 +1,7 @@
 
 resource="${args['resource']}"
 
-_set_identity "${args['identity']}"
+identity.set "${args['identity']}"
 
-close_tomb "$resource"
+tomb.close "$resource"
 exit $?

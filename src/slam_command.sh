@@ -1,20 +1,20 @@
 
 # First set the identity variables with the active one. 
-_set_identity ""
+identity.set ""
 
 _warning "risks" "Slaming identity $IDENTITY"
 
 _info "Slaming PASS tomb ..."
-_run slam_tomb "$PASS_TOMB_LABEL"
+_run tomb.slam "$PASS_TOMB_LABEL"
 
 _info "Slaming SSH tomb ..."
-_run slam_tomb "$SSH_TOMB_LABEL"
+_run tomb.slam "$SSH_TOMB_LABEL"
 
 _info "Slaming Management tomb ..."
-_run slam_tomb "$MGMT_TOMB_LABEL"
+_run tomb.slam "$MGMT_TOMB_LABEL"
 
 _info "Closing GPG coffin ..."
-close_coffin
+gpg.close_coffin
 # done
 
 # Finally, find all other tombs...
@@ -34,7 +34,7 @@ while read -r tomb_name ; do
 done <<< "$tombs"
 
 # Close graveyard backup if open
-if is_luks_mapper_present "$BACKUP_MAPPER" ; then
+if device.luks_mapper_found "$BACKUP_MAPPER" ; then
     risks_backup_lock_command
 fi
 

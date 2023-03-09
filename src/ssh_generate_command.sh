@@ -1,8 +1,8 @@
 
 local email uid ssh_key_name key_algo
 
-_set_identity ""
-check_hush_mounted
+identity.set ""
+hush.fail_device_unmounted
 
 # Parameters setup
 key_algo="${args['--algo']-ed25519}"
@@ -17,7 +17,7 @@ ssh_key_name="${args['--filename']}"
 _info "Generating SSH keypair"
 _info "Type: ${key_algo}"
 
-_run open_tomb "$SSH_TOMB_LABEL"
+_run tomb.open "$SSH_TOMB_LABEL"
 
 # Generate SSH key.
 ssh-keygen -t "${key_algo}" "${bits}" -C "$email" -N "" -f "${HOME}"/.ssh/"${ssh_key_name}"
