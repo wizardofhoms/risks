@@ -1,18 +1,18 @@
 
 # No identity should be active
-if _identity_active; then
+if identity.active; then
     _failure "An identity is active, close it first and rerun the command."
 fi
 
 # Nothing to do if no hush mounted.
-if ! is_named_partition_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
+if ! device.named_mapper_found "${SDCARD_ENC_PART_MAPPER}" ; then
     _failure "Device mapper /dev/mapper/${SDCARD_ENC_PART_MAPPER} not found.\n \
         Be sure you have attached your hush partition."
 fi
 
 # Check there is a hush device mounted
-if is_hush_mounted ; then
-    if is_hush_read_write ; then
+if device.hush_is_mounted ; then
+    if device.hush_is_rw ; then
         _failure "Hush device is currently mounted with read-write permissions. \
             Please ensure not process is writing to it, and mount it read-only."
     fi
@@ -23,7 +23,7 @@ if is_hush_mounted ; then
 fi
 
 # Finally try to umount it and close the LUKS filesystem
-if is_luks_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
+if device.luks_mapper_found "${SDCARD_ENC_PART_MAPPER}" ; then
     if ! sudo cryptsetup close "${SDCARD_ENC_PART_MAPPER}" ; then
         _failure "SDCARD can not be closed"
     fi

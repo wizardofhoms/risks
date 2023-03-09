@@ -2,8 +2,8 @@
 # Get basic status
 local attached mounted
 
-attached=$(is_luks_mapper_present "${SDCARD_ENC_PART_MAPPER}")
-mounted=$(is_hush_mounted)
+attached=$(device.luks_mapper_found "${SDCARD_ENC_PART_MAPPER}")
+mounted=$(device.hush_is_mounted)
 
 [[ ! $attached -eq 0 ]] && _info "Hush device is not attached to vault qube" && return
 [[ ! $mounted -eq 0 ]] && _info "No hush device mounted" && return

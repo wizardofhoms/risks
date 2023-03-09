@@ -1,16 +1,16 @@
 
-if ! is_named_partition_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
+if ! device.named_mapper_found "${SDCARD_ENC_PART_MAPPER}" ; then
     _failure "Device mapper /dev/${SDCARD_ENC_PART_MAPPER} not found.\n\
         Be sure you have attached your hush partition.       "
 fi
 
-if is_hush_mounted ; then
+if device.hush_is_mounted ; then
     _info "Sdcard already mounted"
     play_sound
     return 0
 fi
 
-if ! is_luks_mapper_present "${SDCARD_ENC_PART_MAPPER}" ; then
+if ! device.luks_mapper_found "${SDCARD_ENC_PART_MAPPER}" ; then
     # decrypts the "hush partition": it will ask for passphrase
     if ! sudo cryptsetup open --type luks "${SDCARD_ENC_PART}" "${SDCARD_ENC_PART_MAPPER}" ; then
         _failure "The hush partition ${SDCARD_ENC_PART} can not be decrypted"

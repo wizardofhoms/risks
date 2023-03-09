@@ -25,7 +25,7 @@ _verbose "Cleaning drive"
 sudo dd if=/dev/urandom of="${sd_drive}" bs=1M status=progress && sync 
 
 _info "Creating partitions"
-format_hush_partitions "$sd_drive" "$start_enc_sectors"
+hush.format_partitions "$sd_drive" "$start_enc_sectors"
 _catch "Failed to format partitions"
 
 # Automounting the first partition on any OS
@@ -88,7 +88,7 @@ _catch "Failed to write udev mapper file with SDCard UUID"
 # Create the necessary symbolic links if needed, and reload the rules after creating this link,
 # or simply reload the udev service, to take into account our changes to the udev.
 if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}" &>/dev/null ; then
-    link_hush_udev_rules
+    device.link_hush_udev_rules
 else
     _verbose "Restarting udev service" 
     sudo udevadm control --reload-rules

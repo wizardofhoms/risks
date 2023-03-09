@@ -1,4 +1,4 @@
-if ! is_hush_mounted ; then
+if ! device.hush_is_mounted ; then
     _failure "SDCARD is not mounted"
     exit 1
 fi
