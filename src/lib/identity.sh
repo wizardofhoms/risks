@@ -47,17 +47,8 @@ function identity.set_active ()
 # identity.active returns 0 if an identity is unlocked, 1 if not.
 function identity.active () 
 {
-    local identity
-
-    if [[ ! -e "${RISKS_IDENTITY_FILE}" ]]; then
-        return 1
-    fi
-
-    identity=$(cat "${RISKS_IDENTITY_FILE}")
-    if [[ -z ${identity} ]]; then
-        return 1
-    fi
-
+    [[ ! -e "${RISKS_IDENTITY_FILE}" ]] && return 1
+    [[ -z "$(cat "${RISKS_IDENTITY_FILE}")" ]] && return 1
     return 0
 }
 
@@ -80,16 +71,8 @@ function identity.fail_none_active ()
 # 1 - None have been given
 function identity.active_or_specified ()
 {
-    if [[ -z "${1}" ]] ; then
-        if ! identity.active ; then
-            return 1
-        fi
-    fi
-
-    # Print the identity
-    if [[ -n "${1}" ]]; then
-        print "${1}" && return
-    fi
+    [[ -z "${1}" ]] && ! identity.active && return 1
+    [[ -n "${1}" ]] && print "${1}" && return 0
 
     print "$(cat "${RISKS_IDENTITY_FILE}")"
 }
@@ -138,11 +121,11 @@ function identity.get_args_expiry ()
 {
     local expiry
 
-    if [[ -z "${1}" ]]; then
-        expiry_date="never"
-    else
+    if [[ -n "${1}" ]]; then
         expiry="${1}"
         expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")" 
+    else
+        expiry_date="never"
     fi
 
     print "${expiry_date}"

@@ -22,4 +22,4 @@ if [[ ! -e "$identity_graveyard_backup" ]]; then
 fi
 
 _info "Locking identity graveyard backup"
-crypt.crypt.lock_directory "${identity_graveyard_backup}"
+crypt.lock_directory "${identity_graveyard_backup}"
