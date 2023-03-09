@@ -8,8 +8,8 @@ fi
 _info "Backup device mounts:"
 print "$(mount | grep "^/dev/mapper/${BACKUP_MAPPER}")"
 
-if identity.active; then 
-    identity.set && echo && _info "Identity backup graveyard status:" 
+if identity.active; then
+    identity.set && echo && _info "Identity backup graveyard status:"
 
     backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
     identity_dir=$(crypt.filename "$IDENTITY")

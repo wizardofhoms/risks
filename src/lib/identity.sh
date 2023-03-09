@@ -5,7 +5,7 @@
 # identity that should be used, in case the argument is empty or none.
 #
 # $1 - The identity to use.
-function identity.set () 
+function identity.set ()
 {
     local identity="$1"
 
@@ -17,8 +17,8 @@ function identity.set ()
     FILE_ENCRYPTION_KEY=$(crypt.set_file_obfs_key "$IDENTITY")
 }
 
-# identity.set_active sets the name as an ENV variable that we can use in further functions and commands. 
-# This function slightly differs from identity.set in that it does not set the active identity and its 
+# identity.set_active sets the name as an ENV variable that we can use in further functions and commands.
+# This function slightly differs from identity.set in that it does not set the active identity and its
 # values in the script run itself: it only populates stuff that is to be used in other calls of risks.
 #
 # $1 - The name to use. If empty, just resets the identity.
@@ -34,7 +34,7 @@ function identity.set_active ()
         return
     fi
 
-    # If we don't have a file containing the 
+    # If we don't have a file containing the
     # identity name, populate it.
     if [[ ! -e ${RISKS_IDENTITY_FILE} ]]; then
         print "$1" > "${RISKS_IDENTITY_FILE}"
@@ -45,14 +45,14 @@ function identity.set_active ()
 }
 
 # identity.active returns 0 if an identity is unlocked, 1 if not.
-function identity.active () 
+function identity.active ()
 {
     [[ ! -e "${RISKS_IDENTITY_FILE}" ]] && return 1
     [[ -z "$(cat "${RISKS_IDENTITY_FILE}")" ]] && return 1
     return 0
 }
 
-# identity.fail_none_active exits the program if there is no identity active or specified with args. 
+# identity.fail_none_active exits the program if there is no identity active or specified with args.
 function identity.fail_none_active ()
 {
     if ! identity.active ; then
@@ -60,7 +60,7 @@ function identity.fail_none_active ()
     fi
 }
 
-# identity.active_or_specified checks that either an identity is active, 
+# identity.active_or_specified checks that either an identity is active,
 # or that the passed argument is not empty. If the identity is not empty
 # it is echoed back to the caller.
 #
@@ -79,12 +79,12 @@ function identity.active_or_specified ()
 
 # identity.get_args_name either returns the name given as parameter, or
 # generates a random (burner) one and prints it to the screen.
-function identity.get_args_name () 
+function identity.get_args_name ()
 {
     local name
 
     if [[ -z "${1}" ]] && [[ "${args['--burner']}" -eq 0 ]]; then
-        _failure "Either an identity name is required, or the --burner flag" 
+        _failure "Either an identity name is required, or the --burner flag"
     fi
 
     # Either use the provided one
@@ -98,7 +98,7 @@ function identity.get_args_name ()
     print "${name}"
 }
 
-# identity.get_args_mail returns a correctly formatted mail given either a fully specified 
+# identity.get_args_mail returns a correctly formatted mail given either a fully specified
 # one as positional, or a generated/concatenated one from the username argument.
 function identity.get_args_mail ()
 {
@@ -109,7 +109,7 @@ function identity.get_args_mail ()
 
     email="${args['--mail']}"
 
-    # Return either the mail flag with the name 
+    # Return either the mail flag with the name
     [[ -n "${email}" ]] && print "${name}@${email}"
     # Or the lowercase name without spaces
     print "${name// /_}"
@@ -117,13 +117,13 @@ function identity.get_args_mail ()
 
 # identity.get_args_expiry returns a correctly formatted expiry date for a GPG key.
 # If no arguments are passed to the call, the expiry date is never.
-function identity.get_args_expiry () 
+function identity.get_args_expiry ()
 {
     local expiry
 
     if [[ -n "${1}" ]]; then
         expiry="${1}"
-        expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")" 
+        expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")"
     else
         expiry_date="never"
     fi

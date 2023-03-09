@@ -4,7 +4,7 @@ local identity_graveyard        # The full path to the identity system graveyard
 local identity_graveyard_backup # Full path to identity graveyard backup
 local identity_dir              # The encrypted graveyard directory for the identity
 
-identity.set 
+identity.set
 backup.fail_device_unmounted
 
 backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
@@ -26,8 +26,8 @@ _info "Backing up current identity data and hush partition"
 echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard_backup" --quiet
 
 # Backup the GPG coffin for this identity
-_verbose "Backing GPG" 
-_run backup.write_gpg "${BACKUP_MOUNT_DIR}/graveyard" 
+_verbose "Backing GPG"
+_run backup.write_gpg "${BACKUP_MOUNT_DIR}/graveyard"
 
 # Graveyard backup for this identity.
 _verbose "Backing graveyard files"
@@ -44,7 +44,7 @@ _run sudo chattr +i "${identity_graveyard_backup}"/* \
 # Remove the GPG tomb containing master private and revoc
 backup.move_gpg_master_key
 
-# Testing the full backup 
+# Testing the full backup
 _verbose "Printing directory tree in identity backup graveyard"
 _verbose "$(tree "$identity_graveyard_backup")"
 

@@ -3,7 +3,7 @@
 
 ## tomb.create_password_store creates the tomb storing the password-store and sets it up.
 # $1 - Email recipient to use for password-store (GPG recipient)
-function tomb.create_password_store () 
+function tomb.create_password_store ()
 {
     local email="${1}"
 
@@ -17,7 +17,7 @@ function tomb.create_password_store ()
     _run tomb.close "$PASS_TOMB_LABEL" "$IDENTITY"
 }
 
-# tomb.create_management creates a default management tomb 
+# tomb.create_management creates a default management tomb
 # in which, between others, the key=value store is being kept.
 function tomb.create_management ()
 {

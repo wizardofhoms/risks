@@ -1,6 +1,6 @@
 
 # crypt.set_file_obfs_key is only called once per risks run,
-# and does not need any password prompt to be used: it just 
+# and does not need any password prompt to be used: it just
 # generates a deterministic key based on known inputs.
 function crypt.set_file_obfs_key ()
 {
@@ -10,7 +10,7 @@ function crypt.set_file_obfs_key ()
     print "$key"
 }
 
-# crypt.filename takes a filename as input, and uses the currently 
+# crypt.filename takes a filename as input, and uses the currently
 # set identity to produce an random name to use as a file/directory name.
 # $1 - Name/string to obfuscate.
 function crypt.filename ()
@@ -46,7 +46,7 @@ function crypt.passphrase ()
     print "$passphrase"
 }
 
-# crypt.unlock_directory uses the current identity 
+# crypt.unlock_directory uses the current identity
 # to unlock an fscrypt-encrypted directory.
 function crypt.unlock_directory ()
 {

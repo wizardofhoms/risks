@@ -3,7 +3,7 @@ local backup_graveyard          # Where the graveyard root directory is in the b
 local identity_graveyard_backup # Full path to identity graveyard backup
 local identity_dir              # The encrypted graveyard directory for the identity
 
-identity.set 
+identity.set
 backup.fail_device_unmounted
 identity.fail_none_active
 

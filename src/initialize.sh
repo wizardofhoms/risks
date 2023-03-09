@@ -24,7 +24,7 @@ fi
 # Configuration file -------------------------------------------------------------------------------
 #
 # Directory where risk stores its state
-typeset -rg RISKS_DIR="${HOME}/.risks"  
+typeset -rg RISKS_DIR="${HOME}/.risks"
 
 # Create the risk directory if needed
 [[ -e $RISKS_DIR ]] || { mkdir -p $RISKS_DIR && _info "Creating RISKS directory in $RISKS_DIR" }
@@ -58,7 +58,7 @@ typeset -gr FILE_ENCRYPTION="file_encryption_key" # Simply used as site name in 
 
 # Other default security-related default directories/names .........................................
 
-typeset -gr RAMDISK="${HOME}/.gnupg" 
+typeset -gr RAMDISK="${HOME}/.gnupg"
 typeset -gr BACKUP_MOUNT_DIR="/tmp/pendrive"
 
 typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/db/"

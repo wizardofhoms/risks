@@ -56,7 +56,7 @@ local INSTALL_SCRIPT_PATH="$0"
 local BINARY_INSTALL_DIR="${HOME}/.local/bin"
 local COMPLETIONS_INSTALL_DIR="${HOME}/.local/share/zsh/site-functions"
 
-## Binary 
+## Binary
 #
 echo "Installing risks script in ${BINARY_INSTALL_DIR}"
 if [[ ! -d "${BINARY_INSTALL_DIR}" ]]; then
@@ -66,7 +66,7 @@ cp "${INSTALL_SCRIPT_PATH}" "${BINARY_INSTALL_DIR}"
 sudo chmod go-rwx "${INSTALL_SCRIPT_PATH}"
 sudo chmod u+x "${INSTALL_SCRIPT_PATH}"
 
-## Completions 
+## Completions
 #
 echo "Installing risks completions in ${COMPLETIONS_INSTALL_DIR}"
 if [[ ! -d "${COMPLETIONS_INSTALL_DIR}" ]]; then

@@ -8,7 +8,7 @@ if ! device.luks_mapper_found "$BACKUP_MAPPER" ; then
     return
 fi
 
-identity.set 
+identity.set
 identity.fail_none_active
 
 backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
@@ -17,7 +17,7 @@ identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
 # If the identity has no backup, exit.
 if [[ ! -e "$identity_graveyard_backup" ]]; then
-    _info "This identity has no graveyard on the backup medium" 
+    _info "This identity has no graveyard on the backup medium"
     return
 fi
 

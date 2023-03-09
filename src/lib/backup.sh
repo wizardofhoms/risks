@@ -1,7 +1,7 @@
 
-# backup.setup_identity creates a graveyard backup directory 
+# backup.setup_identity creates a graveyard backup directory
 # for the identity, and sets up fscrypt encryption for it.
-function backup.setup_identity () 
+function backup.setup_identity ()
 {
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
     local identity_dir              # The encrypted graveyard directory for the identity
@@ -28,9 +28,9 @@ function backup.setup_identity ()
 }
 
 # backup.write_gpg copies the raw coffin file in the graveyard backup directory root,
-# since like on the system graveyard (parent directory of the identity graveyard backup), 
+# since like on the system graveyard (parent directory of the identity graveyard backup),
 # since one must access it without having access to the graveyard in the first place.
-function backup.write_gpg () 
+function backup.write_gpg ()
 {
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
     local identity_dir              # The encrypted graveyard directory for the identity
@@ -48,11 +48,11 @@ function backup.write_gpg ()
     coffin_backup_path="${backup_graveyard}/${identity_dir}/${coffin_file}"
 
     if [[ -e ${coffin_backup_path} ]]; then
-        sudo chattr -i "${coffin_backup_path}" 
+        sudo chattr -i "${coffin_backup_path}"
     fi
 
     cp -r "$coffin_path" "$coffin_backup_path"
-    sudo chattr +i "${coffin_backup_path}" 
+    sudo chattr +i "${coffin_backup_path}"
 }
 
 # backup.delete_identity wipes all the data stored in a backup medium
@@ -87,7 +87,7 @@ function backup.delete_identity ()
 # $1 - Cleartext label/name of the tomb to delete.
 function backup.tomb_delete ()
 {
-    # Graveyard paths 
+    # Graveyard paths
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
     local identity_graveyard_backup # Full path to identity graveyard backup
     local identity_dir              # The encrypted graveyard directory for the identity
@@ -112,7 +112,7 @@ function backup.tomb_delete ()
 
     if [[ -e "$tomb_file_path" ]]; then
         _run wipe -f -r "$tomb_file_path"
-    else 
+    else
         _warning "Tomb file backup does not exists, skipping."
     fi
 
@@ -120,7 +120,7 @@ function backup.tomb_delete ()
     _run sudo fscrypt lock "${identity_graveyard_backup}"
 }
 
-# backup.move_gpg_master_key checks that the GPG tomb file is present in the identity 
+# backup.move_gpg_master_key checks that the GPG tomb file is present in the identity
 # backup, and if yes, deletes the GPG tomb from the identity system graveyard.
 # This function requires the identity backup to be mounted and unlocked.
 function backup.move_gpg_master_key ()
@@ -141,17 +141,17 @@ function backup.move_gpg_master_key ()
     tomb_file=$(crypt.filename "$tomb_label")
     tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
 
-    # Nothing to do if the tomb is not here. 
+    # Nothing to do if the tomb is not here.
     [[ ! -e "${tomb_file_path}" ]] && return
 
     # Otherwise move the file to the backup
     _run sudo chattr -i "${identity_graveyard_backup}"/*
-    _run sudo mv "${tomb_file_path}" "${identity_graveyard_backup}" 
+    _run sudo mv "${tomb_file_path}" "${identity_graveyard_backup}"
     _run sudo chattr +i "${identity_graveyard_backup}"/*
 }
 
 # backup.fail_device_unmounted exits the program if no backup device is mounted.
-function backup.fail_device_unmounted () 
+function backup.fail_device_unmounted ()
 {
     if ! device.luks_mapper_found "$BACKUP_MAPPER" ; then
         _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
@@ -173,5 +173,5 @@ function backup.device_unlocked ()
     unlocked=$(sudo fscrypt status "${identity_graveyard_backup}" | head -n 5 | tail -n 1 | awk '{print $2}')
 
     [[ $unlocked == "yes" ]] && return 0
-    [[ $unlocked == "no" ]] && return 1 
+    [[ $unlocked == "no" ]] && return 1
 }

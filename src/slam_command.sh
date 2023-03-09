@@ -1,5 +1,5 @@
 
-# First set the identity variables with the active one. 
+# First set the identity variables with the active one.
 identity.set ""
 
 _warning "risks" "Slaming identity $IDENTITY"

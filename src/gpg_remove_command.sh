@@ -12,7 +12,7 @@ risks_hush_rw_command
 # Copy/check the private key and revoc certificate, check correcly copied, close GPG tomb
 keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
 _verbose "Keygrip: $keygrip"
-keyring_path="${RAMDISK}/private-keys-v1.d/${keygrip}" 
+keyring_path="${RAMDISK}/private-keys-v1.d/${keygrip}"
 
 _info "Wiping private GPG key ${keygrip} from keyring"
 _run wipe -rf "${keyring_path}" \

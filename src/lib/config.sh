@@ -13,32 +13,32 @@
 ##
 config_init() {
     RISKS_CONFIG_FILE=${RISKS_CONFIG_FILE-${RISKS_DIR}/config.ini}
-    [[ -f "$RISKS_CONFIG_FILE" ]] || { 
+    [[ -f "$RISKS_CONFIG_FILE" ]] || {
         _info "Writing default configuration file to ${RISKS_CONFIG_FILE}"
 
-    cat << EOF > "$RISKS_CONFIG_FILE" 
+    cat << EOF > "$RISKS_CONFIG_FILE"
 ; RISKS Vault (domU) Configuration file
 
 ; You can either edit this file in place, set values
 ; through the 'risks config' commands.
 
 ; Device file path to the hush partition
-SDCARD_ENC_PART=/dev/hush 
+SDCARD_ENC_PART=/dev/hush
 
 ; Name of LUKS mapper to hush partition
-SDCARD_ENC_PART_MAPPER=hush 
+SDCARD_ENC_PART_MAPPER=hush
 
 ; Enable sound when hush device is mounted (0: enabled, 1: disabled)
 SDCARD_QUIET=0
 
 ; Directory mount point for the hush device
-HUSH_DIR=/home/user/.hush 
+HUSH_DIR=/home/user/.hush
 
 ; Directory where to store tomb files
 GRAVEYARD=/home/user/.graveyard
 
 ; Name of LUKS mapper to backup partition
-BACKUP_MAPPER=pendev 
+BACKUP_MAPPER=pendev
 
 ; Default timeout after which the clipboard is wiped after being filled with GPG passphrase.
 GPGPASS_TIMEOUT=45

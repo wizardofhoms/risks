@@ -15,7 +15,7 @@ email=$(echo "$uid" | grep -E -o "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2
 masterkey_available="$(gpg.master_key_status)"
 fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
 [[ "${args['--expert']}" -eq 1 ]] && expert="--expert"
-    
+
 _info "Generating GPG subkey"
 _info "Type: ${key_algo}"
 _info "Signing: ${args['--sign']} | Encrypting: ${args['--encrypt']}"
@@ -48,6 +48,6 @@ if [[ $masterkey_available != true ]]; then
     risks_private_remove_command
 fi
 
-_run risks_hush_ro_command 
+_run risks_hush_ro_command
 
 _info "Successfully generated GPG subkey(s)" && return

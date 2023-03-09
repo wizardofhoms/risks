@@ -1,18 +1,18 @@
-# device.named_mapper_found checks if the "hush partition" 
+# device.named_mapper_found checks if the "hush partition"
 # has been seen by kernel and returns 0 if true.
 function device.named_mapper_found ()
 {
     ls -1 "/dev/${1}" &> /dev/null
 }
 
-# device.luks_mapper_found checks if the "hush partition" 
+# device.luks_mapper_found checks if the "hush partition"
 # has been already decrypted and returns 0 if true.
 function device.luks_mapper_found ()
 {
     ls -1 "/dev/mapper/${1}" &> /dev/null
 }
 
-# device.luks_is_opened checks if a luks mapper given 
+# device.luks_is_opened checks if a luks mapper given
 # as argument is opened/unlocked, and returns 0 if true.
 # $1 - LUKS device mapper name.
 function device.luks_is_opened ()
@@ -20,7 +20,7 @@ function device.luks_is_opened ()
     ls "/dev/mapper/${1}" &> /dev/null
 }
 
-# device.luks_is_mounted checks if a luks mapper given 
+# device.luks_is_mounted checks if a luks mapper given
 # as argument is mounted, and returns 0 if true.
 # $1 - LUKS device mapper name.
 function device.luks_is_mounted ()
@@ -28,14 +28,14 @@ function device.luks_is_mounted ()
     mount | grep "^${1}" &> /dev/null
 }
 
-# device.hush_is_mounted checks if the "hush partition" 
+# device.hush_is_mounted checks if the "hush partition"
 # is already mounted and returns 0 if true.
 function device.hush_is_mounted ()
 {
     mount | grep "^/dev/mapper/${SDCARD_ENC_PART_MAPPER}" &> /dev/null
 }
 
-# device.hush_is_rw returns 0 if the hush device mapper 
+# device.hush_is_rw returns 0 if the hush device mapper
 # mount directory has read-write permissions, 1 if not.
 function device.hush_is_rw ()
 {
@@ -45,7 +45,7 @@ function device.hush_is_rw ()
 # device.is_encrypted_block checks if a *block* device is encrypted.
 # Returns 0 if it is an encrypted block device, or 1 if not or failure.
 # $1 - /path/to/block/device
-function device.is_encrypted_block () 
+function device.is_encrypted_block ()
 {
     local	 b=$1 # Path to a block device
     local	 s="" # lsblk option -s (if available)
@@ -65,7 +65,7 @@ function device.is_encrypted_block ()
 # device.link_hush_udev_rules checks that the udev-rules file that risks
 # keeps in its config directory is linked against a file in /etc/udev/rules.d/,
 # and if not, echoes this link to the /rw/config/rc.local file.
-function device.link_hush_udev_rules () 
+function device.link_hush_udev_rules ()
 {
     # We don't do anything if we don't have a udev-rules file in
     # the risks directory yet.
@@ -73,7 +73,7 @@ function device.link_hush_udev_rules ()
         return
     fi
 
-    # Or check that a symlink exists, not taking into account 
+    # Or check that a symlink exists, not taking into account
     # the number in the name. If not found:
     if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}" &> /dev/null ; then
         _info "No link to hush udev rules detected, setting it persistent and for this session"

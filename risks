@@ -2407,10 +2407,8 @@ inspect_args() {
 # src/lib/backup.sh
 
 # backup.setup_identity creates a graveyard backup directory
-
 # for the identity, and sets up fscrypt encryption for it.
 function backup.setup_identity ()
-
 {
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
     local identity_dir              # The encrypted graveyard directory for the identity
@@ -2438,10 +2436,8 @@ function backup.setup_identity ()
 
 # backup.write_gpg copies the raw coffin file in the graveyard backup directory root,
 # since like on the system graveyard (parent directory of the identity graveyard backup),
-
 # since one must access it without having access to the graveyard in the first place.
 function backup.write_gpg ()
-
 {
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
     local identity_dir              # The encrypted graveyard directory for the identity
@@ -2460,12 +2456,10 @@ function backup.write_gpg ()
 
     if [[ -e ${coffin_backup_path} ]]; then
         sudo chattr -i "${coffin_backup_path}"
-
     fi
 
     cp -r "$coffin_path" "$coffin_backup_path"
     sudo chattr +i "${coffin_backup_path}"
-
 }
 
 # backup.delete_identity wipes all the data stored in a backup medium
@@ -2499,7 +2493,6 @@ function backup.delete_identity ()
 function backup.tomb_delete ()
 {
     # Graveyard paths
-
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
     local identity_graveyard_backup # Full path to identity graveyard backup
     local identity_dir              # The encrypted graveyard directory for the identity
@@ -2524,7 +2517,6 @@ function backup.tomb_delete ()
     if [[ -e "$tomb_file_path" ]]; then
         _run wipe -f -r "$tomb_file_path"
     else
-
         _warning "Tomb file backup does not exists, skipping."
     fi
 
@@ -2533,7 +2525,6 @@ function backup.tomb_delete ()
 }
 
 # backup.move_gpg_master_key checks that the GPG tomb file is present in the identity
-
 # backup, and if yes, deletes the GPG tomb from the identity system graveyard.
 # This function requires the identity backup to be mounted and unlocked.
 function backup.move_gpg_master_key ()
@@ -2555,19 +2546,16 @@ function backup.move_gpg_master_key ()
     tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
 
     # Nothing to do if the tomb is not here.
-
     [[ ! -e "${tomb_file_path}" ]] && return
 
     # Otherwise move the file to the backup
     _run sudo chattr -i "${identity_graveyard_backup}"/*
     _run sudo mv "${tomb_file_path}" "${identity_graveyard_backup}"
-
     _run sudo chattr +i "${identity_graveyard_backup}"/*
 }
 
 # backup.fail_device_unmounted exits the program if no backup device is mounted.
 function backup.fail_device_unmounted ()
-
 {
     if ! device.luks_mapper_found "$BACKUP_MAPPER" ; then
         _failure "No mounted backup medium found. Mount one with 'risks backup mount </dev/device>'"
@@ -2590,7 +2578,6 @@ function backup.device_unlocked ()
 
     [[ $unlocked == "yes" ]] && return 0
     [[ $unlocked == "no" ]] && return 1
-
 }
 
 # src/lib/cleanup.sh
@@ -2607,11 +2594,8 @@ _endgame() {
 
     # Ensure no information is left in unallocated memory
     IDENTITY="$rr";		        unset IDENTITY
-
     FILE_ENCRYPTION_KEY="$rr";  unset FILE_ENCRYPTION_KEY
-
     GPG_PASS="$rr";		        unset GPG_PASS
-
 }
 
 # Trap functions for the _endgame event
@@ -2628,7 +2612,6 @@ TRAPSTOP() { _endgame STOP;	}
 # src/lib/coffin.sh
 
 # gpg.generate_coffin sets up, generates and formats a LUKS partition
-
 # to be used as a container of the identity GPG keyring.
 function gpg.generate_coffin ()
 {
@@ -2664,10 +2647,8 @@ function gpg.generate_coffin ()
     _catch "Failed to lay setup and format the coffin LUKS filesystem"
     _verbose "Testing coffin detailed output (luksDump)"
     _run sudo cryptsetup luksDump "$coffin_file"
-
     _catch "Failed to dump coffin LUKS filesystem"
     _verbose "Normally, we should see the UUID of the coffin, and only one key configured for it"
-
 
     _verbose "Opening the coffin for setup"
     _run sudo cryptsetup open --type luks "$coffin_file" "$coffin_name" --key-file "$key_file"
@@ -2675,7 +2656,6 @@ function gpg.generate_coffin ()
 
     _verbose "Testing coffin status"
     _run sudo cryptsetup status "$coffin_name"
-
     _catch "Failed to get status of coffin LUKS filesystem"
 
     _verbose "Formatting the coffin filesystem (ext4)"
@@ -2696,7 +2676,6 @@ function gpg.delete_coffin ()
     if [[ -e "$coffin_file" ]]; then
         _run wipe -f -r "$coffin_file"
     else
-
         _warning "Coffin file does not exists, skipping."
     fi
 
@@ -2705,9 +2684,7 @@ function gpg.delete_coffin ()
     key_file="${HUSH_DIR}/${key_filename}"
 
     if [[ -e "$key_file" ]]; then
-
         sudo chattr -i "${key_file}"
-
         _run wipe -f -r -P 10 "$key_file"
     else
         _warning "Coffin key does not exists, skipping."
@@ -2814,7 +2791,6 @@ function gpg.close_coffin ()
     _run sudo fscrypt lock "${identity_graveyard}"
 
     identity.set_active # An empty  identity will trigger a wiping of the file
-
     _verbose "Coffin file $coffin_file has been closed"
 }
 
@@ -2875,11 +2851,9 @@ cyan_underlined() { print_in_color "\e[4;36m" "$*"; }
 config_init() {
     RISKS_CONFIG_FILE=${RISKS_CONFIG_FILE-${RISKS_DIR}/config.ini}
     [[ -f "$RISKS_CONFIG_FILE" ]] || {
-
         _info "Writing default configuration file to ${RISKS_CONFIG_FILE}"
 
     cat << EOF > "$RISKS_CONFIG_FILE"
-
 ; RISKS Vault (domU) Configuration file
 
 ; You can either edit this file in place, set values
@@ -3010,7 +2984,6 @@ config_has_key() {
 
 # crypt.set_file_obfs_key is only called once per risks run,
 # and does not need any password prompt to be used: it just
-
 # generates a deterministic key based on known inputs.
 function crypt.set_file_obfs_key ()
 {
@@ -3021,7 +2994,6 @@ function crypt.set_file_obfs_key ()
 }
 
 # crypt.filename takes a filename as input, and uses the currently
-
 # set identity to produce an random name to use as a file/directory name.
 # $1 - Name/string to obfuscate.
 function crypt.filename ()
@@ -3058,7 +3030,6 @@ function crypt.passphrase ()
 }
 
 # crypt.unlock_directory uses the current identity
-
 # to unlock an fscrypt-encrypted directory.
 function crypt.unlock_directory ()
 {
@@ -3194,7 +3165,6 @@ function crypt.lock_directory ()
 # src/lib/gpg.sh
 
 # gpg.setup_keyring creates a RAMDisk and sets up the GPG directory/keyring
-
 # in it, with configuration files related to usage/display/generation stuff.
 function gpg.setup_keyring ()
 {
@@ -3204,10 +3174,8 @@ function gpg.setup_keyring ()
     _run sudo mount -t tmpfs -o size=10m ramdisk "${RAMDISK}"
     _catch "Failed to mount tmp fs on ramdisk"
     sudo chown "${USER}" "${RAMDISK}"
-
     _catch "Failed to set ownership to ${RAMDISK}"
     sudo chmod 0700 "${RAMDISK}"
-
     _catch "Failed to change mod 0700 to ${RAMDISK}"
 
     _verbose "Testing ramdisk read/write"
@@ -3217,7 +3185,6 @@ function gpg.setup_keyring ()
         ramdisk on /rw/home/user/ramdisk type tmpfs (rw,relatime,size=10240k) \n"
 
     touch "${RAMDISK}/delme" && rm "${RAMDISK}/delme"
-
     _catch "Failed to test write file ${1}"
 
     # Configuration files
@@ -3263,7 +3230,6 @@ EOF
 # $1 - Name of the GPG owner
 # $2 - Email recipient
 # $3 - Subkeys expiry date
-
 function gpg.generate_keys ()
 {
     local name="$1"
@@ -3277,18 +3243,13 @@ function gpg.generate_keys ()
     cat >"${RAMDISK}/primary_key_unattended" <<EOF
 %echo Generating EDDSA key (Ed25519 curve)
 Key-Type: eddsa
-
 Key-Curve: Ed25519
-
 Key-Usage: sign
 Key-Length: 4096
 Name-Real: $name
-
 Name-Email: $email
-
 Expire-Date: 0
 Passphrase: $GPG_PASS
-
 %commit
 %echo done
 EOF
@@ -3296,16 +3257,12 @@ EOF
     # Generate key and get rid of batch file
     _verbose "Generating primary key from batch file"
     _run gpg --batch --gen-key "${RAMDISK}/primary_key_unattended"
-
     _catch "Failed to generate keys from batch file"
     _verbose "Deleting batch file"
     _run wipe -f -P 10 "${RAMDISK}/primary_key_unattended"
-
     _catch "Failed to wipe batch file: contains the identity passphrase"
 
-
     expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")"
-
     fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
     _info "Fingerprint: ${fingerprint}"
 
@@ -3346,9 +3303,7 @@ function gpg.cleanup_keyring ()
     _verbose "Creating temp directory and mounting coffin"
     mkdir "$tmp_dir"
     sudo mount /dev/mapper/"${coffin_name}" "$tmp_dir"
-
     _catch "Failed to mount coffin partition on $tmp_dir"
-
     sudo chown "$USER" "$tmp_dir"
     _verbose "Testing coffin filesystem"
     _verbose "$(mount | grep "$tmp_filename")"
@@ -3361,7 +3316,6 @@ function gpg.cleanup_keyring ()
     sudo chattr +i "$tmp_dir"/openpgp-revocs.d/*
     sudo umount "$tmp_dir" || _warning "Failed to unmount tmp directory $TMP"
     sudo cryptsetup close /dev/mapper/"$coffin_name"
-
     _catch "Failed to close LUKS filesystem for identity"
 
     # Clearing RAMDisk
@@ -3369,7 +3323,6 @@ function gpg.cleanup_keyring ()
     _run sudo wipe -rf "$RAMDISK"/*
     _catch "Failed to wipe $RAMDISK directory"
     sudo umount -l "$RAMDISK" || _warning "Failed to unmount ramdisk $RAMDISK"
-
 
     _verbose "Checking directory contents"
     _verbose "$(tree "$HUSH_DIR" "$GRAVEYARD")"
@@ -3382,7 +3335,6 @@ function gpg.cleanup_keyring ()
     _verbose "Test opening and closing coffin for $IDENTITY"
     gpg.close_coffin
     gpg.open_coffin
-
 
     _verbose "Removing GPG private keys"
 
@@ -3409,7 +3361,6 @@ function gpg.cleanup_keyring ()
     # Deleting keys from keyring
     _verbose "Wiping corresponding files in GPG keyring"
     sudo chattr -i "${RAMDISK}"/private-keys-v1.d/"${keygrip}"
-
     _run wipe -rf "${RAMDISK}"/private-keys-v1.d/"${keygrip}" \
         || _warning "Failed to delete master private key from keyring !"
 
@@ -3447,7 +3398,6 @@ function gpg.generate_subkeys ()
     fi
 
     # Encryption subkey
-
     if [[ "${args['--encrypt']}" -eq 1 ]]; then
         if [[ "${algo}" == "ed25519" ]]; then
             algo="cv25519"
@@ -3475,10 +3425,8 @@ function gpg.passphrase_is_cached ()
 }
 
 # gpg.master_key_status returns true if the master private
-
 # GPG key is present in the keyring, or false if it's absent.
 function gpg.master_key_status ()
-
 {
     local key_status masterkey_available
 
@@ -3609,7 +3557,6 @@ local INSTALL_SCRIPT_PATH="$0"
 local BINARY_INSTALL_DIR="${HOME}/.local/bin"
 local COMPLETIONS_INSTALL_DIR="${HOME}/.local/share/zsh/site-functions"
 
-
 #
 echo "Installing risks script in ${BINARY_INSTALL_DIR}"
 if [[ ! -d "${BINARY_INSTALL_DIR}" ]]; then
@@ -3618,7 +3565,6 @@ fi
 cp "${INSTALL_SCRIPT_PATH}" "${BINARY_INSTALL_DIR}"
 sudo chmod go-rwx "${INSTALL_SCRIPT_PATH}"
 sudo chmod u+x "${INSTALL_SCRIPT_PATH}"
-
 
 #
 echo "Installing risks completions in ${COMPLETIONS_INSTALL_DIR}"
@@ -3653,7 +3599,6 @@ EOF
 #
 # $1 - The identity to use.
 function identity.set ()
-
 {
     local identity="$1"
 
@@ -3666,9 +3611,7 @@ function identity.set ()
 }
 
 # identity.set_active sets the name as an ENV variable that we can use in further functions and commands.
-
 # This function slightly differs from identity.set in that it does not set the active identity and its
-
 # values in the script run itself: it only populates stuff that is to be used in other calls of risks.
 #
 # $1 - The name to use. If empty, just resets the identity.
@@ -3685,7 +3628,6 @@ function identity.set_active ()
     fi
 
     # If we don't have a file containing the
-
     # identity name, populate it.
     if [[ ! -e ${RISKS_IDENTITY_FILE} ]]; then
         print "$1" > "${RISKS_IDENTITY_FILE}"
@@ -3697,7 +3639,6 @@ function identity.set_active ()
 
 # identity.active returns 0 if an identity is unlocked, 1 if not.
 function identity.active ()
-
 {
     [[ ! -e "${RISKS_IDENTITY_FILE}" ]] && return 1
     [[ -z "$(cat "${RISKS_IDENTITY_FILE}")" ]] && return 1
@@ -3705,7 +3646,6 @@ function identity.active ()
 }
 
 # identity.fail_none_active exits the program if there is no identity active or specified with args.
-
 function identity.fail_none_active ()
 {
     if ! identity.active ; then
@@ -3714,7 +3654,6 @@ function identity.fail_none_active ()
 }
 
 # identity.active_or_specified checks that either an identity is active,
-
 # or that the passed argument is not empty. If the identity is not empty
 # it is echoed back to the caller.
 #
@@ -3734,13 +3673,11 @@ function identity.active_or_specified ()
 # identity.get_args_name either returns the name given as parameter, or
 # generates a random (burner) one and prints it to the screen.
 function identity.get_args_name ()
-
 {
     local name
 
     if [[ -z "${1}" ]] && [[ "${args['--burner']}" -eq 0 ]]; then
         _failure "Either an identity name is required, or the --burner flag"
-
     fi
 
     # Either use the provided one
@@ -3755,7 +3692,6 @@ function identity.get_args_name ()
 }
 
 # identity.get_args_mail returns a correctly formatted mail given either a fully specified
-
 # one as positional, or a generated/concatenated one from the username argument.
 function identity.get_args_mail ()
 {
@@ -3767,7 +3703,6 @@ function identity.get_args_mail ()
     email="${args['--mail']}"
 
     # Return either the mail flag with the name
-
     [[ -n "${email}" ]] && print "${name}@${email}"
     # Or the lowercase name without spaces
     print "${name// /_}"
@@ -3776,14 +3711,12 @@ function identity.get_args_mail ()
 # identity.get_args_expiry returns a correctly formatted expiry date for a GPG key.
 # If no arguments are passed to the call, the expiry date is never.
 function identity.get_args_expiry ()
-
 {
     local expiry
 
     if [[ -n "${1}" ]]; then
         expiry="${1}"
         expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")"
-
     else
         expiry_date="never"
     fi
@@ -3797,7 +3730,6 @@ function identity.get_args_expiry ()
 
 # $1 - Email recipient to use for password-store (GPG recipient)
 function tomb.create_password_store ()
-
 {
     local email="${1}"
 
@@ -3812,7 +3744,6 @@ function tomb.create_password_store ()
 }
 
 # tomb.create_management creates a default management tomb
-
 # in which, between others, the key=value store is being kept.
 function tomb.create_management ()
 {
@@ -3879,10 +3810,8 @@ function is_verbose_set () {
 
 # Messaging function with pretty coloring
 function _msg()
-
 {
     # Check if we have been provided a section name,
-
     # and if not, that the section is set to a default.
     if [[ ${#@} -lt 3 ]]; then
         local progname="$section"
@@ -3983,7 +3912,6 @@ function _warning() {
 # command's stderr buffer, which is printed just below our message.
 # We then exit the program.
 function _failure()
-
 {
     typeset -i exitcode=${exitv:-1}
 
@@ -4003,7 +3931,6 @@ function _print() {
 
 # src/lib/mappers.sh
 # device.named_mapper_found checks if the "hush partition"
-
 # has been seen by kernel and returns 0 if true.
 function device.named_mapper_found ()
 {
@@ -4011,7 +3938,6 @@ function device.named_mapper_found ()
 }
 
 # device.luks_mapper_found checks if the "hush partition"
-
 # has been already decrypted and returns 0 if true.
 function device.luks_mapper_found ()
 {
@@ -4019,7 +3945,6 @@ function device.luks_mapper_found ()
 }
 
 # device.luks_is_opened checks if a luks mapper given
-
 # as argument is opened/unlocked, and returns 0 if true.
 # $1 - LUKS device mapper name.
 function device.luks_is_opened ()
@@ -4028,7 +3953,6 @@ function device.luks_is_opened ()
 }
 
 # device.luks_is_mounted checks if a luks mapper given
-
 # as argument is mounted, and returns 0 if true.
 # $1 - LUKS device mapper name.
 function device.luks_is_mounted ()
@@ -4037,7 +3961,6 @@ function device.luks_is_mounted ()
 }
 
 # device.hush_is_mounted checks if the "hush partition"
-
 # is already mounted and returns 0 if true.
 function device.hush_is_mounted ()
 {
@@ -4045,7 +3968,6 @@ function device.hush_is_mounted ()
 }
 
 # device.hush_is_rw returns 0 if the hush device mapper
-
 # mount directory has read-write permissions, 1 if not.
 function device.hush_is_rw ()
 {
@@ -4056,7 +3978,6 @@ function device.hush_is_rw ()
 # Returns 0 if it is an encrypted block device, or 1 if not or failure.
 # $1 - /path/to/block/device
 function device.is_encrypted_block ()
-
 {
     local	 b=$1 # Path to a block device
     local	 s="" # lsblk option -s (if available)
@@ -4077,7 +3998,6 @@ function device.is_encrypted_block ()
 # keeps in its config directory is linked against a file in /etc/udev/rules.d/,
 # and if not, echoes this link to the /rw/config/rc.local file.
 function device.link_hush_udev_rules ()
-
 {
     # We don't do anything if we don't have a udev-rules file in
     # the risks directory yet.
@@ -4086,7 +4006,6 @@ function device.link_hush_udev_rules ()
     fi
 
     # Or check that a symlink exists, not taking into account
-
     # the number in the name. If not found:
     if ! ls /etc/udev/rules.d/*"${UDEV_RULES_FILE}" &> /dev/null ; then
         _info "No link to hush udev rules detected, setting it persistent and for this session"
@@ -4156,7 +4075,6 @@ function _catch ()
 # src/lib/ssh.sh
 
 # ssh.setup generates an SSH keypair and sets up scripts for
-
 # loading multiple keypairs from the identity SSH tomb.
 # $1 - Email recipient to use for SSH keypair.
 function ssh.setup ()
@@ -4225,14 +4143,12 @@ EOF
 # $2 - Size to use if possible
 # Returns "-b <size" compatible with ssh-keygen
 function ssh.set_key_size ()
-
 {
     local algo="${1}"
     local key_size="${2}"
     local max
 
     # Set max length per key algo
-
     if [[ "$algo" == "rsa" ]]; then
         max=4096
     elif [[ "$algo" == "ecdsa" ]]; then
@@ -4251,21 +4167,18 @@ function ssh.set_key_size ()
 
 # print to stderr, red color
 function kv.echo_err ()
-
 {
     echo -e "\e[01;31m$@\e[0m" >&2
 }
 
 # Usage: kv_validate_key <key>
 function kv.validate_key ()
-
 {
     [[ "$1" =~ ^[0-9a-zA-Z._:-]+$  ]]
 }
 
 # Usage: kvget <key>
 function kv.get ()
-
 {
     key="$1"
     kv_validate_key "$key" || {
@@ -4280,9 +4193,7 @@ function kv.get ()
     }
 
 # Usage: kvset <key> [value]
-
 function kv.set ()
-
 {
     key="$1"
     value="$2"
@@ -4298,7 +4209,6 @@ function kv.set ()
 
 # Usage: kvdel <key>
 function kv.del ()
-
 {
     key="$1"
     kv_validate_key "$key" || {
@@ -4313,7 +4223,6 @@ function kv.del ()
 # list all key/value pairs to stdout
 # Usage: kvlist
 function kv.list ()
-
 {
     kv_user_dir=${KV_USER_DIR:-$DEFAULT_KV_USER_DIR}
     for i in "$kv_user_dir/"*; do
@@ -4322,13 +4231,11 @@ function kv.list ()
             echo "$key" "$(kvget "$key")"
         fi
     done
-
 }
 
 # clear all key/value pairs in database
 # Usage: kvclear
 function kv.clear ()
-
 {
     rm -rf "${KV_USER_DIR:-$DEFAULT_KV_USER_DIR}"
 }
@@ -4383,19 +4290,14 @@ function tomb.create ()
     # Then dig
     _verbose "Digging tomb in $tomb_file_path"
     tomb dig -s "$size" "$tomb_file_path"
-
     _catch "Failed to dig tomb. Aborting"
     _run risks_hush_rw_command
-
     _verbose "Forging tomb key and making it immutable"
     tomb forge -g -r "$recipient" "$tomb_key_path"
-
     _catch "Failed to forge keys. Aborting"
     sudo chattr +i "$tomb_key_path"
-
     _verbose "Locking tomb with key"
     tomb lock -g -k "$tomb_key_path" "$tomb_file_path"
-
     _catch "Failed to lock tomb. Aborting"
     _run risks_hush_ro_command
 }
@@ -4424,7 +4326,6 @@ function tomb.delete ()
     tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
 
     # A few special cases need confirmation from the user,
-
     # like GPG, which stores the identity' private keys
     case ${name} in
         GPG)
@@ -4451,10 +4352,8 @@ function tomb.delete ()
         sudo chattr -i "$tomb_key_path"
         _run wipe -f -r -P 10 "$tomb_key_path"
     else
-
         _warning "Tomb key path does not exists, skipping."
     fi
-
 }
 
 # tomb.open_path accepts an arbitrary tomb path to open.
@@ -4462,7 +4361,6 @@ function tomb.delete ()
 # $2 - Tomb file path
 # $3 - Tomb key path
 function tomb.open_path ()
-
 {
     local resource="${1}"
     local tomb_file_path="${2}"
@@ -4472,7 +4370,6 @@ function tomb.open_path ()
     mapper=$(tomb.get_mapper "$tomb_file")
 
     # Some resources need to have fixed mount points,
-
     # like the few below that are not matched by the wildcard.
     case ${resource} in
         gpg)
@@ -4538,11 +4435,8 @@ function tomb.open_path ()
 }
 
 # tomb.open requires a cleartext resource name that the function will encrypt
-
 # to resolve the correct tomb file. The name is both used as a mount directory,
-
 # as well as to determine when some special tombs need to be mounted on non-standard
-
 # mount points, like gpg/ssh.
 # $1 - Name of the tomb
 function tomb.open ()
@@ -4571,11 +4465,9 @@ function tomb.open ()
 }
 
 # tomb.open_backup opens a target tomb from the
-
 # user backup graveyard instead of the system one.
 # This function assumes the backup is accessible.
 function tomb.open_backup ()
-
 {
     local resource="${1}"
 
@@ -4645,7 +4537,6 @@ function tomb.close ()
 }
 
 # tomb.slam is identical to tomb.close, but slamming it,
-
 # so all processes making use of it are killed
 function tomb.slam ()
 {
@@ -4691,7 +4582,6 @@ function tomb.slam ()
 
 # Return 0 if is set, 1 otherwise
 function option_is_set ()
-
 {
     local -i r	 # the return code (0 = set, 1 = unset)
 
@@ -4739,7 +4629,6 @@ function play_sound ()
 # $1 - Flag argument
 # $2 - Key name in config
 function config_or_flag ()
-
 {
     local value config_value
 
@@ -4811,8 +4700,7 @@ risks_hush_format_command() {
 
   local sd_drive sd_ext4_drive sd_enc_part mount_point udev_rules uuid
 
-  sd_drive="${args['device']}"        # Device file
-
+  sd_drive="${args['device']}"      # Device file
   sd_ext4_drive="$sd_drive"1        # Dumb partition
   sd_enc_part="$sd_drive"2          # Encrypted partition
   mount_point="${HUSH_DIR}"
@@ -4825,14 +4713,12 @@ risks_hush_format_command() {
       start_enc_sectors="${enc_part_size}"
   else
       percent_size="${args['--size-percent']}"
-
       total_size="$(sudo blockdev --getsize "${sd_drive}")"
       enc_part_size="$(( total_size * percent_size / 100 ))"
       start_enc_sectors="$(( total_size - enc_part_size - 2048 ))"
   fi
 
   # Cleanup & making partitions
-
   _info "Overwriting and partitioning SDCARD"
   _verbose "Cleaning drive"
   sudo dd if=/dev/urandom of="${sd_drive}" bs=1M status=progress && sync
@@ -4842,14 +4728,11 @@ risks_hush_format_command() {
   _catch "Failed to format partitions"
 
   # Setting up automounting the first partition on any OS
-
   _verbose "Making 1st partition mountable by default for all OS (fat32)"
   _run sudo mkfs.vfat -F 32 -n DATA "${sd_ext4_drive}"
-
   _catch "Failed to make vfat32 filesystem"
 
   # Hush partition encryption setup
-
   mkdir "${mount_point}" &> /dev/null
   _info "Creating LUKS filesystem"
   sudo cryptsetup -v -q -y --cipher aes-xts-plain64 --key-size 512 --hash sha512 \
@@ -4859,22 +4742,17 @@ risks_hush_format_command() {
 
   _verbose "Checking LUKS partition status"
   sudo cryptsetup open --type luks "${sd_enc_part}" "${SDCARD_ENC_PART_MAPPER}"
-
   _catch "Failed to open LUKS drive"
   _verbose "$(sudo cryptsetup status "${SDCARD_ENC_PART_MAPPER}")"
 
   # Ext4 with encryption support (for fscrypt) and fscrypt setup
   _info "Making filesytem and setting up high-level encryption (fscrypt)"
   _run sudo mkfs.ext4 -m 0 -L "hush" "/dev/mapper/${SDCARD_ENC_PART_MAPPER}"
-
   _catch "Failed to make ext4 filesystem on partition"
   _run sudo /sbin/tune2fs -O encrypt "/dev/mapper/${SDCARD_ENC_PART_MAPPER}"
-
   _catch "Failed to enable encryption on ext4 filesystem"
   _run sudo mount -o rw "/dev/mapper/${SDCARD_ENC_PART_MAPPER}" "${mount_point}"
-
   _catch "Failed to mount partition on ${mount_point}"
-
   sudo chown "${USER}" "${HUSH_DIR}"
   _verbose "Setting up fscrypt in hush mount point (${mount_point})"
   sudo fscrypt setup --quiet --force "${mount_point}"
@@ -4887,10 +4765,8 @@ risks_hush_format_command() {
       /dev/mapper/hush on /rw/home/user/.hush type ext4 (rw,relatime,data=ordered)    \n\n"
 
   # Prepare a udev command string with correct UUID, to be written
-
   # both on this system and on the hush if used on another computer.
   _info "Setting Udev rules for hush partition "
-
   uuid=$(sudo cryptsetup luksUUID "${sd_enc_part}")
   echo 'SUBSYSTEM=="block", ENV{ID_FS_UUID}=="'"${uuid}"'", SYMLINK+="hush"' >> "${UDEV_RULES_PATH}"
 
@@ -4898,17 +4774,12 @@ risks_hush_format_command() {
   hush.write_risks_scripts "$udev_rules"
   _verbose "Closing and unmounting device"
   _run sudo umount "${mount_point}"
-
   _catch "Failed to unmount ${mount_point}"
-
   _run sudo cryptsetup close "${SDCARD_ENC_PART_MAPPER}"
-
   _catch "Failed to close LUKS filesystem on ${SDCARD_ENC_PART_MAPPER}"
 
   # Setup udev identitiers mapping for hush partition
-
   _info "Setting Udev rules for hush partition "
-
   _catch "Failed to write udev mapper file with SDCard UUID"
 
   # Create the necessary symbolic links if needed, and reload the rules after creating this link,
@@ -4917,7 +4788,6 @@ risks_hush_format_command() {
       device.link_hush_udev_rules
   else
       _verbose "Restarting udev service"
-
       sudo udevadm control --reload-rules
   fi
 
@@ -5089,25 +4959,20 @@ risks_backup_format_command() {
   # Filesystem setup
   mkdir "${BACKUP_MOUNT_DIR}" &> /dev/null
   sudo cryptsetup open --type luks "${pendrive}" "${BACKUP_MAPPER}"
-
   _catch "Failed to open backup LUKS filesystem"
 
   _info "Making ext4 filesystem on LUKS mapper"
   _run sudo mkfs.ext4 -m 0 -L "backup" /dev/mapper/"${BACKUP_MAPPER}"
-
   _catch "Failed to make ext4 filesystem on backup"
 
   # fsencrypt setup
   _info "Enabling filesystem encryption and setting up fscrypt"
   _run sudo /sbin/tune2fs -O encrypt "/dev/mapper/${BACKUP_MAPPER}"
-
   _catch "Failed to enable encryption on ext4 filesystem"
 
   _run sudo mount /dev/mapper/"${BACKUP_MAPPER}" "${BACKUP_MOUNT_DIR}"
-
   _catch "Failed to mount partition on ${BACKUP_MOUNT_DIR}"
   sudo chown "${USER}" "${BACKUP_MOUNT_DIR}"
-
   _info "Setting up fscrypt in backup mount point (${BACKUP_MOUNT_DIR})"
   echo "N" | sudo fscrypt setup "${BACKUP_MOUNT_DIR}" &> /dev/null
   _catch "Failed to setup fscrypt metadata with root permissions"
@@ -5186,7 +5051,6 @@ risks_backup_unlock_command() {
   local identity_dir              # The encrypted graveyard directory for the identity
 
   identity.set
-
   backup.fail_device_unmounted
   identity.fail_none_active
 
@@ -5219,7 +5083,6 @@ risks_backup_lock_command() {
   fi
 
   identity.set
-
   identity.fail_none_active
 
   backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
@@ -5229,7 +5092,6 @@ risks_backup_lock_command() {
   # If the identity has no backup, exit.
   if [[ ! -e "$identity_graveyard_backup" ]]; then
       _info "This identity has no graveyard on the backup medium"
-
       return
   fi
 
@@ -5252,7 +5114,6 @@ risks_backup_status_command() {
   print "$(mount | grep "^/dev/mapper/${BACKUP_MAPPER}")"
 
   if identity.active; then
-
       identity.set && echo && _info "Identity backup graveyard status:"
 
       backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
@@ -5274,7 +5135,6 @@ risks_backup_identity_command() {
   local identity_dir              # The encrypted graveyard directory for the identity
 
   identity.set
-
   backup.fail_device_unmounted
 
   backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
@@ -5296,7 +5156,6 @@ risks_backup_identity_command() {
 
   # Backup the GPG coffin for this identity
   _verbose "Backing GPG"
-
   _run backup.write_gpg "${BACKUP_MOUNT_DIR}/graveyard"
 
   # Graveyard backup for this identity.
@@ -5315,7 +5174,6 @@ risks_backup_identity_command() {
   backup.move_gpg_master_key
 
   # Testing the full backup
-
   _verbose "Printing directory tree in identity backup graveyard"
   _verbose "$(tree "$identity_graveyard_backup")"
 
@@ -5387,10 +5245,8 @@ risks_identity_create_command() {
   identity.set "$identity"
 
   # GPG
-
   #
   # Generate GPG keypairs with a different passphrase than the one
-
   # we use for encrypting file/directory names and contents.
   # This passphrase is the one returned by the risks gpg pass command.
   _in_section 'gpg' && _info "Setting up RAMDisk and GPG backend"
@@ -5417,7 +5273,6 @@ risks_identity_create_command() {
   gpg.generate_coffin
 
   # Clean RAM disk, remove private keys from the keyring and test open/close
-
   _in_section 'gpg' && _info "Cleaning and backing keyring privates"
   gpg.cleanup_keyring "$email"
 
@@ -5431,9 +5286,7 @@ risks_identity_create_command() {
   fi
 
   _in_section 'ssh' && _info "Generating SSH keypair and multi-key ssh-agent script"
-
   ssh.setup "$email"
-
 
   # config files, etc, and set default key=values
   _in_section 'mgmt' && _info "Creating management tomb"
@@ -5462,7 +5315,6 @@ risks_identity_create_command() {
 
       risks_backup_umount_command
   fi
-
 
   echo && _success "risks" "Identity generation complete." && echo
 
@@ -5551,7 +5403,6 @@ risks_identity_delete_command() {
   hush.fail_device_unmounted
 
   # If the user wants to delete in the backup, check that a medium is mounted, and fail if not.
-
   if [[ ${args['--backup']} -eq 1 ]] && ! ls -1 /dev/mapper/"${BACKUP_MAPPER}" &> /dev/null; then
       _failure "User specified to also delete on backup, but none is mounted. \
           Mount one with 'risks backup mount <dev> and rerun this command"
@@ -5559,7 +5410,6 @@ risks_identity_delete_command() {
 
   # Set the identity variables needed by all functions in this script run,
   # but close the identity itself. We set the resource to delete for this command.
-
   identity.set "${args['name']}"
 
   if identity.active && [[ "$(cat "${RISKS_IDENTITY_FILE}")" == "$name" ]]; then
@@ -5944,7 +5794,6 @@ risks_slam_command() {
   # src/slam_command.sh
 
   # First set the identity variables with the active one.
-
   identity.set ""
 
   _warning "risks" "Slaming identity $IDENTITY"
@@ -6030,7 +5879,6 @@ risks_load_command() {
   identity.set "${args['identity']}"
 
   # Open the related tomb for the tool
-
   _run tomb.open "$resource"
   _catch "Failed to open tomb"
 
@@ -6054,13 +5902,11 @@ risks_save_command() {
   local source_vm resource source_dir dest_dir
 
   source_vm="${args['source_vm']}"
-
   resource="${args['resource']}"   # Resource is a tomb file (root directory) in ~/.tomb
 
   identity.set "${args['identity']}"
 
   # Make the source directory
-
   # Don't do anything if the directory does not exist
   source_dir="${HOME}/QubesIncoming/${source_vm}"
   if [[ ! -d $source_dir ]]; then
@@ -6068,7 +5914,6 @@ risks_save_command() {
   fi
 
   # Open the related tomb for the tool
-
   _run tomb.open "$resource"
   _catch "Failed to open tomb"
 
@@ -6104,7 +5949,7 @@ risks_resolve_tomb_command() {
 
   local tomb_file tomb_label resource
 
-  identity.set ""
+  identity.set "${args['identity']}"
 
   resource="${args['tomb_name']}"
   tomb_label="${IDENTITY}-${resource}"
@@ -10263,7 +10108,6 @@ initialize() {
   # Other default security-related default directories/names .........................................
 
   typeset -gr RAMDISK="${HOME}/.gnupg"
-
   typeset -gr BACKUP_MOUNT_DIR="/tmp/pendrive"
 
   typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/db/"

@@ -10,9 +10,9 @@ _endgame() {
     done
 
     # Ensure no information is left in unallocated memory
-    IDENTITY="$rr";		        unset IDENTITY 
-    FILE_ENCRYPTION_KEY="$rr";  unset FILE_ENCRYPTION_KEY 
-    GPG_PASS="$rr";		        unset GPG_PASS 
+    IDENTITY="$rr";		        unset IDENTITY
+    FILE_ENCRYPTION_KEY="$rr";  unset FILE_ENCRYPTION_KEY
+    GPG_PASS="$rr";		        unset GPG_PASS
 }
 
 # Trap functions for the _endgame event

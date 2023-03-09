@@ -2,11 +2,11 @@
 local resource dest_vm source_dir
 
 resource="${args['resource']}"   # Resource is a tomb file (root directory) in ~/.tomb
-dest_vm="${args['dest_vm']}"    
+dest_vm="${args['dest_vm']}"
 
 identity.set "${args['identity']}"
 
-# Open the related tomb for the tool 
+# Open the related tomb for the tool
 _run tomb.open "$resource"
 _catch "Failed to open tomb"
 

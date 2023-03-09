@@ -31,9 +31,9 @@ _info "Using ${fg_bold[green]}${email}${reset_color} as email"
 # Use the identity name to set its file encryption key.
 identity.set "$identity"
 
-# GPG 
+# GPG
 #
-# Generate GPG keypairs with a different passphrase than the one 
+# Generate GPG keypairs with a different passphrase than the one
 # we use for encrypting file/directory names and contents.
 # This passphrase is the one returned by the risks gpg pass command.
 _in_section 'gpg' && _info "Setting up RAMDisk and GPG backend"
@@ -59,7 +59,7 @@ _run risks_hush_rw_command
 _in_section 'coffin' && _info "Creating and testing GPG coffin container"
 gpg.generate_coffin
 
-# Clean RAM disk, remove private keys from the keyring and test open/close 
+# Clean RAM disk, remove private keys from the keyring and test open/close
 _in_section 'gpg' && _info "Cleaning and backing keyring privates"
 gpg.cleanup_keyring "$email"
 
@@ -74,10 +74,10 @@ if [[ "${args['--burner']}" -eq 1 ]]; then
     return
 fi
 
-_in_section 'ssh' && _info "Generating SSH keypair and multi-key ssh-agent script" 
+_in_section 'ssh' && _info "Generating SSH keypair and multi-key ssh-agent script"
 ssh.setup "$email"
 
-## Create a tomb to use for admin storage: 
+## Create a tomb to use for admin storage:
 # config files, etc, and set default key=values
 _in_section 'mgmt' && _info "Creating management tomb"
 tomb.create_management
@@ -107,5 +107,5 @@ if [[ -n "$pendrive" ]]; then
     risks_backup_umount_command
 fi
 
-## 10 - ALL DONE 
+## 10 - ALL DONE
 echo && _success "risks" "Identity generation complete." && echo

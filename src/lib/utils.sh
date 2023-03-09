@@ -1,6 +1,6 @@
 
 # Return 0 if is set, 1 otherwise
-function option_is_set () 
+function option_is_set ()
 {
     local -i r	 # the return code (0 = set, 1 = unset)
 
@@ -47,7 +47,7 @@ function play_sound ()
 # config file, and optionally overrides it if the flag is set.
 # $1 - Flag argument
 # $2 - Key name in config
-function config_or_flag () 
+function config_or_flag ()
 {
     local value config_value
 

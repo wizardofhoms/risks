@@ -46,15 +46,15 @@ function tomb.create ()
 
     # Then dig
     _verbose "Digging tomb in $tomb_file_path"
-    tomb dig -s "$size" "$tomb_file_path" 
+    tomb dig -s "$size" "$tomb_file_path"
     _catch "Failed to dig tomb. Aborting"
-    _run risks_hush_rw_command 
+    _run risks_hush_rw_command
     _verbose "Forging tomb key and making it immutable"
-    tomb forge -g -r "$recipient" "$tomb_key_path" 
+    tomb forge -g -r "$recipient" "$tomb_key_path"
     _catch "Failed to forge keys. Aborting"
-    sudo chattr +i "$tomb_key_path" 
+    sudo chattr +i "$tomb_key_path"
     _verbose "Locking tomb with key"
-    tomb lock -g -k "$tomb_key_path" "$tomb_file_path" 
+    tomb lock -g -k "$tomb_key_path" "$tomb_file_path"
     _catch "Failed to lock tomb. Aborting"
     _run risks_hush_ro_command
 }
@@ -82,7 +82,7 @@ function tomb.delete ()
     identity_graveyard=$(graveyard.identity_directory "$IDENTITY")
     tomb_file_path="${identity_graveyard}/${tomb_file}.tomb"
 
-    # A few special cases need confirmation from the user, 
+    # A few special cases need confirmation from the user,
     # like GPG, which stores the identity' private keys
     case ${name} in
         GPG)
@@ -108,16 +108,16 @@ function tomb.delete ()
     if [[ -e "$tomb_key_path" ]]; then
         sudo chattr -i "$tomb_key_path"
         _run wipe -f -r -P 10 "$tomb_key_path"
-    else 
+    else
         _warning "Tomb key path does not exists, skipping."
-    fi 
+    fi
 }
 
 # tomb.open_path accepts an arbitrary tomb path to open.
 # $1 - Resource name
 # $2 - Tomb file path
 # $3 - Tomb key path
-function tomb.open_path () 
+function tomb.open_path ()
 {
     local resource="${1}"
     local tomb_file_path="${2}"
@@ -126,7 +126,7 @@ function tomb.open_path ()
 
     mapper=$(tomb.get_mapper "$tomb_file")
 
-    # Some resources need to have fixed mount points, 
+    # Some resources need to have fixed mount points,
     # like the few below that are not matched by the wildcard.
     case ${resource} in
         gpg)
@@ -191,9 +191,9 @@ function tomb.open_path ()
     fi
 }
 
-# tomb.open requires a cleartext resource name that the function will encrypt 
-# to resolve the correct tomb file. The name is both used as a mount directory, 
-# as well as to determine when some special tombs need to be mounted on non-standard 
+# tomb.open requires a cleartext resource name that the function will encrypt
+# to resolve the correct tomb file. The name is both used as a mount directory,
+# as well as to determine when some special tombs need to be mounted on non-standard
 # mount points, like gpg/ssh.
 # $1 - Name of the tomb
 function tomb.open ()
@@ -221,10 +221,10 @@ function tomb.open ()
     tomb.open_path "${resource}" "${tomb_file_path}" "${tomb_key_path}"
 }
 
-# tomb.open_backup opens a target tomb from the 
+# tomb.open_backup opens a target tomb from the
 # user backup graveyard instead of the system one.
 # This function assumes the backup is accessible.
-function tomb.open_backup () 
+function tomb.open_backup ()
 {
     local resource="${1}"
 
@@ -293,7 +293,7 @@ function tomb.close ()
     esac
 }
 
-# tomb.slam is identical to tomb.close, but slamming it, 
+# tomb.slam is identical to tomb.close, but slamming it,
 # so all processes making use of it are killed
 function tomb.slam ()
 {

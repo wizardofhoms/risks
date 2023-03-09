@@ -18,21 +18,21 @@ _catch "Failed to setup LUKS filesystem on backup drive"
 
 # Filesystem setup
 mkdir "${BACKUP_MOUNT_DIR}" &> /dev/null
-sudo cryptsetup open --type luks "${pendrive}" "${BACKUP_MAPPER}" 
+sudo cryptsetup open --type luks "${pendrive}" "${BACKUP_MAPPER}"
 _catch "Failed to open backup LUKS filesystem"
 
 _info "Making ext4 filesystem on LUKS mapper"
-_run sudo mkfs.ext4 -m 0 -L "backup" /dev/mapper/"${BACKUP_MAPPER}" 
+_run sudo mkfs.ext4 -m 0 -L "backup" /dev/mapper/"${BACKUP_MAPPER}"
 _catch "Failed to make ext4 filesystem on backup"
 
 # fsencrypt setup
 _info "Enabling filesystem encryption and setting up fscrypt"
-_run sudo /sbin/tune2fs -O encrypt "/dev/mapper/${BACKUP_MAPPER}" 
+_run sudo /sbin/tune2fs -O encrypt "/dev/mapper/${BACKUP_MAPPER}"
 _catch "Failed to enable encryption on ext4 filesystem"
 
-_run sudo mount /dev/mapper/"${BACKUP_MAPPER}" "${BACKUP_MOUNT_DIR}" 
+_run sudo mount /dev/mapper/"${BACKUP_MAPPER}" "${BACKUP_MOUNT_DIR}"
 _catch "Failed to mount partition on ${BACKUP_MOUNT_DIR}"
-sudo chown "${USER}" "${BACKUP_MOUNT_DIR}" 
+sudo chown "${USER}" "${BACKUP_MOUNT_DIR}"
 _info "Setting up fscrypt in backup mount point (${BACKUP_MOUNT_DIR})"
 echo "N" | sudo fscrypt setup "${BACKUP_MOUNT_DIR}" &> /dev/null
 _catch "Failed to setup fscrypt metadata with root permissions"

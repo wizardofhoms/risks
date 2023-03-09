@@ -1,5 +1,5 @@
 
-# gpg.generate_coffin sets up, generates and formats a LUKS partition 
+# gpg.generate_coffin sets up, generates and formats a LUKS partition
 # to be used as a container of the identity GPG keyring.
 function gpg.generate_coffin ()
 {
@@ -36,17 +36,17 @@ function gpg.generate_coffin ()
 
     _catch "Failed to lay setup and format the coffin LUKS filesystem"
     _verbose "Testing coffin detailed output (luksDump)"
-    _run sudo cryptsetup luksDump "$coffin_file" 
+    _run sudo cryptsetup luksDump "$coffin_file"
     _catch "Failed to dump coffin LUKS filesystem"
     _verbose "Normally, we should see the UUID of the coffin, and only one key configured for it"
 
-    ##  Setup 
+    ##  Setup
     _verbose "Opening the coffin for setup"
     _run sudo cryptsetup open --type luks "$coffin_file" "$coffin_name" --key-file "$key_file"
     _catch "Failed to open the coffin LUKS filesystem"
 
     _verbose "Testing coffin status"
-    _run sudo cryptsetup status "$coffin_name" 
+    _run sudo cryptsetup status "$coffin_name"
     _catch "Failed to get status of coffin LUKS filesystem"
 
     ## Filesystem
@@ -67,7 +67,7 @@ function gpg.delete_coffin ()
 
     if [[ -e "$coffin_file" ]]; then
         _run wipe -f -r "$coffin_file"
-    else 
+    else
         _warning "Coffin file does not exists, skipping."
     fi
 
@@ -75,8 +75,8 @@ function gpg.delete_coffin ()
     key_filename=$(crypt.filename "${IDENTITY}-gpg.key")
     key_file="${HUSH_DIR}/${key_filename}"
 
-    if [[ -e "$key_file" ]]; then 
-        sudo chattr -i "${key_file}" 
+    if [[ -e "$key_file" ]]; then
+        sudo chattr -i "${key_file}"
         _run wipe -f -r -P 10 "$key_file"
     else
         _warning "Coffin key does not exists, skipping."
@@ -182,7 +182,7 @@ function gpg.close_coffin ()
     identity_graveyard="${GRAVEYARD}/${identity_dir}"
     _run sudo fscrypt lock "${identity_graveyard}"
 
-    identity.set_active # An empty  identity will trigger a wiping of the file 
+    identity.set_active # An empty  identity will trigger a wiping of the file
     _verbose "Coffin file $coffin_file has been closed"
 }
 

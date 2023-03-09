@@ -23,6 +23,6 @@ fi
 risks_hush_rw_command
 
 _info "Importing GPG private key in keyring"
-cp "${keypath}" "${RAMDISK}"/private-keys-v1.d/"${keygrip}" 
+cp "${keypath}" "${RAMDISK}"/private-keys-v1.d/"${keygrip}"
 
 _run tomb.close "${GPG_TOMB_LABEL}"

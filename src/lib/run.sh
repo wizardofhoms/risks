@@ -1,6 +1,6 @@
 
 COMMAND_STDOUT=''           # Stores a command's stdout output.
-COMMAND_STDERR=''           # Stores a command's stderr output.   
+COMMAND_STDERR=''           # Stores a command's stderr output.
 
 # do a command, splitting and storing stdout/stderr output and printing
 # the former to screen only if the command is ran with verbose flag.
@@ -37,7 +37,7 @@ _run ()
 # catch $ret "hush" "Failed to execute this command"
 function _catch ()
 {
-    local ret="$?" 
+    local ret="$?"
 
     if [[ ! $ret -eq 0 ]]; then
         _failure "$@"

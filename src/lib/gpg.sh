@@ -1,5 +1,5 @@
 
-# gpg.setup_keyring creates a RAMDisk and sets up the GPG directory/keyring 
+# gpg.setup_keyring creates a RAMDisk and sets up the GPG directory/keyring
 # in it, with configuration files related to usage/display/generation stuff.
 function gpg.setup_keyring ()
 {
@@ -9,9 +9,9 @@ function gpg.setup_keyring ()
     mkdir "${RAMDISK}"
     _run sudo mount -t tmpfs -o size=10m ramdisk "${RAMDISK}"
     _catch "Failed to mount tmp fs on ramdisk"
-    sudo chown "${USER}" "${RAMDISK}" 
+    sudo chown "${USER}" "${RAMDISK}"
     _catch "Failed to set ownership to ${RAMDISK}"
-    sudo chmod 0700 "${RAMDISK}" 
+    sudo chmod 0700 "${RAMDISK}"
     _catch "Failed to change mod 0700 to ${RAMDISK}"
 
     ## Testing
@@ -21,7 +21,7 @@ function gpg.setup_keyring ()
         ramdisk on /home/user/ramdisk type tmpfs (rw,relatime,size=10240k) \n\
         ramdisk on /rw/home/user/ramdisk type tmpfs (rw,relatime,size=10240k) \n"
 
-    touch "${RAMDISK}/delme" && rm "${RAMDISK}/delme" 
+    touch "${RAMDISK}/delme" && rm "${RAMDISK}/delme"
     _catch "Failed to test write file ${1}"
 
     # Configuration files
@@ -66,7 +66,7 @@ EOF
 # gpg.generate_keys creates master/subkey pairs for a new identity.
 # $1 - Name of the GPG owner
 # $2 - Email recipient
-# $3 - Subkeys expiry date 
+# $3 - Subkeys expiry date
 function gpg.generate_keys ()
 {
     local name="$1"
@@ -79,28 +79,28 @@ function gpg.generate_keys ()
     _verbose "Writing GPG batch file to ramdisk"
     cat >"${RAMDISK}/primary_key_unattended" <<EOF
 %echo Generating EDDSA key (Ed25519 curve)
-Key-Type: eddsa 
-Key-Curve: Ed25519 
+Key-Type: eddsa
+Key-Curve: Ed25519
 Key-Usage: sign
 Key-Length: 4096
-Name-Real: $name 
-Name-Email: $email 
+Name-Real: $name
+Name-Email: $email
 Expire-Date: 0
-Passphrase: $GPG_PASS 
+Passphrase: $GPG_PASS
 %commit
 %echo done
 EOF
 
     # Generate key and get rid of batch file
     _verbose "Generating primary key from batch file"
-    _run gpg --batch --gen-key "${RAMDISK}/primary_key_unattended" 
+    _run gpg --batch --gen-key "${RAMDISK}/primary_key_unattended"
     _catch "Failed to generate keys from batch file"
     _verbose "Deleting batch file"
-    _run wipe -f -P 10 "${RAMDISK}/primary_key_unattended" 
+    _run wipe -f -P 10 "${RAMDISK}/primary_key_unattended"
     _catch "Failed to wipe batch file: contains the identity passphrase"
 
-    ## 2 - Subjeys creation 
-    expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")" 
+    ## 2 - Subjeys creation
+    expiry_date="$(date +"%Y-%m-%d" --date="${expiry}")"
     fingerprint=$(gpg -K "${email}" | grep fingerprint | head -n 1 | cut -d= -f2 | sed 's/ //g')
     _info "Fingerprint: ${fingerprint}"
 
@@ -140,8 +140,8 @@ function gpg.cleanup_keyring ()
     # Making tmp directory
     _verbose "Creating temp directory and mounting coffin"
     mkdir "$tmp_dir"
-    sudo mount /dev/mapper/"${coffin_name}" "$tmp_dir" 
-    _catch "Failed to mount coffin partition on $tmp_dir"       
+    sudo mount /dev/mapper/"${coffin_name}" "$tmp_dir"
+    _catch "Failed to mount coffin partition on $tmp_dir"
     sudo chown "$USER" "$tmp_dir"
     _verbose "Testing coffin filesystem"
     _verbose "$(mount | grep "$tmp_filename")"
@@ -154,7 +154,7 @@ function gpg.cleanup_keyring ()
     _verbose "Closing coffin"
     sudo chattr +i "$tmp_dir"/openpgp-revocs.d/*
     sudo umount "$tmp_dir" || _warning "Failed to unmount tmp directory $TMP"
-    sudo cryptsetup close /dev/mapper/"$coffin_name" 
+    sudo cryptsetup close /dev/mapper/"$coffin_name"
     _catch "Failed to close LUKS filesystem for identity"
 
     # Clearing RAMDisk
@@ -163,7 +163,7 @@ function gpg.cleanup_keyring ()
     _catch "Failed to wipe $RAMDISK directory"
     sudo umount -l "$RAMDISK" || _warning "Failed to unmount ramdisk $RAMDISK"
 
-    ## 5 - Final checks 
+    ## 5 - Final checks
     _verbose "Checking directory contents"
     _verbose "$(tree "$HUSH_DIR" "$GRAVEYARD")"
     _verbose "Should look like this:           \n\n \
@@ -176,7 +176,7 @@ function gpg.cleanup_keyring ()
     gpg.close_coffin
     gpg.open_coffin
 
-    ## 6 - Removing GPG private keys 
+    ## 6 - Removing GPG private keys
     _verbose "Removing GPG private keys"
 
     local tomb_size keygrip fingerprint
@@ -201,7 +201,7 @@ function gpg.cleanup_keyring ()
 
     # Deleting keys from keyring
     _verbose "Wiping corresponding files in GPG keyring"
-    sudo chattr -i "${RAMDISK}"/private-keys-v1.d/"${keygrip}" 
+    sudo chattr -i "${RAMDISK}"/private-keys-v1.d/"${keygrip}"
     _run wipe -rf "${RAMDISK}"/private-keys-v1.d/"${keygrip}" \
         || _warning "Failed to delete master private key from keyring !"
 
@@ -238,7 +238,7 @@ function gpg.generate_subkeys ()
         _catch "Failed to generate subkey-pair"
     fi
 
-    # Encryption subkey 
+    # Encryption subkey
     if [[ "${args['--encrypt']}" -eq 1 ]]; then
         if [[ "${algo}" == "ed25519" ]]; then
             algo="cv25519"
@@ -265,9 +265,9 @@ function gpg.passphrase_is_cached ()
     return 1
 }
 
-# gpg.master_key_status returns true if the master private 
+# gpg.master_key_status returns true if the master private
 # GPG key is present in the keyring, or false if it's absent.
-function gpg.master_key_status () 
+function gpg.master_key_status ()
 {
     local key_status masterkey_available
 

@@ -26,4 +26,4 @@ echo -n "$GPG_PASS" | xclip -selection clipboard
 
 _info "The passphrase has been saved in clipboard"
 _info "Press CTRL+SHIFT+C to share the clipboard with another qube."
-_info "Local clipboard will be erased is $timeout seconds"       
+_info "Local clipboard will be erased is $timeout seconds"

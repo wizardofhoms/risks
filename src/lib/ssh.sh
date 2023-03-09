@@ -1,5 +1,5 @@
 
-# ssh.setup generates an SSH keypair and sets up scripts for 
+# ssh.setup generates an SSH keypair and sets up scripts for
 # loading multiple keypairs from the identity SSH tomb.
 # $1 - Email recipient to use for SSH keypair.
 function ssh.setup ()
@@ -67,13 +67,13 @@ EOF
 # $1 - Algorithm
 # $2 - Size to use if possible
 # Returns "-b <size" compatible with ssh-keygen
-function ssh.set_key_size () 
+function ssh.set_key_size ()
 {
     local algo="${1}"
     local key_size="${2}"
     local max
 
-    # Set max length per key algo 
+    # Set max length per key algo
     if [[ "$algo" == "rsa" ]]; then
         max=4096
     elif [[ "$algo" == "ecdsa" ]]; then
