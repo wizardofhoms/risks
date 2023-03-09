@@ -1,7 +1,7 @@
 
 local tomb_key tomb_label
 
-identity.set "" 
+identity.set "${args['identity']}" 
 
 resource="${args['tomb_name']}"
 tomb_label="${IDENTITY}-${resource}"

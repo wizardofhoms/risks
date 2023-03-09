@@ -15,6 +15,9 @@ commands:
       - name: tomb_name 
         help: 'Tomb name'
         required: true 
+      - name: identity 
+        help: 'identity name (optional)'
+        required: false
 
   - name: key
     help: 'Get the filename of a tomb key'
@@ -22,4 +25,7 @@ commands:
       - name: tomb_name
         help: 'Tomb name'
         required: true 
+      - name: identity 
+        help: 'identity name (optional)'
+        required: false
 

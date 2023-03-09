@@ -39,17 +39,18 @@ commands:
 - import: src/backup_commands.yml
   # Identity/stores management commands
 - import: src/identity_commands.yml
-- import: src/tomb_commands.yml
 - import: src/gpg_commands.yml
 - import: src/ssh_commands.yml
+- import: src/tomb_commands.yml
 - import: src/list_command.yml
 - import: src/slam_command.yml
+- import: src/cleanup_commands.yml
   # Data/tools commands
 - import: src/load_command.yml
 - import: src/save_command.yml
-- import: src/kv_commands.yml
-- import: src/config_commands.yml
 - import: src/resolve_commands.yml
+- import: src/config_commands.yml
+- import: src/kv_commands.yml
 
 - name: help
   help: Show help about a command

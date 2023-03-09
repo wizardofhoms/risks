@@ -3,15 +3,6 @@ name: hush
 help: 'Format or manage the hush partition mount points and read/write permissions'
 
 commands:
-  - name: mount
-    help: 'Mount the hush drive' 
-  - name: rw 
-    help: 'Set read-write permissions on the hush partition'
-  - name: ro 
-    help: 'Set read-only permissions on the hush partition'
-  - name: umount 
-    help: 'Unmount the hush drive'
-
   - name: format 
     help: 'Format a drive for storing identity secrets (GPG/coffin/age keys)'
     args:
@@ -37,6 +28,15 @@ commands:
     examples:
       - "hush format --size-absolute 200M /dev/xvdi   # The encrypted part will be 200M in size"
       - "hush format --size-percent 70 /dev/xvdi      # The encrypted part takes 70% of the drive"
+
+  - name: mount
+    help: 'Mount the hush drive' 
+  - name: rw 
+    help: 'Set read-write permissions on the hush partition'
+  - name: ro 
+    help: 'Set read-only permissions on the hush partition'
+  - name: umount 
+    help: 'Unmount the hush drive'
 
   - name: status
     help: 'Print the status of the hush device (mount points, etc)'

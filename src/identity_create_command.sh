@@ -9,23 +9,17 @@ expiry="$(identity.get_args_expiry "${args['expiry_date']}")"
 email="$(identity.get_args_mail "${name}" "${args['email']}")"
 pendrive="${args['--backup']}" # Backup is optional
 
-## Pre-run checks ========
-
-# No identity should be active, because some important mount points will be
-# unaccessible or might risk ending in a dangling state.
+# Checks
+#
+# Ensure no identity and hush is safe to write onto.
 if identity.active ; then
     _failure "An identity seems to be active. Cannot safely create a new one."
 fi
 
-# Check the hush device is, if mounted, on a read-only state at this point.
-# We fail if it's read-write, because we should assume another process is
-# currently writing to it.
 if device.hush_is_mounted && [[ -w "$HUSH_DIR" ]]; then
     _failure "Hush is currently mounted read-write. \n \
         Please ensure nothing is writing to it and set it to read-only first"
 fi
-
-## Start work ============
 
 _in_section 'risks' 6
 _info "Starting new identity generation process"
@@ -35,44 +29,37 @@ _info "Using ${fg_bold[green]}${name}${reset_color} as identity name"
 _info "Using ${fg_bold[green]}${email}${reset_color} as email"
 
 # Use the identity name to set its file encryption key.
-# This call propagates some of those essential variables 
-# so that all functions can use them.
 identity.set "$identity"
 
 # GPG 
 #
+# Generate GPG keypairs with a different passphrase than the one 
+# we use for encrypting file/directory names and contents.
+# This passphrase is the one returned by the risks gpg pass command.
 _in_section 'gpg' && _info "Setting up RAMDisk and GPG backend"
 gpg.setup_keyring
 
-# Generate GPG keypairs with a different passphrase than the one
-# we use for encrypting file/directory names and contents.
 _info "Generating GPG keys"
-
-# This new key is also the one provided when using gpgpass command.
 GPG_PASS=$(crypt.passphrase "$GPG_TOMB_LABEL")
 echo -n "$GPG_PASS" | xclip -loops 1 -selection clipboard
 _warning "GPG passphrase copied to clipboard with one-time use only"
 _info -n "Paste it in the coming GPG prompt when creating builtin tombs\n"
-
 _run gpg.generate_keys "$name" "$email" "$expiry"
 
 # Setup the identity graveyard directory with fscrypt protection
 _in_section 'coffin' && _info "Creating and setting encrypted identity directory"
 graveyard.create
 
-# At this point, we need access to the hush device, so make sure 
-# it's mounted and that we have read-write permissions.
+# At this point, we need access to the hush device in read-write mode.
 _in_section 'hush' && _info "Mounting hush device with read-write permissions"
 risks_hush_mount_command
 _run risks_hush_rw_command
 
-# Then only, generate the coffin and copy it into the root graveyard
-# (not the identity's graveyard subdirectory, because we need access to
-# this file BEFORE anything else, since it contains the GPG keyring)
+# Then only, generate the coffin and copy it into the graveyard root directory.
 _in_section 'coffin' && _info "Creating and testing GPG coffin container"
 gpg.generate_coffin
 
-# Cleaning RAM disk, removing private keys from the keyring and test open/close 
+# Clean RAM disk, remove private keys from the keyring and test open/close 
 _in_section 'gpg' && _info "Cleaning and backing keyring privates"
 gpg.cleanup_keyring "$email"
 

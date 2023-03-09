@@ -19,7 +19,6 @@ _info "Type: ${key_algo}"
 
 _run tomb.open "$SSH_TOMB_LABEL"
 
-# Generate SSH key.
 ssh-keygen -t "${key_algo}" "${bits}" -C "$email" -N "" -f "${HOME}"/.ssh/"${ssh_key_name}"
 _catch "Failed to generate SSH keys"
 

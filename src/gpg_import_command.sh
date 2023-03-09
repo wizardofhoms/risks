@@ -7,7 +7,7 @@ identity.set "${args['identity']}"
 hush.fail_device_unmounted
 backup.fail_device_unmounted
 
-# 1 - Open the GPG tomb in the backup, and verify target files are here.
+# Open the GPG tomb in the backup, and verify target files are here.
 _run tomb.open_backup "$GPG_TOMB_LABEL"
 
 keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
@@ -19,7 +19,7 @@ if [[ ! -e "${keypath}" ]]; then
     _failure "Private key ${keygrip} not found in ${GPG_TOMB_LABEL} tomb"
 fi
 
-# 2 - Set the hush partition read-write and import the corresponding key
+# Set the hush partition read-write and import the corresponding key
 risks_hush_rw_command
 
 _info "Importing GPG private key in keyring"

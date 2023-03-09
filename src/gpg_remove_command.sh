@@ -7,10 +7,9 @@ identity.set "${args['identity']}"
 hush.fail_device_unmounted
 backup.fail_device_unmounted
 
-# 2 - Set the partition read-write and remove from the gpg keyring
 risks_hush_rw_command
 
-# 3 - Copy/check the private key and revoc certificate, check correcly copied, close GPG tomb
+# Copy/check the private key and revoc certificate, check correcly copied, close GPG tomb
 keygrip="$(gpg -K | grep Keygrip | head -n 1 | cut -d= -f 2 | sed 's/ //g').key"
 _verbose "Keygrip: $keygrip"
 keyring_path="${RAMDISK}/private-keys-v1.d/${keygrip}" 

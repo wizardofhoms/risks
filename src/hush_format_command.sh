@@ -28,7 +28,7 @@ _info "Creating partitions"
 hush.format_partitions "$sd_drive" "$start_enc_sectors"
 _catch "Failed to format partitions"
 
-# Automounting the first partition on any OS
+# Setting up automounting the first partition on any OS 
 _verbose "Making 1st partition mountable by default for all OS (fat32)"
 _run sudo mkfs.vfat -F 32 -n DATA "${sd_ext4_drive}" 
 _catch "Failed to make vfat32 filesystem"
@@ -73,8 +73,6 @@ echo 'SUBSYSTEM=="block", ENV{ID_FS_UUID}=="'"${uuid}"'", SYMLINK+="hush"' >> "$
 
 # Write our risks scripts in a special directory on the hush, and close the device.
 hush.write_risks_scripts "$udev_rules"
-
-# Note that even if we fail to umount at $mount_point, we still try to cryptsetup close hush.
 _verbose "Closing and unmounting device"
 _run sudo umount "${mount_point}" 
 _catch "Failed to unmount ${mount_point}"                   

@@ -61,6 +61,7 @@ _risks_commands ()
         'gpg:Manage GPG coffings, keys, passwords and settings'
         'identity:Create, use and manage identities'
         'tomb:Create, use and manage tombs (stores)'
+        'cleanup:Close any open identity and wipe files/directories that should not exist.'
     )
 
     _describe -t commands 'commands' subcmds

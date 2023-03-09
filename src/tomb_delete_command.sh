@@ -10,15 +10,9 @@ fi
 
 identity.set "${args['identity']}"
 
-# Set the hush device with read-write permissions, 
-# since we must delete the tomb key file on it.
+# Delete tomb in graveyard and key in hush.
 _run risks_hush_rw_command
-
-# This call handles everything, including confirmation
-# when sensitive tombs are to be deleted.
 tomb.delete "$name"
-
-# And reset the hush
 _run risks_hush_ro_command
 
 # Delete in backup if specified

@@ -1,7 +1,7 @@
-# gpgpass essentially wraps a call to spectre with our identity parameters.
+# gpg pass essentially wraps a call to spectre with our identity parameters.
 # Note that this function cannot fail because of "a wrong password".
 #
-# If a second, non-nil argument is passed, we print the passphrase: 
+# If a second, non-nil argument is passed, we print the passphrase:
 # this is used when some commands need both the passphrase as an input
 # to decrypt something (like files) and the user needs them for GPG prompts
 

@@ -15,7 +15,5 @@ if identity.active; then
     identity_dir=$(crypt.filename "$IDENTITY")
     identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
-    ## First make sure the backup directory for the identity is unlocked
-    ## We won't lock it, since after that function runs it won't exist anymore.
     sudo fscrypt status "$identity_graveyard_backup"
 fi

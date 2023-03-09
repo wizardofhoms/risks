@@ -2,6 +2,17 @@ name: backup
 help: 'Create, manage, restore or use backup devices and partitions'
 
 commands:
+  # Formatting, cyphering, etc
+  - name: format 
+    help: "Format and setup a drive for as a risks backup medium"
+    args:
+      - name: device
+        required: true
+        help: "Device file of the backup drive (must be a whole drive without a partition number, eg. /dev/sdb)"
+        validate: file_exists
+    examples:
+      - backup format /dev/xvdi
+
   # Common management
   - name: mount
     help: 'Mount the backup partition/device' 
@@ -13,16 +24,20 @@ commands:
   - name: umount 
     help: 'Unmount the current backup drive'
 
-  # Formatting, cyphering, etc
-  - name: format 
-    help: "Format and setup a drive for as a risks backup medium"
+  - name: unlock
+    help: 'Unlock encryption on the backup of an identity'
     args:
-      - name: device
-        required: true
-        help: "Device file of the backup drive (must be a whole drive without a partition number, eg. /dev/sdb)"
-        validate: file_exists
+      - name: identity 
+        required: true 
+        help: "Identity owning the backup."
+        validate: identity_exists
     examples:
-      - backup format /dev/xvdi
+      - backup unlock john_doe        # Unlocks the graveyard backup of john_doe 
+  - name: lock
+    help: 'Lock encryption on the backup of an identity'
+
+  - name: status
+    help: 'Print the status of the backup (mount points, locks, etc)'
 
   # Backup usage, restore and related
   - name: identity
@@ -44,18 +59,3 @@ commands:
 
   - name: hush 
     help: "Backup only the raw hush device image"
-
-  - name: unlock
-    help: 'Unlock encryption on the backup of an identity'
-    args:
-      - name: identity 
-        required: true 
-        help: "Identity owning the backup."
-        validate: identity_exists
-    examples:
-      - backup unlock john_doe        # Unlocks the graveyard backup of john_doe 
-  - name: lock
-    help: 'Lock encryption on the backup of an identity'
-
-  - name: status
-    help: 'Print the status of the backup (mount points, locks, etc)'
