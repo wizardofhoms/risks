@@ -9414,7 +9414,7 @@ risks_help_parse_requirements() {
 initialize() {
   version="0.1.0"
   long_usage=''
-  set -euo pipefail
+  
 
   # Connected terminal
   typeset -H _TTY
