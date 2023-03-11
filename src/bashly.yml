@@ -22,16 +22,10 @@ flags:
   - long: --verbose
     short: -v
     help: "Show verbose logging"
-  # - &log
-  #   long: --log
-  #   short: -l
-  #   help: "Log the command's output to the identity log file, or the file path given with -f/--log-file"
-  # - &logfile
-  #   long: --log-file
-  #   short: -f
-  #   help: "Path to log file, defaults to ~/.graveyard/<identity>.log"
-  #   arg: logfile
-  #   required: false
+  - long: --log-file
+    short: -l
+    help: "Path to log file"
+    arg: logfile
 
 commands:
   # Drives/partitions

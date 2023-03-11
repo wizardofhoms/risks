@@ -53,6 +53,11 @@ risks_usage() {
     printf "    Show verbose logging\n"
     echo
 
+    # :flag.usage
+    printf "  %s\n" "--log-file, -l LOGFILE"
+    printf "    Path to log file\n"
+    echo
+
     # :command.usage_fixed_flags
     printf "  %s\n" "--help, -h"
     printf "    Show this help\n"
@@ -2582,9 +2587,130 @@ function backup.device_unlocked ()
 
 # src/lib/cleanup.sh
 
-# Cleanup anything sensitive before exiting.
+# Files that are registered for cleanup wipe on exit.
+typeset -ga cleanup_directories
+typeset -ga cleanup_files
+typeset -ga cleanup_mounts
+typeset -ga cleanup_luks
+
+# cleanup.add_directory is used to register one or more directories
+# to be deleted of their contents (but not the directory root itself).
+# $@ - Directories to register for cleanup.
+function cleanup.add_directory ()
+{
+    [[ -z "$*" ]] && return
+    cleanup_directories+=( "$@" )
+    read -rA cleanup_directories < <(printf "%s\n" "${cleanup_directories[@]}" | sort -u | tr '\n' ' ')
+}
+
+# cleanup.rm_directory is used to deregister some
+# directories previously registered for cleanup.
+# $@ - Directories to deregister.
+function cleanup.rm_directory ()
+{
+    [[ -z "$*" ]] && return
+    read -rA cleanup_directories < <(printf "%s\n" "${cleanup_directories[@]}" "$@" | uniq -u)
+}
+
+# cleanup.add_file registers one or more files to be wiped on exit.
+# $@ - Files to register for wipe.
+function cleanup.add_file ()
+{
+    [[ -z "$*" ]] && return
+    read -rA cleanup_files <<< "$@"
+    read -rA cleanup_files < <(printf "%s\n" "${cleanup_files[@]}" | sort -u | tr '\n' ' ')
+}
+
+# cleanup.rm_file deregisters some files
+# previously registered for cleanup.
+# $@ - Files to deregister.
+function cleanup.rm_file ()
+{
+    [[ -z "$*" ]] && return
+    read -rA cleanup_files < <(printf "%s\n" "${cleanup_files[@]}" "$@" | uniq -u)
+}
+
+# cleanup.add_mount_point registers one or more mount points (paths)
+# which should be unmounted on exit. For any of those directoreis that
+# are also registered with cleanup.add_directory, they will be cleaned
+# up from their contents before being unmounted.
+# $@ - Mounts points to register.
+function cleanup.add_mount_point ()
+{
+    [[ -z "$*" ]] && return
+    read -rA cleanup_mounts <<< "$@"
+    read -rA cleanup_mounts < <(printf "%s\n" "${cleanup_mounts[@]}" | sort -u | tr '\n' ' ')
+}
+
+# cleanup.rm_mount_point deregisters mount points
+# previously registered for unmounting on exit.
+# $@ - Mounts points to deregister.
+function cleanup.rm_mount_point ()
+{
+    [[ -z "$*" ]] && return
+    read -rA cleanup_mounts < <(printf "%s\n" "${cleanup_mounts[@]}" "$@" | uniq -u)
+}
+
+# cleanup.add_luks registers a luks device name (/dev/mapper/<name>)
+# to be closed on cleanup execute. The mapper will first be checked
+# on the list of mount points, and if any are found, they will be
+# unmounted first before being cryptsetup closed.
+# $@ - Luks mappers to register.
+function cleanup.add_luks ()
+{
+    [[ -z "$*" ]] && return
+    cleanup_luks+=( "$@" )
+    read -rA cleanup_luks < <(printf "%s\n" "${cleanup_luks[@]}" | sort -u | tr '\n' ' ')
+}
+
+# cleanup.rm_luks deregisters luks mapper names
+# previously registered for closing on exit.
+# $@ - Luks mappers to deregister.
+function cleanup.rm_luks ()
+{
+    [[ -z "$*" ]] && return
+    read -rA cleanup_luks < <(printf "%s\n" "${cleanup_luks[@]}" "$@" | uniq -u)
+}
+
+# cleanup.execute will perform cleanup and unmounting of
+# all previously/currently registered files/directories,
+# and overwrites/clears all sensitive script variables.
 # Originally copied from tomb code.
-_endgame() {
+function cleanup.execute()
+{
+    # Cleanup all registered files and directories
+    [[ -n "${cleanup_files[*]}" ]] && _info "Cleaning up files"
+    for file in "${cleanup_files[@]}"; do
+        [[ -z "$file" ]] && continue
+
+        sudo chattr -i "${file}"
+        _run sudo wipe -rf "${file}"
+    done
+
+    [[ -n "${cleanup_directories[*]}" ]] && _info "Cleaning up directories"
+    for dir in "${cleanup_directories[@]}"; do
+        [[ -z "$dir" ]] && continue
+
+        sudo chattr -i "${dir}"/**/*
+        _run sudo wipe -rf "${dir}"/*
+    done
+
+    # Unmount all mount points.
+    [[ -n "${cleanup_mounts[*]}" ]] && _info "Cleaning up mount points"
+    for mount in "${cleanup_mounts[@]}"; do
+        [[ -z "$mount" ]] && continue
+
+        device.unmount "${mount}"
+    done
+
+    # Unmount and close LUKS devices
+    [[ -n "${cleanup_luks[*]}" ]] && _info "Closing LUKS devices"
+    for luks in "${cleanup_luks[@]}"; do
+        [[ -z "$luks" ]] && continue
+
+        device.unmount "${luks}"
+        sudo cryptsetup close "${luks}"
+    done
 
     # Prepare some random material to overwrite vars
     local rr="$RANDOM"
@@ -2598,16 +2724,16 @@ _endgame() {
     GPG_PASS="$rr";		        unset GPG_PASS
 }
 
-# Trap functions for the _endgame event
-TRAPINT()  { _endgame INT;	}
-TRAPEXIT() { _endgame EXIT;	}
-TRAPHUP()  { _endgame HUP;	}
-TRAPQUIT() { _endgame QUIT;	}
-TRAPABRT() { _endgame ABORT; }
-TRAPKILL() { _endgame KILL;	}
-TRAPPIPE() { _endgame PIPE;	}
-TRAPTERM() { _endgame TERM;	}
-TRAPSTOP() { _endgame STOP;	}
+# Trap functions for the cleanup.execute event
+TRAPINT()  { cleanup.execute INT;	}
+TRAPEXIT() { cleanup.execute EXIT;	}
+TRAPHUP()  { cleanup.execute HUP;	}
+TRAPQUIT() { cleanup.execute QUIT;	}
+TRAPABRT() { cleanup.execute ABORT; }
+TRAPKILL() { cleanup.execute KILL;	}
+TRAPPIPE() { cleanup.execute PIPE;	}
+TRAPTERM() { cleanup.execute TERM;	}
+TRAPSTOP() { cleanup.execute STOP;	}
 
 # src/lib/coffin.sh
 
@@ -3171,11 +3297,15 @@ function gpg.setup_keyring ()
     _verbose 'Creating directory & setting permissions'
     rm -fR "${RAMDISK}"
     mkdir "${RAMDISK}"
+    cleanup.add_directory "${RAMDISK}"
+
     _run sudo mount -t tmpfs -o size=10m ramdisk "${RAMDISK}"
     _catch "Failed to mount tmp fs on ramdisk"
-    sudo chown "${USER}" "${RAMDISK}"
+    cleanup.add_mount_point ramdisk
+
+    _run sudo chown "${USER}" "${RAMDISK}"
     _catch "Failed to set ownership to ${RAMDISK}"
-    sudo chmod 0700 "${RAMDISK}"
+    _run sudo chmod 0700 "${RAMDISK}"
     _catch "Failed to change mod 0700 to ${RAMDISK}"
 
     _verbose "Testing ramdisk read/write"
@@ -3184,7 +3314,7 @@ function gpg.setup_keyring ()
         ramdisk on /home/user/ramdisk type tmpfs (rw,relatime,size=10240k) \n\
         ramdisk on /rw/home/user/ramdisk type tmpfs (rw,relatime,size=10240k) \n"
 
-    touch "${RAMDISK}/delme" && rm "${RAMDISK}/delme"
+    _run touch "${RAMDISK}/delme" && rm "${RAMDISK}/delme"
     _catch "Failed to test write file ${1}"
 
     # Configuration files
@@ -3292,18 +3422,20 @@ function gpg.cleanup_keyring ()
 {
     local email="$1"
 
-    local tmp_filename tmp_dir coffin_name
+    local mapper tmp_filename tmp_dir coffin_name
 
     # Filenames
     tmp_filename=$(crypt.filename "${IDENTITY}-gpg")
     tmp_dir="/tmp/${tmp_filename}"
     coffin_name=$(crypt.filename "coffin-${IDENTITY}-gpg")
+    mapper="/dev/mapper/${coffin_name}"
 
-    # Making tmp directory
+    # Making tmp directory and mounting the coffin onto it.
     _verbose "Creating temp directory and mounting coffin"
     mkdir "$tmp_dir"
-    sudo mount /dev/mapper/"${coffin_name}" "$tmp_dir"
+    sudo mount "${mapper}" "$tmp_dir"
     _catch "Failed to mount coffin partition on $tmp_dir"
+    cleanup.add_luks "${mapper}"
     sudo chown "$USER" "$tmp_dir"
     _verbose "Testing coffin filesystem"
     _verbose "$(mount | grep "$tmp_filename")"
@@ -3315,14 +3447,16 @@ function gpg.cleanup_keyring ()
     _verbose "Closing coffin"
     sudo chattr +i "$tmp_dir"/openpgp-revocs.d/*
     sudo umount "$tmp_dir" || _warning "Failed to unmount tmp directory $TMP"
-    sudo cryptsetup close /dev/mapper/"$coffin_name"
+    sudo cryptsetup close "${mapper}"
     _catch "Failed to close LUKS filesystem for identity"
+    cleanup.rm_luks "${mapper}"
 
     # Clearing RAMDisk
     _verbose "Wiping and unmounting ramdisk"
     _run sudo wipe -rf "$RAMDISK"/*
     _catch "Failed to wipe $RAMDISK directory"
     sudo umount -l "$RAMDISK" || _warning "Failed to unmount ramdisk $RAMDISK"
+    cleanup.rm_mount_point ramdisk
 
     _verbose "Checking directory contents"
     _verbose "$(tree "$HUSH_DIR" "$GRAVEYARD")"
@@ -3332,7 +3466,7 @@ function gpg.cleanup_keyring ()
         /home/user/.graveyard                      \n    \
         ├── fejk38RjhfEf13 (joe-gpg.coffin)        \n"
 
-    _verbose "Test opening and closing coffin for $IDENTITY"
+    _verbose "Test closing and opening coffin for $IDENTITY"
     gpg.close_coffin
     gpg.open_coffin
 
@@ -3758,6 +3892,9 @@ function tomb.create_management ()
 # src/lib/log.sh
 
 
+# If the user wants to log command output to a file.
+risks_log_file=""
+
 # Section is set either by functions or simple calls,
 # so that logging can inform on the component working.
 section='risks'
@@ -3791,8 +3928,33 @@ log_chars=(
 )
 
 
+# _init_log_file creates the log file if does not exist,
+# and exits the script in case of failure, or if the file
+# is not writable.
+function _init_log_file ()
+{
+    risks_log_file="${args['--log-file']}"
+    [[ -z "${risks_log_file}" ]] && return
+
+    # Ensure not a directory, and if exists, is writable.
+    if [[ -d "${risks_log_file}" ]] ; then
+        risks_log_file=''
+        _failure "Log file ${risks_log_file} is a directory"
+    elif [[ -e "${risks_log_file}" ]] && [[ ! -w "${risks_log_file}" ]]; then
+        risks_log_file=''
+        _failure "Log file ${risks_log_file} is not writable"
+    fi
+
+    # Create the file if not existing, or fail.
+    if [[ ! -e "${risks_log_file}" ]]; then
+        _run touch "${risks_log_file}"
+        _catch "Failed to create log file ${risks_log_file}"
+        _info "Logging command output to file ${risks_log_file}"
+    fi
+}
+
 # Simple way of setting the section and to update the padding
-_in_section ()
+function _in_section ()
 {
     section="$1"
     if [[ -n "${2}" ]]; then
@@ -3800,7 +3962,9 @@ _in_section ()
     fi
 }
 
-function is_verbose_set () {
+function is_verbose_set ()
+
+{
     if [[ "${args['--verbose']}" -eq 1 ]]; then
         return 0
     else
@@ -3809,7 +3973,7 @@ function is_verbose_set () {
 }
 
 # Messaging function with pretty coloring
-function _msg()
+function _msg ()
 {
     # Check if we have been provided a section name,
     # and if not, that the section is set to a default.
@@ -3866,12 +4030,10 @@ function _msg()
 
     [[ -n $_MSG_FD_OVERRIDE ]] && fd=$_MSG_FD_OVERRIDE
 
-    # If there is a log-file specified with flag --log-file,
-    # output the message to it, instead of the current file descriptor
-    logfile="${args['--log-file']}"
-    if [[ -n "${logfile}" ]]; then
-        ${=command} "${progname}" "${pchars}" "${msg}" >> "$logfile"
-        return $returncode
+    # If there is a log-file specified, write the output to it.
+
+    if [[ -n "${risks_log_file}" ]]; then
+        ${=command} "${progname}" "${pchars}" "${msg}" >> "$risks_log_file"
     fi
 
     # Else, print to stdout, with colors
@@ -3885,24 +4047,32 @@ function _msg()
     return $returncode
 }
 
-function _info() {
+function _info ()
+
+{
     local notice="message"
     [[ "$1" = "-n" ]] && shift && notice="inline"
     option_is_set -q || _msg "$notice" "$@"
     return 0
 }
 
-function _verbose() {
+function _verbose ()
+
+{
     is_verbose_set && _msg verbose "$@"
     return 0
 }
 
-function _success() {
+function _success ()
+
+{
     option_is_set -q || _msg success "$@"
     return 0
 }
 
-function _warning() {
+function _warning ()
+
+{
     option_is_set -q || _msg warning "$@"
     return 1
 }
@@ -3911,7 +4081,7 @@ function _warning() {
 # of an error exit code, and then looks at the contents of erroring
 # command's stderr buffer, which is printed just below our message.
 # We then exit the program.
-function _failure()
+function _failure ()
 {
     typeset -i exitcode=${exitv:-1}
 
@@ -3924,7 +4094,9 @@ function _failure()
     exit "$exitcode"
 }
 
-function _print() {
+function _print ()
+
+{
     option_is_set -q || _msg print "$@"
     return 0
 }
@@ -4023,6 +4195,31 @@ function device.link_hush_udev_rules ()
         _verbose "Reloading udev rules"
         sudo udevadm control --reload-rules
     fi
+}
+
+# device.unmount attempts to unmount a directory from the system.
+# $1 - A name to match with grep when searching mount points.
+#      When a line is matched, the corresponding mount path is used.
+#      Ex: ramdisk on /home/user/.gnupg, where ramdisk is $1, and
+#      ~/.gnupg is the path that this command will attempt to umount.
+function device.unmount ()
+{
+    local name="${1}"
+    local exclude=(grep -v -e /rw) # Mount paths we don't want to touch.
+
+    while read -r match; do
+        # Ensure the 2nd word is 'on', which means the third is the path.
+        [[ -z "${match}" ]] && continue
+        [[ "$(echo "$match" | awk '{print $2}')" == 'on' ]] || continue
+
+        # Or attempt to unmount.
+        local mount_point
+        mount_point="$(echo "$match" | awk '{print $3}')"
+        [[ -z "${mount_point}" ]] && continue
+
+        sudo umount -l "${mount_point}" || _warning "Failed to unmount $mount_point"
+
+    done < <(mount | grep "${name}" | "${exclude[@]}" 2>/dev/null)
 }
 
 # src/lib/run.sh
@@ -5229,7 +5426,11 @@ risks_identity_create_command() {
       _failure "An identity seems to be active. Cannot safely create a new one."
   fi
 
-  if device.hush_is_mounted && [[ -w "$HUSH_DIR" ]]; then
+  if ! device.hush_is_mounted; then
+      _failure "No hush device is mounted and available to store identity keys."
+  fi
+
+  if [[ -w "$HUSH_DIR" ]]; then
       _failure "Hush is currently mounted read-write. \n \
           Please ensure nothing is writing to it and set it to read-only first"
   fi
@@ -5848,20 +6049,48 @@ risks_slam_command() {
 risks_cleanup_command() {
   # src/cleanup_command.sh
 
-  if identity.active; then
-      _info "An identity is active, closing it before cleanup."
-      risks_identity_close_command
-      echo
-  fi
+  # if identity.active; then
+  #     _info "An identity is active, closing it before cleanup."
+  #     risks_identity_close_command
+  #     echo
+  # fi
 
-  _warning "Unmounting orphaned file systems and devices"
-  _info "Unmounting .gnupg ramdisk"
-  _info "Unmounting /tmp/${BACKUP_MAPPER}"
+  local dirs=(/home/user/test /rw/hush/another)
+  _info "Adding directories ${dirs[*]}"
+  cleanup.add_directory "${dirs[@]}"
+  cleanup.rm_directory /home/user/test
 
-  _warning "Deleting directories"
-  _info "Wiping .gnupg/"
-  _info "Wiping .ssh/"
-  _info "Wiping .tomb/"
+  local files=(/home/user/.ssh /rw/config/rc.local)
+  _info "Adding files ${files[*]}"
+  cleanup.add_file "${files[@]}"
+
+  #
+  # _warning "Unmounting file systems and/or devices"
+  #
+  # # Mount points usually existing when creating an identity.
+  # if mount | grep ramdisk &>/dev/null; then
+  #     _info "Detected orphaned ramdisk from identity creation, unmounting."
+  #     device.unmount ramdisk
+  # fi
+  #
+  # # Other mount points
+  # if mount | grep "${RAMDISK}" &>/dev/null; then
+  #     _info "Unmounting .gnupg"
+  #     device.unmount .gnupg
+  # fi
+  #
+  # if mount | grep "${BACKUP_MOUNT_DIR}" &>/dev/null; then
+  #     _info "Unmounting ${BACKUP_MOUNT_DIR}"
+  #     device.unmount "${BACKUP_MOUNT_DIR}"
+  # fi
+  #
+  # ## 2 - Directories
+  # #
+  # _warning "Deleting directories"
+  #
+  # _info "Wiping .gnupg/"
+  # _info "Wiping .ssh/"
+  # _info "Wiping .tomb/"
 
   _success "Done cleaning vault system"
 
@@ -6120,6 +6349,21 @@ parse_requirements() {
         # :flag.case_no_arg
         args['--verbose']=1
         shift
+        ;;
+
+      # :flag.case
+      --log-file | -l)
+
+        # :flag.case_arg
+        if [[ -n ${2+x} ]]; then
+
+          args['--log-file']="$2"
+          shift
+          shift
+        else
+          printf "%s\n" "--log-file requires an argument: --log-file, -l LOGFILE" >&2
+          exit 1
+        fi
         ;;
 
       *)
@@ -10045,7 +10289,7 @@ risks_help_parse_requirements() {
 initialize() {
   version="0.1.0"
   long_usage=''
-  
+  set -euo pipefail
 
   # src/initialize.sh
 
@@ -10062,6 +10306,9 @@ initialize() {
 
   # Use colors unless told not to
   { ! option_is_set --no-color } && { autoload -Uz colors && colors }
+
+  # Set log file if specified via flags.
+  _init_log_file
 
 
   # Don't run as root
@@ -10139,6 +10386,7 @@ run() {
   declare -a input=()
   normalize_input "$@"
   parse_requirements "${input[@]}"
+  initialize
 
   case "$action" in
     "hush")
@@ -10675,5 +10923,4 @@ run() {
   esac
 }
 
-initialize
 run "$@"

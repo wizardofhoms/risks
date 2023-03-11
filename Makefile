@@ -10,11 +10,12 @@ default:
 
 	# First generate the risk script from our source
 	bashly generate
-	
-	# Remove set -e from the generated script
-	# since we handle our errors ourselves
-	sed -i 's/set -e//g' risks
 
+	# Move the initialize call from its current position to within 
+	# the run function, so that flags are accessible immediately.
+	sed -i 'N;$$!P;D' risks
+	sed -i '/parse_requirements "$${/a \ \ initialize' risks
+	
 # release is used for every new version of the tool
 release:
 	# Update the version line string
@@ -30,9 +31,6 @@ release:
 	# First generate the risk script from our source
 	bashly generate
 	
-	# Remove set -e from the generated script
-	# since we handle our errors ourselves
-	sed -i 's/set -e//g' risks
 	# And reset the settings from prod to dev
 	sed -i 's#^.*\benv\b.*$$#env: development#' settings.yml
 

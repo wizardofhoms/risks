@@ -1,6 +1,9 @@
 
 ## Variables ##
 
+# If the user wants to log command output to a file.
+risks_log_file=""
+
 # Section is set either by functions or simple calls,
 # so that logging can inform on the component working.
 section='risks'
@@ -35,8 +38,33 @@ log_chars=(
 
 ## Functions ##
 
+# _init_log_file creates the log file if does not exist,
+# and exits the script in case of failure, or if the file
+# is not writable.
+function _init_log_file ()
+{
+    risks_log_file="${args['--log-file']}"
+    [[ -z "${risks_log_file}" ]] && return
+
+    # Ensure not a directory, and if exists, is writable.
+    if [[ -d "${risks_log_file}" ]] ; then
+        risks_log_file=''
+        _failure "Log file ${risks_log_file} is a directory"
+    elif [[ -e "${risks_log_file}" ]] && [[ ! -w "${risks_log_file}" ]]; then
+        risks_log_file=''
+        _failure "Log file ${risks_log_file} is not writable"
+    fi
+
+    # Create the file if not existing, or fail.
+    if [[ ! -e "${risks_log_file}" ]]; then
+        _run touch "${risks_log_file}"
+        _catch "Failed to create log file ${risks_log_file}"
+        _info "Logging command output to file ${risks_log_file}"
+    fi
+}
+
 # Simple way of setting the section and to update the padding
-_in_section ()
+function _in_section ()
 {
     section="$1"
     if [[ -n "${2}" ]]; then
@@ -44,7 +72,8 @@ _in_section ()
     fi
 }
 
-function is_verbose_set () {
+function is_verbose_set () 
+{
     if [[ "${args['--verbose']}" -eq 1 ]]; then
         return 0
     else
@@ -53,7 +82,7 @@ function is_verbose_set () {
 }
 
 # Messaging function with pretty coloring
-function _msg()
+function _msg ()
 {
     # Check if we have been provided a section name,
     # and if not, that the section is set to a default.
@@ -110,12 +139,9 @@ function _msg()
 
     [[ -n $_MSG_FD_OVERRIDE ]] && fd=$_MSG_FD_OVERRIDE
 
-    # If there is a log-file specified with flag --log-file,
-    # output the message to it, instead of the current file descriptor
-    logfile="${args['--log-file']}"
-    if [[ -n "${logfile}" ]]; then
-        ${=command} "${progname}" "${pchars}" "${msg}" >> "$logfile"
-        return $returncode
+    # If there is a log-file specified, write the output to it. 
+    if [[ -n "${risks_log_file}" ]]; then
+        ${=command} "${progname}" "${pchars}" "${msg}" >> "$risks_log_file"
     fi
 
     # Else, print to stdout, with colors
@@ -129,24 +155,28 @@ function _msg()
     return $returncode
 }
 
-function _info() {
+function _info () 
+{
     local notice="message"
     [[ "$1" = "-n" ]] && shift && notice="inline"
     option_is_set -q || _msg "$notice" "$@"
     return 0
 }
 
-function _verbose() {
+function _verbose () 
+{
     is_verbose_set && _msg verbose "$@"
     return 0
 }
 
-function _success() {
+function _success () 
+{
     option_is_set -q || _msg success "$@"
     return 0
 }
 
-function _warning() {
+function _warning () 
+{
     option_is_set -q || _msg warning "$@"
     return 1
 }
@@ -155,7 +185,7 @@ function _warning() {
 # of an error exit code, and then looks at the contents of erroring
 # command's stderr buffer, which is printed just below our message.
 # We then exit the program.
-function _failure()
+function _failure ()
 {
     typeset -i exitcode=${exitv:-1}
 
@@ -168,7 +198,8 @@ function _failure()
     exit "$exitcode"
 }
 
-function _print() {
+function _print () 
+{
     option_is_set -q || _msg print "$@"
     return 0
 }
