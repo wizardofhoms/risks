@@ -5,6 +5,9 @@ VERSION = $(shell git describe --abbrev=0 --tags --always)
 
 # default produces a single CLI for development purposes
 default:
+	# Remove all trailing spaces from src code.
+	sed -i 's/[ \t]*$$//' **/*.sh
+
 	# First generate the risk script from our source
 	bashly generate
 	
@@ -21,6 +24,9 @@ release:
 	# (strips a bit of code from the final script)
 	sed -i 's#^.*\benv\b.*$$#env: production#' settings.yml
 	
+	# Remove all trailing spaces from src code.
+	sed -i 's/[ \t]*$$//' **/*.sh
+
 	# First generate the risk script from our source
 	bashly generate
 	
