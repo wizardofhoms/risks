@@ -34,7 +34,6 @@ risks_usage() {
   printf "  %s   Create, use and manage tombs (stores)\n" "$(green "tomb")    "
   printf "  %s   Show currently open data stores\n" "$(green "list")    "
   printf "  %s   Close all active identities and unmount hush/backup partitions\n" "$(green "slam")    "
-  printf "  %s   Close any open identity, and wipe all files and directories that should not exist.\n" "$(green "cleanup") "
   printf "  %s   Copy some resource to a VM where to use it (completed)\n" "$(green "load")    "
   printf "  %s   Move some data coming from another VM to a (tomb) directory\n" "$(green "save")    "
   printf "  %s   Retrieve the encrypted names of identity files\n" "$(green "resolve") "
@@ -1586,35 +1585,6 @@ risks_slam_usage() {
   printf "%s\n" "$(bold "Usage:")"
   printf "  risks slam\n"
   printf "  risks slam --help | -h\n"
-  echo
-
-  # :command.long_usage
-  if [[ -n $long_usage ]]; then
-    printf "%s\n" "$(bold "Options:")"
-
-    # :command.usage_fixed_flags
-    printf "  %s\n" "--help, -h"
-    printf "    Show this help\n"
-    echo
-
-  fi
-}
-
-# :command.usage
-risks_cleanup_usage() {
-  if [[ -n $long_usage ]]; then
-    printf "risks cleanup - Close any open identity, and wipe all files and directories that should not exist.\n"
-    echo
-
-  else
-    printf "risks cleanup - Close any open identity, and wipe all files and directories that should not exist.\n"
-    echo
-
-  fi
-
-  printf "%s\n" "$(bold "Usage:")"
-  printf "  risks cleanup\n"
-  printf "  risks cleanup --help | -h\n"
   echo
 
   # :command.long_usage
@@ -6046,57 +6016,6 @@ risks_slam_command() {
 }
 
 # :command.function
-risks_cleanup_command() {
-  # src/cleanup_command.sh
-
-  # if identity.active; then
-  #     _info "An identity is active, closing it before cleanup."
-  #     risks_identity_close_command
-  #     echo
-  # fi
-
-  local dirs=(/home/user/test /rw/hush/another)
-  _info "Adding directories ${dirs[*]}"
-  cleanup.add_directory "${dirs[@]}"
-  cleanup.rm_directory /home/user/test
-
-  local files=(/home/user/.ssh /rw/config/rc.local)
-  _info "Adding files ${files[*]}"
-  cleanup.add_file "${files[@]}"
-
-  #
-  # _warning "Unmounting file systems and/or devices"
-  #
-  # # Mount points usually existing when creating an identity.
-  # if mount | grep ramdisk &>/dev/null; then
-  #     _info "Detected orphaned ramdisk from identity creation, unmounting."
-  #     device.unmount ramdisk
-  # fi
-  #
-  # # Other mount points
-  # if mount | grep "${RAMDISK}" &>/dev/null; then
-  #     _info "Unmounting .gnupg"
-  #     device.unmount .gnupg
-  # fi
-  #
-  # if mount | grep "${BACKUP_MOUNT_DIR}" &>/dev/null; then
-  #     _info "Unmounting ${BACKUP_MOUNT_DIR}"
-  #     device.unmount "${BACKUP_MOUNT_DIR}"
-  # fi
-  #
-  # ## 2 - Directories
-  # #
-  # _warning "Deleting directories"
-  #
-  # _info "Wiping .gnupg/"
-  # _info "Wiping .ssh/"
-  # _info "Wiping .tomb/"
-
-  _success "Done cleaning vault system"
-
-}
-
-# :command.function
 risks_load_command() {
   # src/load_command.sh
 
@@ -6483,13 +6402,6 @@ parse_requirements() {
       action="slam"
       shift
       risks_slam_parse_requirements "$@"
-      shift $#
-      ;;
-
-    cleanup)
-      action="cleanup"
-      shift
-      risks_cleanup_parse_requirements "$@"
       shift $#
       ;;
 
@@ -9063,50 +8975,6 @@ risks_slam_parse_requirements() {
 }
 
 # :command.parse_requirements
-risks_cleanup_parse_requirements() {
-  # :command.fixed_flags_filter
-  while [[ $# -gt 0 ]]; do
-    case "${1:-}" in
-      --help | -h)
-        long_usage=yes
-        risks_cleanup_usage
-        exit
-        ;;
-
-      *)
-        break
-        ;;
-
-    esac
-  done
-
-  # :command.command_filter
-  action="cleanup"
-
-  # :command.parse_requirements_while
-  while [[ $# -gt 0 ]]; do
-    key="$1"
-    case "$key" in
-
-      -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
-        ;;
-
-      *)
-        # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
-        printf "invalid argument: %s\n" "$key" >&2
-        exit 1
-
-        ;;
-
-    esac
-  done
-
-}
-
-# :command.parse_requirements
 risks_load_parse_requirements() {
   # :command.fixed_flags_filter
   while [[ $# -gt 0 ]]; do
@@ -10737,15 +10605,6 @@ run() {
         risks_slam_usage
       else
         risks_slam_command
-      fi
-      ;;
-
-    "cleanup")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_cleanup_usage
-      else
-        risks_cleanup_command
       fi
       ;;
 

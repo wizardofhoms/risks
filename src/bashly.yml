@@ -38,7 +38,6 @@ commands:
 - import: src/tomb_commands.yml
 - import: src/list_command.yml
 - import: src/slam_command.yml
-- import: src/cleanup_commands.yml
   # Data/tools commands
 - import: src/load_command.yml
 - import: src/save_command.yml
