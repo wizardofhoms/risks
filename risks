@@ -9508,6 +9508,7 @@ run() {
   declare -a input=()
   normalize_input "$@"
   parse_requirements "${input[@]}"
+  initialize
 
   case "$action" in
     "hush")
@@ -10035,5 +10036,4 @@ run() {
   esac
 }
 
-initialize
 run "$@"
