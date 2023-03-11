@@ -92,3 +92,28 @@ function device.link_hush_udev_rules ()
         sudo udevadm control --reload-rules
     fi
 }
+
+# device.unmount attempts to unmount a directory from the system.
+# $1 - A name to match with grep when searching mount points.
+#      When a line is matched, the corresponding mount path is used.
+#      Ex: ramdisk on /home/user/.gnupg, where ramdisk is $1, and
+#      ~/.gnupg is the path that this command will attempt to umount.
+function device.unmount ()
+{
+    local name="${1}"
+    local exclude=(grep -v -e /rw) # Mount paths we don't want to touch.
+
+    while read -r match; do
+        # Ensure the 2nd word is 'on', which means the third is the path.
+        [[ -z "${match}" ]] && continue
+        [[ "$(echo "$match" | awk '{print $2}')" == 'on' ]] || continue
+
+        # Or attempt to unmount.
+        local mount_point
+        mount_point="$(echo "$match" | awk '{print $3}')"
+        [[ -z "${mount_point}" ]] && continue
+
+        sudo umount -l "${mount_point}" || _warning "Failed to unmount $mount_point"
+
+    done < <(mount | grep "${name}" | "${exclude[@]}" 2>/dev/null)
+}

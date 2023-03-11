@@ -16,7 +16,11 @@ if identity.active ; then
     _failure "An identity seems to be active. Cannot safely create a new one."
 fi
 
-if device.hush_is_mounted && [[ -w "$HUSH_DIR" ]]; then
+if ! device.hush_is_mounted; then
+    _failure "No hush device is mounted and available to store identity keys."
+fi
+
+if [[ -w "$HUSH_DIR" ]]; then
     _failure "Hush is currently mounted read-write. \n \
         Please ensure nothing is writing to it and set it to read-only first"
 fi
@@ -107,5 +111,5 @@ if [[ -n "$pendrive" ]]; then
     risks_backup_umount_command
 fi
 
-## 10 - ALL DONE
+## ALL DONE
 echo && _success "risks" "Identity generation complete." && echo

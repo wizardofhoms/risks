@@ -7,11 +7,15 @@ function gpg.setup_keyring ()
     _verbose 'Creating directory & setting permissions'
     rm -fR "${RAMDISK}"
     mkdir "${RAMDISK}"
+    cleanup.add_directory "${RAMDISK}"
+
     _run sudo mount -t tmpfs -o size=10m ramdisk "${RAMDISK}"
     _catch "Failed to mount tmp fs on ramdisk"
-    sudo chown "${USER}" "${RAMDISK}"
+    cleanup.add_mount_point ramdisk
+
+    _run sudo chown "${USER}" "${RAMDISK}"
     _catch "Failed to set ownership to ${RAMDISK}"
-    sudo chmod 0700 "${RAMDISK}"
+    _run sudo chmod 0700 "${RAMDISK}"
     _catch "Failed to change mod 0700 to ${RAMDISK}"
 
     ## Testing
@@ -21,7 +25,7 @@ function gpg.setup_keyring ()
         ramdisk on /home/user/ramdisk type tmpfs (rw,relatime,size=10240k) \n\
         ramdisk on /rw/home/user/ramdisk type tmpfs (rw,relatime,size=10240k) \n"
 
-    touch "${RAMDISK}/delme" && rm "${RAMDISK}/delme"
+    _run touch "${RAMDISK}/delme" && rm "${RAMDISK}/delme"
     _catch "Failed to test write file ${1}"
 
     # Configuration files
@@ -130,23 +134,25 @@ function gpg.cleanup_keyring ()
 {
     local email="$1"
 
-    local tmp_filename tmp_dir coffin_name
+    local mapper tmp_filename tmp_dir coffin_name
 
     # Filenames
     tmp_filename=$(crypt.filename "${IDENTITY}-gpg")
     tmp_dir="/tmp/${tmp_filename}"
     coffin_name=$(crypt.filename "coffin-${IDENTITY}-gpg")
+    mapper="/dev/mapper/${coffin_name}"
 
-    # Making tmp directory
+    # Making tmp directory and mounting the coffin onto it.
     _verbose "Creating temp directory and mounting coffin"
     mkdir "$tmp_dir"
-    sudo mount /dev/mapper/"${coffin_name}" "$tmp_dir"
+    sudo mount "${mapper}" "$tmp_dir"
     _catch "Failed to mount coffin partition on $tmp_dir"
+    cleanup.add_luks "${mapper}"
     sudo chown "$USER" "$tmp_dir"
     _verbose "Testing coffin filesystem"
     _verbose "$(mount | grep "$tmp_filename")"
 
-    ## Moving GPG data into the coffin, and closing again
+    ## Moving GPG data from ramdisk into the coffin, and closing again
     _verbose "Copying GPG files in coffin"
     cp -fR "$RAMDISK"/* "$tmp_dir" || _warning "Failed to copy one or more files into coffin"
     _verbose "Setting GPG files immutable"
@@ -154,14 +160,16 @@ function gpg.cleanup_keyring ()
     _verbose "Closing coffin"
     sudo chattr +i "$tmp_dir"/openpgp-revocs.d/*
     sudo umount "$tmp_dir" || _warning "Failed to unmount tmp directory $TMP"
-    sudo cryptsetup close /dev/mapper/"$coffin_name"
+    sudo cryptsetup close "${mapper}"
     _catch "Failed to close LUKS filesystem for identity"
+    cleanup.rm_luks "${mapper}"
 
     # Clearing RAMDisk
     _verbose "Wiping and unmounting ramdisk"
     _run sudo wipe -rf "$RAMDISK"/*
     _catch "Failed to wipe $RAMDISK directory"
     sudo umount -l "$RAMDISK" || _warning "Failed to unmount ramdisk $RAMDISK"
+    cleanup.rm_mount_point ramdisk
 
     ## 5 - Final checks
     _verbose "Checking directory contents"
@@ -172,7 +180,7 @@ function gpg.cleanup_keyring ()
         /home/user/.graveyard                      \n    \
         ├── fejk38RjhfEf13 (joe-gpg.coffin)        \n"
 
-    _verbose "Test opening and closing coffin for $IDENTITY"
+    _verbose "Test closing and opening coffin for $IDENTITY"
     gpg.close_coffin
     gpg.open_coffin
 
