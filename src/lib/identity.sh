@@ -45,6 +45,7 @@ function identity.set_active ()
 }
 
 # identity.active returns 0 if an identity is unlocked, 1 if not.
+# TODO: Rename identity.is_active
 function identity.active ()
 {
     [[ ! -e "${RISKS_IDENTITY_FILE}" ]] && return 1

@@ -13,9 +13,6 @@ setopt BASH_REMATCH
 # Use colors unless told not to
 { ! option_is_set --no-color } && { autoload -Uz colors && colors }
 
-# Set log file if specified via flags.
-_init_log_file
-
 ## Checks ##
 
 # Don't run as root

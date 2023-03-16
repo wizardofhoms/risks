@@ -15,10 +15,8 @@ default:
 	# since we handle our errors ourselves
 	sed -i 's/set -e//g' risks
 
-	# Move the initialize call from its current position to within 
-	# the run function, so that flags are accessible immediately.
-	sed -i 'N;$$!P;D' risks
-	sed -i '/parse_requirements "$${/a \ \ initialize' risks
+	# Add call after initialize but before run to setup log
+	sed -i '/parse_requirements "$${/a \ \ _init_log_file' risks
 	
 # release is used for every new version of the tool
 release:
