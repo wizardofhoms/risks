@@ -111,6 +111,27 @@ function tomb.delete ()
     fi
 }
 
+# tomb.delete_key_file takes a tomb name as argument, 
+# resolves to its key file and deletes it if it exists.
+function tomb.delete_key_file ()
+{
+    local name="$1"
+    local tomb_label
+    local tomb_key
+    local tomb_key_path
+
+    tomb_label="${IDENTITY}-${resource}"
+
+    tomb_key=$(crypt.filename "$tomb_label.key")
+    tomb_key_path="${HUSH_DIR}/${tomb_key}"
+
+    [[ ! -e "${tomb_key_path}" ]] && return
+    [[ -d "${tomb_key_path}" ]] && return
+
+    sudo chattr -i "$tomb_key_path"
+    _run wipe -f -r -P 10 "$tomb_key_path"
+}
+
 # tomb.open_path accepts an arbitrary tomb path to open.
 # $1 - Resource name
 # $2 - Tomb file path

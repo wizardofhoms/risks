@@ -26,6 +26,13 @@ _info "Some of the wiping operations will take some time (several minutes). Plea
 _info "Wiping graveyard ($(graveyard.identity_directory "$IDENTITY"))"
 graveyard.delete
 
+# Remove builtin tomb keys from the hush device.
+_run risks_hush_rw_command
+_run tomb.delete_key_file ssh
+_run tomb.delete_key_file pass
+_run tomb.delete_key_file mgmt
+_run risks_hush_ro_command
+
 # Delete the coffin files in the graveyard, and coffin key in hush
 _info "Wiping GPG coffin"
 _run risks_hush_rw_command

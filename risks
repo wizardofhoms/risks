@@ -4546,6 +4546,28 @@ function tomb.delete ()
     fi
 }
 
+# tomb.delete_key_file takes a tomb name as argument,
+
+# resolves to its key file and deletes it if it exists.
+function tomb.delete_key_file ()
+{
+    local name="$1"
+    local tomb_label
+    local tomb_key
+    local tomb_key_path
+
+    tomb_label="${IDENTITY}-${resource}"
+
+    tomb_key=$(crypt.filename "$tomb_label.key")
+    tomb_key_path="${HUSH_DIR}/${tomb_key}"
+
+    [[ ! -e "${tomb_key_path}" ]] && return
+    [[ -d "${tomb_key_path}" ]] && return
+
+    sudo chattr -i "$tomb_key_path"
+    _run wipe -f -r -P 10 "$tomb_key_path"
+}
+
 # tomb.open_path accepts an arbitrary tomb path to open.
 # $1 - Resource name
 # $2 - Tomb file path
@@ -5620,6 +5642,13 @@ risks_identity_delete_command() {
   #  Delete the identity graveyard directory, and the associated fscrypt policy
   _info "Wiping graveyard ($(graveyard.identity_directory "$IDENTITY"))"
   graveyard.delete
+
+  # Remove builtin tomb keys from the hush device.
+  _run risks_hush_rw_command
+  _run tomb.delete_key_file ssh
+  _run tomb.delete_key_file pass
+  _run tomb.delete_key_file mgmt
+  _run risks_hush_ro_command
 
   # Delete the coffin files in the graveyard, and coffin key in hush
   _info "Wiping GPG coffin"
