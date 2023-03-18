@@ -24,7 +24,7 @@ function tomb.create ()
     local tomb_file_path    # Absolute path to the tomb file
     local tomb_key          # Encrypted name of the tomb key file
     local tomb_key_path     # Absolute path to the tomb key file
-    local uid recipient     # Used to get the email address of the identity with GPG.
+    local recipient         # Used to get the email address of the identity with GPG.
 
     # Filenames
     tomb_label="${IDENTITY}-${name}"
@@ -41,8 +41,7 @@ function tomb.create ()
     gpg.open_coffin
 
     # And get the email recipient
-    uid=$(gpg -K | grep uid | head -n 1)
-    recipient=$(echo "$uid" | grep -E -o "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b")
+    recipient="$(identity.recipient)"
 
     # Then dig
     _verbose "Digging tomb in $tomb_file_path"
@@ -70,7 +69,6 @@ function tomb.delete ()
     local tomb_file_path    # Absolute path to the tomb file
     local tomb_key          # Encrypted name of the tomb key file
     local tomb_key_path     # Absolute path to the tomb key file
-    local uid recipient     # Used to get the email address of the identity with GPG.
 
     # Prepare filenames
     tomb_label="${IDENTITY}-${name}"

@@ -16,7 +16,7 @@ identity.set "${args['name']}"
 if identity.active && [[ "$(cat "${RISKS_IDENTITY_FILE}")" == "$name" ]]; then
     args["resource"]="identity"
     args["identity"]="$name"
-    risks_close_command
+    risks_identity_close_command
 fi
 
 _info "Starting deletion of identity '$name'"

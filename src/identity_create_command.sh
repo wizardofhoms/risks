@@ -86,6 +86,8 @@ ssh.setup "$email"
 _in_section 'mgmt' && _info "Creating management tomb"
 tomb.create_management
 
+risks_hush_ro_command
+
 ## Backup
 #
 if [[ -n "$pendrive" ]]; then

@@ -3830,6 +3830,17 @@ function identity.get_args_expiry ()
     print "${expiry_date}"
 }
 
+# identity.recipient returns the email/name recipient of the identity GPG master key.
+function identity.recipient ()
+{
+    [[ -z "${IDENTITY}" ]] && return
+
+    local uid
+
+    uid=$(gpg -K | grep uid | head -n 1)
+    echo "$uid" | grep -oP '(?<=<).*(?=>)'
+}
+
 # src/lib/init.sh
 
 # This file contains additional IDENTITY initialization functions.
@@ -4436,7 +4447,7 @@ function tomb.create ()
     local tomb_file_path    # Absolute path to the tomb file
     local tomb_key          # Encrypted name of the tomb key file
     local tomb_key_path     # Absolute path to the tomb key file
-    local uid recipient     # Used to get the email address of the identity with GPG.
+    local recipient         # Used to get the email address of the identity with GPG.
 
     # Filenames
     tomb_label="${IDENTITY}-${name}"
@@ -4453,8 +4464,7 @@ function tomb.create ()
     gpg.open_coffin
 
     # And get the email recipient
-    uid=$(gpg -K | grep uid | head -n 1)
-    recipient=$(echo "$uid" | grep -E -o "\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}\b")
+    recipient="$(identity.recipient)"
 
     # Then dig
     _verbose "Digging tomb in $tomb_file_path"
@@ -4482,7 +4492,6 @@ function tomb.delete ()
     local tomb_file_path    # Absolute path to the tomb file
     local tomb_key          # Encrypted name of the tomb key file
     local tomb_key_path     # Absolute path to the tomb key file
-    local uid recipient     # Used to get the email address of the identity with GPG.
 
     # Prepare filenames
     tomb_label="${IDENTITY}-${name}"
@@ -5465,6 +5474,8 @@ risks_identity_create_command() {
   _in_section 'mgmt' && _info "Creating management tomb"
   tomb.create_management
 
+  risks_hush_ro_command
+
   #
   if [[ -n "$pendrive" ]]; then
       _in_section 'backup' && _info "Setting identity backup and making initial one"
@@ -5588,7 +5599,7 @@ risks_identity_delete_command() {
   if identity.active && [[ "$(cat "${RISKS_IDENTITY_FILE}")" == "$name" ]]; then
       args["resource"]="identity"
       args["identity"]="$name"
-      risks_close_command
+      risks_identity_close_command
   fi
 
   _info "Starting deletion of identity '$name'"

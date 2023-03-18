@@ -131,3 +131,14 @@ function identity.get_args_expiry ()
 
     print "${expiry_date}"
 }
+
+# identity.recipient returns the email/name recipient of the identity GPG master key.
+function identity.recipient ()
+{
+    [[ -z "${IDENTITY}" ]] && return
+
+    local uid 
+
+    uid=$(gpg -K | grep uid | head -n 1)
+    echo "$uid" | grep -oP '(?<=<).*(?=>)'
+}
