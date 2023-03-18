@@ -113,7 +113,7 @@ function device.unmount ()
         mount_point="$(echo "$match" | awk '{print $3}')"
         [[ -z "${mount_point}" ]] && continue
 
-        sudo umount -l "${mount_point}" || _warning "Failed to unmount $mount_point"
+        sudo umount -l "${mount_point}" &>/dev/null || _warning "Failed to unmount $mount_point"
 
     done < <(mount | grep "${name}" | "${exclude[@]}" 2>/dev/null)
 }

@@ -11,8 +11,8 @@ typeset -ga cleanup_luks
 function cleanup.add_directory ()
 {
     [[ -z "$*" ]] && return
-    cleanup_directories+=( "$@" )
-    read -rA cleanup_directories < <(printf "%s\n" "${cleanup_directories[@]}" | sort -u | tr '\n' ' ')
+    read -r cleanup_directories <<< "$@"
+    read -r cleanup_directories < <(printf "%s\n" "${cleanup_directories[@]}" | sort -u | tr '\n' ' ')
 }
 
 # cleanup.rm_directory is used to deregister some
@@ -21,7 +21,7 @@ function cleanup.add_directory ()
 function cleanup.rm_directory ()
 {
     [[ -z "$*" ]] && return
-    read -rA cleanup_directories < <(printf "%s\n" "${cleanup_directories[@]}" "$@" | uniq -u)
+    read -r cleanup_directories < <(printf "%s\n" "${cleanup_directories[@]}" "$@" | uniq -u)
 }
 
 # cleanup.add_file registers one or more files to be wiped on exit.
@@ -29,8 +29,8 @@ function cleanup.rm_directory ()
 function cleanup.add_file ()
 {
     [[ -z "$*" ]] && return
-    read -rA cleanup_files <<< "$@"
-    read -rA cleanup_files < <(printf "%s\n" "${cleanup_files[@]}" | sort -u | tr '\n' ' ')
+    read -r cleanup_files <<< "$@"
+    read -r cleanup_files < <(printf "%s\n" "${cleanup_files[@]}" | sort -u | tr '\n' ' ')
 }
 
 # cleanup.rm_file deregisters some files
@@ -50,8 +50,8 @@ function cleanup.rm_file ()
 function cleanup.add_mount_point ()
 {
     [[ -z "$*" ]] && return
-    read -rA cleanup_mounts <<< "$@"
-    read -rA cleanup_mounts < <(printf "%s\n" "${cleanup_mounts[@]}" | sort -u | tr '\n' ' ')
+    read -r cleanup_mounts <<< "$@"
+    read -r cleanup_mounts < <(printf "%s\n" "${cleanup_mounts[@]}" | sort -u | tr '\n' ' ')
 }
 
 # cleanup.rm_mount_point deregisters mount points
@@ -60,7 +60,7 @@ function cleanup.add_mount_point ()
 function cleanup.rm_mount_point ()
 {
     [[ -z "$*" ]] && return
-    read -rA cleanup_mounts < <(printf "%s\n" "${cleanup_mounts[@]}" "$@" | uniq -u)
+    read -r cleanup_mounts < <(printf "%s\n" "${cleanup_mounts[@]}" "$@" | uniq -u)
 }
 
 # cleanup.add_luks registers a luks device name (/dev/mapper/<name>)
@@ -72,7 +72,7 @@ function cleanup.add_luks ()
 {
     [[ -z "$*" ]] && return
     cleanup_luks+=( "$@" )
-    read -rA cleanup_luks < <(printf "%s\n" "${cleanup_luks[@]}" | sort -u | tr '\n' ' ')
+    read -r cleanup_luks < <(printf "%s\n" "${cleanup_luks[@]}" | sort -u | tr '\n' ' ')
 }
 
 # cleanup.rm_luks deregisters luks mapper names
@@ -81,7 +81,7 @@ function cleanup.add_luks ()
 function cleanup.rm_luks ()
 {
     [[ -z "$*" ]] && return
-    read -rA cleanup_luks < <(printf "%s\n" "${cleanup_luks[@]}" "$@" | uniq -u)
+    read -r cleanup_luks < <(printf "%s\n" "${cleanup_luks[@]}" "$@" | uniq -u)
 }
 
 # cleanup.execute will perform cleanup and unmounting of

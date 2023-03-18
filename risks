@@ -1753,7 +1753,7 @@ risks_resolve_coffin_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks resolve coffin [NAME]\n"
+  printf "  risks resolve coffin [IDENTITY]\n"
   printf "  risks resolve coffin --help | -h\n"
   echo
 
@@ -1770,7 +1770,7 @@ risks_resolve_coffin_usage() {
     printf "%s\n" "$(bold "Arguments:")"
 
     # :argument.usage
-    printf "  %s\n" "$(blue "NAME")"
+    printf "  %s\n" "$(blue "IDENTITY")"
     printf "    identity name\n"
     echo
 
@@ -2569,8 +2569,8 @@ typeset -ga cleanup_luks
 function cleanup.add_directory ()
 {
     [[ -z "$*" ]] && return
-    cleanup_directories+=( "$@" )
-    read -rA cleanup_directories < <(printf "%s\n" "${cleanup_directories[@]}" | sort -u | tr '\n' ' ')
+    read -r cleanup_directories <<< "$@"
+    read -r cleanup_directories < <(printf "%s\n" "${cleanup_directories[@]}" | sort -u | tr '\n' ' ')
 }
 
 # cleanup.rm_directory is used to deregister some
@@ -2579,7 +2579,7 @@ function cleanup.add_directory ()
 function cleanup.rm_directory ()
 {
     [[ -z "$*" ]] && return
-    read -rA cleanup_directories < <(printf "%s\n" "${cleanup_directories[@]}" "$@" | uniq -u)
+    read -r cleanup_directories < <(printf "%s\n" "${cleanup_directories[@]}" "$@" | uniq -u)
 }
 
 # cleanup.add_file registers one or more files to be wiped on exit.
@@ -2587,8 +2587,8 @@ function cleanup.rm_directory ()
 function cleanup.add_file ()
 {
     [[ -z "$*" ]] && return
-    read -rA cleanup_files <<< "$@"
-    read -rA cleanup_files < <(printf "%s\n" "${cleanup_files[@]}" | sort -u | tr '\n' ' ')
+    read -r cleanup_files <<< "$@"
+    read -r cleanup_files < <(printf "%s\n" "${cleanup_files[@]}" | sort -u | tr '\n' ' ')
 }
 
 # cleanup.rm_file deregisters some files
@@ -2608,8 +2608,8 @@ function cleanup.rm_file ()
 function cleanup.add_mount_point ()
 {
     [[ -z "$*" ]] && return
-    read -rA cleanup_mounts <<< "$@"
-    read -rA cleanup_mounts < <(printf "%s\n" "${cleanup_mounts[@]}" | sort -u | tr '\n' ' ')
+    read -r cleanup_mounts <<< "$@"
+    read -r cleanup_mounts < <(printf "%s\n" "${cleanup_mounts[@]}" | sort -u | tr '\n' ' ')
 }
 
 # cleanup.rm_mount_point deregisters mount points
@@ -2618,7 +2618,7 @@ function cleanup.add_mount_point ()
 function cleanup.rm_mount_point ()
 {
     [[ -z "$*" ]] && return
-    read -rA cleanup_mounts < <(printf "%s\n" "${cleanup_mounts[@]}" "$@" | uniq -u)
+    read -r cleanup_mounts < <(printf "%s\n" "${cleanup_mounts[@]}" "$@" | uniq -u)
 }
 
 # cleanup.add_luks registers a luks device name (/dev/mapper/<name>)
@@ -2630,7 +2630,7 @@ function cleanup.add_luks ()
 {
     [[ -z "$*" ]] && return
     cleanup_luks+=( "$@" )
-    read -rA cleanup_luks < <(printf "%s\n" "${cleanup_luks[@]}" | sort -u | tr '\n' ' ')
+    read -r cleanup_luks < <(printf "%s\n" "${cleanup_luks[@]}" | sort -u | tr '\n' ' ')
 }
 
 # cleanup.rm_luks deregisters luks mapper names
@@ -2639,7 +2639,7 @@ function cleanup.add_luks ()
 function cleanup.rm_luks ()
 {
     [[ -z "$*" ]] && return
-    read -rA cleanup_luks < <(printf "%s\n" "${cleanup_luks[@]}" "$@" | uniq -u)
+    read -r cleanup_luks < <(printf "%s\n" "${cleanup_luks[@]}" "$@" | uniq -u)
 }
 
 # cleanup.execute will perform cleanup and unmounting of
@@ -3426,6 +3426,7 @@ function gpg.cleanup_keyring ()
     _run sudo wipe -rf "$RAMDISK"/*
     _catch "Failed to wipe $RAMDISK directory"
     sudo umount -l "$RAMDISK" || _warning "Failed to unmount ramdisk $RAMDISK"
+    cleanup.rm_directory "${RAMDISK}"
     cleanup.rm_mount_point ramdisk
 
     _verbose "Checking directory contents"
@@ -4188,7 +4189,7 @@ function device.unmount ()
         mount_point="$(echo "$match" | awk '{print $3}')"
         [[ -z "${mount_point}" ]] && continue
 
-        sudo umount -l "${mount_point}" || _warning "Failed to unmount $mount_point"
+        sudo umount -l "${mount_point}" &>/dev/null || _warning "Failed to unmount $mount_point"
 
     done < <(mount | grep "${name}" | "${exclude[@]}" 2>/dev/null)
 }
@@ -9250,9 +9251,9 @@ risks_resolve_coffin_parse_requirements() {
       *)
         # :command.parse_requirements_case
         # :command.parse_requirements_case_simple
-        if [[ -z ${args['name']+x} ]]; then
+        if [[ -z ${args['identity']+x} ]]; then
 
-          args['name']=$1
+          args['identity']=$1
           shift
         else
           printf "invalid argument: %s\n" "$key" >&2

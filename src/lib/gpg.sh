@@ -169,6 +169,7 @@ function gpg.cleanup_keyring ()
     _run sudo wipe -rf "$RAMDISK"/*
     _catch "Failed to wipe $RAMDISK directory"
     sudo umount -l "$RAMDISK" || _warning "Failed to unmount ramdisk $RAMDISK"
+    cleanup.rm_directory "${RAMDISK}"
     cleanup.rm_mount_point ramdisk
 
     ## 5 - Final checks

@@ -5,7 +5,7 @@ commands:
   - name: coffin 
     help: 'Get the name of the gpg coffin for an identity'
     args:
-      - name: name
+      - name: identity 
         help: 'identity name'
         required: false
 
