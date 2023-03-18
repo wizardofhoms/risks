@@ -29,11 +29,12 @@ _in_section 'risks' 6
 _info "Starting new identity generation process"
 _warning "Do not unplug hush and backup devices during the process"
 
-_info "Using ${fg_bold[green]}${name}${reset_color} as identity name"
-_info "Using ${fg_bold[green]}${email}${reset_color} as email"
-
 # Use the identity name to set its file encryption key.
 identity.set "$identity"
+_info "${fg_bold[white]}Username${reset_color}:       ${name}"
+_info "${fg_bold[white]}GPG recipient${reset_color}:  ${email}"
+_info "${fg_bold[white]}Subkeys expiry${reset_color}: ${expiry_date}"
+
 
 # GPG
 #

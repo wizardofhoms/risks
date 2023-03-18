@@ -28,13 +28,18 @@ function graveyard.create ()
 # graveyard.delete wipes the graveyard directory of an identity.
 function graveyard.delete ()
 {
-    local identity_graveyard
+    local identity_graveyard fscrypt_policy
 
     identity_graveyard=$(graveyard.identity_directory "$IDENTITY")
 
-    ## First make sure the backup directory for the identity is unlocked
-    ## We won't lock it, since after that function runs it won't exist anymore.
+    # First make sure the backup directory for the identity is unlocked
+    # We won't lock it, since after that function runs it won't exist anymore.
     echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard" --quiet
+    _catch "Failed to unlock graveyard"
+
+    # After unlocking, destroy the fscrypt policy for this directory.
+    fscrypt_policy="$(sudo fscrypt status "${identity_graveyard}" | grep Policy | awk '{print $2}')"
+    _run sudo fscrypt metadata destroy --force --policy=/rw:"${fscrypt_policy}"
 
     sudo chattr -i "${identity_graveyard}"/*
     _run wipe -f -r "$identity_graveyard"

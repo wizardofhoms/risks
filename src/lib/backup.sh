@@ -64,6 +64,7 @@ function backup.delete_identity ()
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
     local identity_graveyard_backup # Full path to identity graveyard backup
     local identity_dir              # The encrypted graveyard directory for the identity
+    local fscrypt_policy            # Policy ID of fscrypt protector on identity backup directory
 
     backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
     identity_dir=$(crypt.filename "$IDENTITY")
@@ -72,6 +73,10 @@ function backup.delete_identity ()
     ## First make sure the backup directory for the identity is unlocked
     ## We won't lock it, since after that function runs it won't exist anymore.
     echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard_backup" --quiet
+
+    # And remove the protectors of the graveyard.
+    fscrypt_policy="$(sudo fscrypt status "${identity_graveyard_backup}" | grep Policy | awk '{print $2}')"
+    _run sudo fscrypt metadata destroy --force --policy="${BACKUP_MOUNT_DIR}":"${fscrypt_policy}"
 
     # Delete the identity graveyard in it, and associated fscrypt policy
     if [[ -e "$identity_graveyard_backup" ]]; then

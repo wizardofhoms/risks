@@ -2446,12 +2446,17 @@ function backup.delete_identity ()
     local backup_graveyard          # Where the graveyard root directory is in the backup drive
     local identity_graveyard_backup # Full path to identity graveyard backup
     local identity_dir              # The encrypted graveyard directory for the identity
+    local fscrypt_policy            # Policy ID of fscrypt protector on identity backup directory
 
     backup_graveyard="${BACKUP_MOUNT_DIR}/graveyard"
     identity_dir=$(crypt.filename "$IDENTITY")
     identity_graveyard_backup="${backup_graveyard}/${identity_dir}"
 
     echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard_backup" --quiet
+
+    # And remove the protectors of the graveyard.
+    fscrypt_policy="$(sudo fscrypt status "${identity_graveyard_backup}" | grep Policy | awk '{print $2}')"
+    _run sudo fscrypt metadata destroy --force --policy="${BACKUP_MOUNT_DIR}":"${fscrypt_policy}"
 
     # Delete the identity graveyard in it, and associated fscrypt policy
     if [[ -e "$identity_graveyard_backup" ]]; then
@@ -3577,11 +3582,18 @@ function graveyard.create ()
 # graveyard.delete wipes the graveyard directory of an identity.
 function graveyard.delete ()
 {
-    local identity_graveyard
+    local identity_graveyard fscrypt_policy
 
     identity_graveyard=$(graveyard.identity_directory "$IDENTITY")
 
+    # First make sure the backup directory for the identity is unlocked
+    # We won't lock it, since after that function runs it won't exist anymore.
     echo "$FILE_ENCRYPTION_KEY" | _run sudo fscrypt unlock "$identity_graveyard" --quiet
+    _catch "Failed to unlock graveyard"
+
+    # After unlocking, destroy the fscrypt policy for this directory.
+    fscrypt_policy="$(sudo fscrypt status "${identity_graveyard}" | grep Policy | awk '{print $2}')"
+    _run sudo fscrypt metadata destroy --force --policy=/rw:"${fscrypt_policy}"
 
     sudo chattr -i "${identity_graveyard}"/*
     _run wipe -f -r "$identity_graveyard"
@@ -5420,11 +5432,11 @@ risks_identity_create_command() {
   _info "Starting new identity generation process"
   _warning "Do not unplug hush and backup devices during the process"
 
-  _info "Using ${fg_bold[green]}${name}${reset_color} as identity name"
-  _info "Using ${fg_bold[green]}${email}${reset_color} as email"
-
   # Use the identity name to set its file encryption key.
   identity.set "$identity"
+  _info "${fg_bold[white]}Username${reset_color}:       ${name}"
+  _info "${fg_bold[white]}GPG recipient${reset_color}:  ${email}"
+  _info "${fg_bold[white]}Subkeys expiry${reset_color}: ${expiry_date}"
 
   # GPG
   #
