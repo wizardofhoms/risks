@@ -31,9 +31,12 @@ _warning "Do not unplug hush and backup devices during the process"
 
 # Use the identity name to set its file encryption key.
 identity.set "$identity"
+
+echo
 _info "${fg_bold[white]}Username${reset_color}:       ${name}"
 _info "${fg_bold[white]}GPG recipient${reset_color}:  ${email}"
-_info "${fg_bold[white]}Subkeys expiry${reset_color}: ${expiry_date}"
+_info "${fg_bold[white]}Subkeys expiry${reset_color}: ${expiry}"
+echo
 
 
 # GPG
