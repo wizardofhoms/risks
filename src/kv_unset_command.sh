@@ -1,3 +1,3 @@
 key="${args['key']}"
 
-kvdel "${key}"
+kv.del "${key}"

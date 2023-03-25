@@ -5,7 +5,7 @@ function kv.echo_err ()
     echo -e "\e[01;31m$@\e[0m" >&2
 }
 
-# Usage: kv_validate_key <key>
+# Usage: kv.validate_key <key>
 function kv.validate_key ()
 {
     [[ "$1" =~ ^[0-9a-zA-Z._:-]+$  ]]
@@ -15,7 +15,7 @@ function kv.validate_key ()
 function kv.get ()
 {
     key="$1"
-    kv_validate_key "$key" || {
+    kv.validate_key "$key" || {
         _failure "db" 'invalid param "key"'
             return 1
         }
@@ -31,7 +31,7 @@ function kv.set ()
 {
     key="$1"
     value="$2"
-    kv_validate_key "$key" || {
+    kv.validate_key "$key" || {
         _failure "db" 'invalid param "key"'
             return 1
         }
@@ -45,7 +45,7 @@ function kv.set ()
 function kv.del ()
 {
     key="$1"
-    kv_validate_key "$key" || {
+    kv.validate_key "$key" || {
         _failure "db" 'invalid param "key"'
             return 1
         }

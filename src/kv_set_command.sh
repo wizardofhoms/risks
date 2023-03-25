@@ -1,4 +1,4 @@
 key="${args['key']}"
 value="${args['value']}"
 
-kvset "${key}" "${value}"
+kv.set "${key}" "${value}"

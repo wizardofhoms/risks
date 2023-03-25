@@ -267,10 +267,10 @@ _kv ()
         args)
             case $line[1] in
             set)
-                _arguments -C "1:key:" "2:variable:" && ret=0 # TODO complete existing keys ?"
+                _arguments -C "1:key:_kv_keys" "2:variable:" && ret=0 # TODO complete existing keys ?"
             ;;
             get|unset)
-                _arguments -C "1:key:" && ret=0 # TODO complete existing keys ?"
+                _arguments -C "1:key:_kv_keys" && ret=0 # TODO complete existing keys ?"
             ;;
             esac
     esac
@@ -658,6 +658,16 @@ _config_keys ()
     local keys
     keys=( $(risks config keys) )
     _arguments -C "1:configuration keys:($keys)"
+}
+
+# Returns all currently existing keys in the identity key-value store.
+_kv_keys ()
+{
+    local kv_keys kv_dir
+    kv_dir="$(risks config get KV_USER_DIR)"
+    kv_keys=( $(basename -a "${kv_dir}"/*) )
+
+    _arguments -C "1:key-value store keys:($kv_keys)"
 }
 
 # don't run the completion function when being source-ed or eval-ed

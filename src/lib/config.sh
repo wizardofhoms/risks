@@ -43,6 +43,9 @@ BACKUP_MAPPER=pendev
 ; Default timeout after which the clipboard is wiped after being filled with GPG passphrase.
 GPGPASS_TIMEOUT=45
 
+; The 'risks kv' commands will write to/read from this directory for the currently active identity.
+KV_USER_DIR=/home/user/.tomb/mgmt/kv
+
 EOF
     }
 }

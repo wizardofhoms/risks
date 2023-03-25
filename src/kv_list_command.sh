@@ -1,3 +1,3 @@
 _info "Saved keys:"
 
-kvlist
+kv.list

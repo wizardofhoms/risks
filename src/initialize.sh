@@ -60,23 +60,27 @@ typeset -gr FILE_ENCRYPTION="file_encryption_key" # Simply used as site name in 
 
 typeset -gr RAMDISK="${HOME}/.gnupg"
 typeset -gr BACKUP_MOUNT_DIR="/tmp/pendrive"
-
-typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/db/"
 typeset -gr RISKS_SCRIPTS_INSTALL_PATH="${HUSH_DIR}/.risks"
 
+# risks kv set/get writes to this directory when identity active.
+typeset -gH KV_USER_DIR=$(config_get KV_USER_DIR)
+typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/kv/"
+
 typeset -gr RISKS_IDENTITY_FILE="${RISKS_DIR}/.identity"
-
-# Other constants ..................................................................................
-
-typeset -gr UDEV_RULES_FILE="risks-hush.rules"
-typeset -gr UDEV_RULES_PATH="${RISKS_DIR}/${UDEV_RULES_FILE}" # Contains udev rules for all formatted SDcards
-
-# Password-store
-export PASSWORD_STORE_ENABLE_EXTENSIONS=true
-export PASSWORD_STORE_GENERATED_LENGTH=20
 
 # Sensitive & and recurring variables used by program ..............................................
 
 typeset -gH IDENTITY
 typeset -gH FILE_ENCRYPTION_KEY
 typeset -gH GPG_PASS
+
+# Other constants ..................................................................................
+
+typeset -gr UDEV_RULES_FILE="risks-hush.rules"
+typeset -gr UDEV_RULES_PATH="${RISKS_DIR}/${UDEV_RULES_FILE}" # Contains udev rules for all formatted SDcards
+
+
+# Password-store
+export PASSWORD_STORE_ENABLE_EXTENSIONS=true
+export PASSWORD_STORE_GENERATED_LENGTH=20
+
