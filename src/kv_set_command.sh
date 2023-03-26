@@ -1,3 +1,4 @@
+
 local key
 local -a values
 local all_values
@@ -13,6 +14,8 @@ if [[ -n "${other_args[*]}" ]]; then
     IFS=$'\n'
     all_values="${values[*]}"
     IFS=$old
+else
+    all_values="${values[*]}"
 fi
 
 kv.set "${key}" "${all_values}"

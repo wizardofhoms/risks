@@ -6243,6 +6243,7 @@ risks_config_keys_command() {
 # :command.function
 risks_kv_set_command() {
   # src/kv_set_command.sh
+
   local key
   local -a values
   local all_values
@@ -6258,6 +6259,8 @@ risks_kv_set_command() {
       IFS=$'\n'
       all_values="${values[*]}"
       IFS=$old
+  else
+      all_values="${values[*]}"
   fi
 
   kv.set "${key}" "${all_values}"
@@ -10309,7 +10312,7 @@ initialize() {
 
   # risks kv set/get writes to this directory when identity active.
   typeset -gH KV_USER_DIR=$(config_get KV_USER_DIR)
-  typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/kv/"
+  typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/kv"
 
   typeset -gr RISKS_IDENTITY_FILE="${RISKS_DIR}/.identity"
 

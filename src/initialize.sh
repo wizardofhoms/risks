@@ -64,7 +64,7 @@ typeset -gr RISKS_SCRIPTS_INSTALL_PATH="${HUSH_DIR}/.risks"
 
 # risks kv set/get writes to this directory when identity active.
 typeset -gH KV_USER_DIR=$(config_get KV_USER_DIR)
-typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/kv/"
+typeset -gr DEFAULT_KV_USER_DIR="$HOME/.tomb/mgmt/kv"
 
 typeset -gr RISKS_IDENTITY_FILE="${RISKS_DIR}/.identity"
 
