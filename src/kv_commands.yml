@@ -4,6 +4,7 @@ help: 'Manage the small key=value store used by other commands/functions'
 commands:
   - name: set
     help: 'Set a variable to a value'
+    catch_all: "values" 
     args:
       - name: key
         required: true
@@ -12,7 +13,7 @@ commands:
         required: true
         help: 'Value to assign to the key'
     examples:
-      - "set signalVM MySignalVM      # Sets the key 'signalVM' to 'mySignalVM' in the store"
+      - "set signalVM MySignalVM      # Set key 'signalVM' to 'mySignalVM' in the store"
   - name: get 
     help: 'Get the value of a variable'
     args:

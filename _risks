@@ -665,6 +665,8 @@ _kv_keys ()
 {
     local kv_keys kv_dir
     kv_dir="$(risks config get KV_USER_DIR)"
+    [[ -z "${kv_dir}" ]] && _message "No keys in store" && return
+
     kv_keys=( $(basename -a "${kv_dir}"/*) )
     [[ -z "${kv_keys}" ]] && _message "No keys in store" && return
 

@@ -2121,7 +2121,7 @@ risks_kv_set_usage() {
   fi
 
   printf "%s\n" "$(bold "Usage:")"
-  printf "  risks kv set KEY VALUE\n"
+  printf "  risks kv set KEY VALUE [VALUES...]\n"
   printf "  risks kv set --help | -h\n"
   echo
 
@@ -2149,7 +2149,7 @@ risks_kv_set_usage() {
 
     # :command.usage_examples
     printf "%s\n" "$(bold "Examples:")"
-    printf "  set signalVM MySignalVM      # Sets the key 'signalVM' to 'mySignalVM' in the\n  store\n"
+    printf "  set signalVM MySignalVM      # Set key 'signalVM' to 'mySignalVM' in the store\n"
     echo
 
   fi
@@ -6243,10 +6243,24 @@ risks_config_keys_command() {
 # :command.function
 risks_kv_set_command() {
   # src/kv_set_command.sh
-  key="${args['key']}"
-  value="${args['value']}"
+  local key
+  local -a values
+  local all_values
 
-  kv.set "${key}" "${value}"
+  key="${args['key']}"
+  values+=("${args['value']}")
+
+  # More than one value means we are setting an array.
+  # Join them with newlines.
+  if [[ -n "${other_args[*]}" ]]; then
+      values+=( "${other_args[@]}" )
+      old="$IFS"
+      IFS=$'\n'
+      all_values="${values[*]}"
+      IFS=$old
+  fi
+
+  kv.set "${key}" "${all_values}"
 
 }
 
@@ -9929,14 +9943,20 @@ risks_kv_set_parse_requirements() {
     key="$1"
     case "$key" in
 
+      --)
+        shift
+        other_args+=("$@")
+        break
+        ;;
+
       -?*)
-        printf "invalid option: %s\n" "$key" >&2
-        exit 1
+        other_args+=("$1")
+        shift
         ;;
 
       *)
         # :command.parse_requirements_case
-        # :command.parse_requirements_case_simple
+        # :command.parse_requirements_case_catch_all
         if [[ -z ${args['key']+x} ]]; then
 
           args['key']=$1
@@ -9946,8 +9966,8 @@ risks_kv_set_parse_requirements() {
           args['value']=$1
           shift
         else
-          printf "invalid argument: %s\n" "$key" >&2
-          exit 1
+          other_args+=("$1")
+          shift
         fi
 
         ;;
@@ -9957,11 +9977,11 @@ risks_kv_set_parse_requirements() {
 
   # :command.required_args_filter
   if [[ -z ${args['key']+x} ]]; then
-    printf "missing required argument: KEY\nusage: risks kv set KEY VALUE\n" >&2
+    printf "missing required argument: KEY\nusage: risks kv set KEY VALUE [VALUES...]\n" >&2
     exit 1
   fi
   if [[ -z ${args['value']+x} ]]; then
-    printf "missing required argument: VALUE\nusage: risks kv set KEY VALUE\n" >&2
+    printf "missing required argument: VALUE\nusage: risks kv set KEY VALUE [VALUES...]\n" >&2
     exit 1
   fi
 

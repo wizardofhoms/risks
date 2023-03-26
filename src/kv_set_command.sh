@@ -1,4 +1,18 @@
-key="${args['key']}"
-value="${args['value']}"
+local key
+local -a values
+local all_values
 
-kv.set "${key}" "${value}"
+key="${args['key']}"
+values+=("${args['value']}")
+
+# More than one value means we are setting an array.
+# Join them with newlines.
+if [[ -n "${other_args[*]}" ]]; then
+    values+=( "${other_args[@]}" )
+    old="$IFS"
+    IFS=$'\n'
+    all_values="${values[*]}"
+    IFS=$old
+fi
+
+kv.set "${key}" "${all_values}"
