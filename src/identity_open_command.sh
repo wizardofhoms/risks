@@ -22,6 +22,3 @@ _run tomb.open "$SSH_TOMB_LABEL"
 
 _info "Opening PASS tomb ..."
 _run tomb.open "$PASS_TOMB_LABEL"
-
-_info "Opening Signal tomb ..."
-_run tomb.open "$SIGNAL_TOMB_LABEL"

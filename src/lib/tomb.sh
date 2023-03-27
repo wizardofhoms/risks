@@ -43,6 +43,9 @@ function tomb.create ()
     # And get the email recipient
     recipient="$(identity.recipient)"
 
+    # Make sure, if the key file exists, that we can overwrite.
+    [[ -e "${tomb_key_path}" ]] && sudo chattr +i "${tomb_key_path}"
+
     # Then dig
     _verbose "Digging tomb in $tomb_file_path"
     tomb dig -s "$size" "$tomb_file_path"
