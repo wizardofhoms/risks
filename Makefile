@@ -32,15 +32,13 @@ release:
 
 	# First generate the risk script from our source
 	bashly generate
-	
+
 	# Remove set -e from the generated script
 	# since we handle our errors ourselves
 	sed -i 's/set -e//g' risks
 
-	# Move the initialize call from its current position to within 
-	# the run function, so that flags are accessible immediately.
-	sed -i 'N;$$!P;D' risks
-	sed -i '/parse_requirements "$${/a \ \ initialize' risks
+	# Add call after initialize but before run to setup log
+	sed -i '/parse_requirements "$${/a \ \ _init_log_file' risks
 
 	# And reset the settings from prod to dev
 	sed -i 's#^.*\benv\b.*$$#env: development#' settings.yml
