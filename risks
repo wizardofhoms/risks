@@ -9499,7 +9499,7 @@ risks_help_parse_requirements() {
 }
 
 initialize() {
-  version="0.1.0"
+  version="0.2.5"
   long_usage=''
   
 
