@@ -14,3 +14,4 @@ if ! gpg.passphrase_is_cached ; then
 fi
 
 _run tomb.open "$resource"
+_info "Successfully opened tomb ${resource}"
