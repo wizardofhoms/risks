@@ -51,10 +51,10 @@ function hush.write_risks_scripts ()
     cat >"${RISKS_SCRIPTS_INSTALL_PATH}/install" <<'EOF'
 #!/usr/bin/env zsh
 
-local INSTALL_SCRIPT_DIR="${0:a:h}"
-local INSTALL_SCRIPT_PATH="$0"
-local BINARY_INSTALL_DIR="${HOME}/.local/bin"
-local COMPLETIONS_INSTALL_DIR="${HOME}/.local/share/zsh/site-functions"
+declare INSTALL_SCRIPT_DIR="${0:a:h}"
+declare INSTALL_SCRIPT_PATH="$0"
+declare BINARY_INSTALL_DIR="${HOME}/.local/bin"
+declare COMPLETIONS_INSTALL_DIR="${HOME}/.local/share/zsh/site-functions"
 
 ## Binary
 #

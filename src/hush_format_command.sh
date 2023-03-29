@@ -1,5 +1,5 @@
 
-local sd_drive sd_ext4_drive sd_enc_part mount_point udev_rules uuid
+local sd_drive sd_ext4_drive sd_enc_part mount_point uuid
 
 sd_drive="${args['device']}"      # Device file
 sd_ext4_drive="$sd_drive"1        # Dumb partition
@@ -72,7 +72,7 @@ uuid=$(sudo cryptsetup luksUUID "${sd_enc_part}")
 echo 'SUBSYSTEM=="block", ENV{ID_FS_UUID}=="'"${uuid}"'", SYMLINK+="hush"' >> "${UDEV_RULES_PATH}"
 
 # Write our risks scripts in a special directory on the hush, and close the device.
-hush.write_risks_scripts "$udev_rules"
+hush.write_risks_scripts "$(cat "${UDEV_RULES_PATH}")"
 _verbose "Closing and unmounting device"
 _run sudo umount "${mount_point}"
 _catch "Failed to unmount ${mount_point}"
