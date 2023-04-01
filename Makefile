@@ -46,3 +46,9 @@ release:
 	# Signatures
 	qubes-gpg-client-wrapper --detach-sign risks > risks.gpg
 	sha256sum risks > risks.sha
+
+publish:
+	# Run the script using the Github CLI to publish
+	# a new release, prompting user for version tag
+	# and optionally some notes.
+	@bash scripts/release
