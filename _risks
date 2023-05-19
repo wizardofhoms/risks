@@ -246,8 +246,10 @@ _kv ()
         local -a subcmds
         subcmds=(
             'set:Set a variable to a value'
+            'append:Append a value to an existing variable (or create it)'
             'get:Get the value of a variable'
             'unset:Unset an existing variable'
+            'filter:Filter one or more values from an existing list variable'
             'list:List all key=value pairs in the store'
             'clean:Delete all key=value pairs in the store'
         )
@@ -266,7 +268,7 @@ _kv ()
     case $state in
         args)
             case $line[1] in
-            set)
+            set|append|filter)
                 _arguments -C "1:key:_kv_keys" "2:variable:" && ret=0 # TODO complete existing keys ?"
             ;;
             get|unset)

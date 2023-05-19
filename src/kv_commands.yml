@@ -14,6 +14,16 @@ commands:
         help: 'Value to assign to the key'
     examples:
       - "set signalVM MySignalVM      # Set key 'signalVM' to 'mySignalVM' in the store"
+  - name: append 
+    help: 'Append a value to an existing variable (or create it)'
+    catch_all: "values" 
+    args:
+      - name: key
+        required: true
+        help: 'Name of of key to set'
+      - name: value 
+        required: true
+        help: 'Value to append'
   - name: get 
     help: 'Get the value of a variable'
     args:
@@ -30,6 +40,16 @@ commands:
         help: 'Name of of key to delete/unset'
     examples:
       - "unset signalVM            # Deletes the key 'signalVM' in the key-value store"
+  - name: filter 
+    help: 'Filter one or more values from an existing list variable'
+    catch_all: "values" 
+    args:
+      - name: key
+        required: true
+        help: 'Name of of key to filter'
+      - name: value 
+        required: true
+        help: 'Value to filter out'
   - name: list 
     help: 'List all key=value pairs in the store'
   - name: clean 

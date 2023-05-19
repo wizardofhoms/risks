@@ -41,6 +41,20 @@ function kv.set ()
         _info "${key} => ${value}"
     }
 
+function kv.append ()
+{
+    key="$1"
+    value="$2"
+    kv.validate_key "$key" || {
+        _failure "db" 'invalid param "key"'
+            return 1
+        }
+        kv_user_dir=${KV_USER_DIR:-$DEFAULT_KV_USER_DIR}
+        test -d "$kv_user_dir" || mkdir "$kv_user_dir"
+        echo "$value" >> "$kv_user_dir/$key"
+        _info "${key} => ${value}"
+}
+
 # Usage: kvdel <key>
 function kv.del ()
 {
@@ -53,6 +67,33 @@ function kv.del ()
         test -f "$kv_user_dir/$key" && rm -f "$kv_user_dir/$key"
         _info "Deleted key '${key}'"
     }
+
+function kv.filter ()
+{
+    key="$1"
+    shift
+    local values=("$@")
+
+    [[ -z "${key}" || -z "${values[*]}" ]] && return
+
+    # Retrieve the existing key value, or skip.
+    local existing_value
+    existing_value="$(kv.get "${key}")"
+    [[ -z "${existing_value}" ]] && return
+
+    # And remove each key if found.
+    for val in "${values[@]}"; do
+        [[ -n "${val}" ]] || continue
+        existing_value=$(sed /^"$val"\$/d <<<"${existing_value}")
+    done
+
+    # Either save the reduced value, or unset the key if empty.
+    if [[ -z "${existing_value}" ]]; then
+        kv.unset "${key}"
+    else
+        kv.set "${key}" "${existing_value}"
+    fi
+}
 
 # list all key/value pairs to stdout
 # Usage: kvlist
