@@ -3,5 +3,5 @@ resource="${args['resource']}"
 
 identity.set "${args['identity']}"
 
-tomb.close "$resource"
+tomb.slam "$resource"
 exit $?

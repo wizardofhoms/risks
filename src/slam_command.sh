@@ -18,20 +18,8 @@ gpg.close_coffin
 # done
 
 # Finally, find all other tombs...
-tombs=$(tomb list 2>&1 \
-    | sed -n '0~4p' \
-    | awk -F" " '{print $(3)}' \
-    | rev | cut -c2- | rev | cut -c2-)
-
-# ... and close them
-while read -r tomb_name ; do
-    if [[ -z $tomb_name ]]; then
-        continue
-    fi
-
-    _info "Slaming tomb $tomb_name ..."
-    _run tomb slam "$tomb_name"
-done <<< "$tombs"
+_info "Closing all other tombs"
+tomb slam
 
 # Close graveyard backup if open
 if device.luks_mapper_found "$BACKUP_MAPPER" ; then
