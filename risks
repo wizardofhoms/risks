@@ -4542,7 +4542,7 @@ function kv.filter ()
     if [[ -z "${existing_value}" ]]; then
         kv.unset "${key}"
     else
-        kv.set "${key}" "'${existing_value}'"
+        kv.set "${key}" "${existing_value}"
     fi
 }
 
