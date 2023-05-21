@@ -1,6 +1,6 @@
 name: risks 
 help: Identity creation and management tool
-version: 0.2.7
+version: 0.2.7.1
 
 # Required programs for all commands
 dependencies:
