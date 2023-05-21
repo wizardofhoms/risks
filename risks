@@ -2128,8 +2128,8 @@ normalize_input() {
 }
 
 inspect_args() {
-  readarray -t sorted_keys < <(printf '%s\n' "${!args[@]}" | sort)
   if ((${#args[@]})); then
+    readarray -t sorted_keys < <(printf '%s\n' "${!args[@]}" | sort)
     echo args:
     for k in "${sorted_keys[@]}"; do echo "- \${args[$k]} = ${args[$k]}"; done
   else
@@ -2144,6 +2144,14 @@ inspect_args() {
       echo "- \${other_args[$i]} = ${other_args[$i]}"
     done
   fi
+
+  if ((${#deps[@]})); then
+    readarray -t sorted_keys < <(printf '%s\n' "${!deps[@]}" | sort)
+    echo
+    echo deps:
+    for k in "${sorted_keys[@]}"; do echo "- \${deps[$k]} = ${deps[$k]}"; done
+  fi
+
 }
 
 # backup.setup_identity creates a graveyard backup directory
@@ -6060,52 +6068,72 @@ parse_requirements() {
     esac
   done
 
-  if ! command -v wipe >/dev/null 2>&1; then
+  if command -v wipe >/dev/null 2>&1; then
+    deps['wipe']="$(command -v wipe | head -n1)"
+  else
     printf "missing dependency: wipe\n" >&2
     exit 1
   fi
 
-  if ! command -v tomb >/dev/null 2>&1; then
+  if command -v tomb >/dev/null 2>&1; then
+    deps['tomb']="$(command -v tomb | head -n1)"
+  else
     printf "missing dependency: tomb\n" >&2
     exit 1
   fi
 
-  if ! command -v fscrypt >/dev/null 2>&1; then
+  if command -v fscrypt >/dev/null 2>&1; then
+    deps['fscrypt']="$(command -v fscrypt | head -n1)"
+  else
     printf "missing dependency: fscrypt\n" >&2
     exit 1
   fi
 
-  if ! command -v steghide >/dev/null 2>&1; then
+  if command -v steghide >/dev/null 2>&1; then
+    deps['steghide']="$(command -v steghide | head -n1)"
+  else
     printf "missing dependency: steghide\n" >&2
     exit 1
   fi
 
-  if ! command -v spectre >/dev/null 2>&1; then
+  if command -v spectre >/dev/null 2>&1; then
+    deps['spectre']="$(command -v spectre | head -n1)"
+  else
     printf "missing dependency: spectre\n" >&2
     exit 1
   fi
 
-  if ! command -v pass >/dev/null 2>&1; then
+  if command -v pass >/dev/null 2>&1; then
+    deps['pass']="$(command -v pass | head -n1)"
+  else
     printf "missing dependency: pass\n" >&2
     exit 1
   fi
 
-  if ! command -v gpg2 >/dev/null 2>&1; then
+  if command -v gpg2 >/dev/null 2>&1; then
+    deps['gpg2']="$(command -v gpg2 | head -n1)"
+  else
     printf "missing dependency: gpg2\n" >&2
     exit 1
   fi
 
-  if ! command -v xclip >/dev/null 2>&1; then
+  if command -v xclip >/dev/null 2>&1; then
+    deps['xclip']="$(command -v xclip | head -n1)"
+  else
     printf "missing dependency: xclip\n" >&2
     exit 1
   fi
 
-  if ! command -v socat >/dev/null 2>&1; then
+  if command -v socat >/dev/null 2>&1; then
+    deps['socat']="$(command -v socat | head -n1)"
+  else
     printf "missing dependency: socat\n" >&2
     exit 1
   fi
 
-  if ! command -v pinentry-curses >/dev/null 2>&1; then
+  if command -v pinentry-curses >/dev/null 2>&1; then
+    deps['pinentry-curses']="$(command -v pinentry-curses | head -n1)"
+  else
     printf "missing dependency: pinentry-curses\n" >&2
     exit 1
   fi
@@ -9869,6 +9897,7 @@ initialize() {
 
 run() {
   declare -A args=()
+  declare -A deps=()
   declare -a other_args=()
   declare -a input=()
   normalize_input "$@"
@@ -9876,546 +9905,66 @@ run() {
   _init_log_file
 
   case "$action" in
-    "hush")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_hush_usage
-      else
-        risks_hush_command
-      fi
-      ;;
-
-    "hush format")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_hush_format_usage
-      else
-        risks_hush_format_command
-      fi
-      ;;
-
-    "hush mount")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_hush_mount_usage
-      else
-        risks_hush_mount_command
-      fi
-      ;;
-
-    "hush rw")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_hush_rw_usage
-      else
-        risks_hush_rw_command
-      fi
-      ;;
-
-    "hush ro")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_hush_ro_usage
-      else
-        risks_hush_ro_command
-      fi
-      ;;
-
-    "hush umount")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_hush_umount_usage
-      else
-        risks_hush_umount_command
-      fi
-      ;;
-
-    "hush status")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_hush_status_usage
-      else
-        risks_hush_status_command
-      fi
-      ;;
-
-    "backup")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_backup_usage
-      else
-        risks_backup_command
-      fi
-      ;;
-
-    "backup format")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_backup_format_usage
-      else
-        risks_backup_format_command
-      fi
-      ;;
-
-    "backup mount")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_backup_mount_usage
-      else
-        risks_backup_mount_command
-      fi
-      ;;
-
-    "backup umount")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_backup_umount_usage
-      else
-        risks_backup_umount_command
-      fi
-      ;;
-
-    "backup unlock")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_backup_unlock_usage
-      else
-        risks_backup_unlock_command
-      fi
-      ;;
-
-    "backup lock")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_backup_lock_usage
-      else
-        risks_backup_lock_command
-      fi
-      ;;
-
-    "backup status")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_backup_status_usage
-      else
-        risks_backup_status_command
-      fi
-      ;;
-
-    "backup identity")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_backup_identity_usage
-      else
-        risks_backup_identity_command
-      fi
-      ;;
-
-    "backup hush")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_backup_hush_usage
-      else
-        risks_backup_hush_command
-      fi
-      ;;
-
-    "identity")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_identity_usage
-      else
-        risks_identity_command
-      fi
-      ;;
-
-    "identity create")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_identity_create_usage
-      else
-        risks_identity_create_command
-      fi
-      ;;
-
-    "identity open")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_identity_open_usage
-      else
-        risks_identity_open_command
-      fi
-      ;;
-
-    "identity close")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_identity_close_usage
-      else
-        risks_identity_close_command
-      fi
-      ;;
-
-    "identity delete")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_identity_delete_usage
-      else
-        risks_identity_delete_command
-      fi
-      ;;
-
-    "identity backup")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_identity_backup_usage
-      else
-        risks_identity_backup_command
-      fi
-      ;;
-
-    "identity active")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_identity_active_usage
-      else
-        risks_identity_active_command
-      fi
-      ;;
-
-    "gpg")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_gpg_usage
-      else
-        risks_gpg_command
-      fi
-      ;;
-
-    "gpg generate")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_gpg_generate_usage
-      else
-        risks_gpg_generate_command
-      fi
-      ;;
-
-    "gpg open")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_gpg_open_usage
-      else
-        risks_gpg_open_command
-      fi
-      ;;
-
-    "gpg close")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_gpg_close_usage
-      else
-        risks_gpg_close_command
-      fi
-      ;;
-
-    "gpg import")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_gpg_import_usage
-      else
-        risks_gpg_import_command
-      fi
-      ;;
-
-    "gpg remove")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_gpg_remove_usage
-      else
-        risks_gpg_remove_command
-      fi
-      ;;
-
-    "gpg pass")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_gpg_pass_usage
-      else
-        risks_gpg_pass_command
-      fi
-      ;;
-
-    "ssh")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_ssh_usage
-      else
-        risks_ssh_command
-      fi
-      ;;
-
-    "ssh generate")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_ssh_generate_usage
-      else
-        risks_ssh_generate_command
-      fi
-      ;;
-
-    "tomb")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_tomb_usage
-      else
-        risks_tomb_command
-      fi
-      ;;
-
-    "tomb create")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_tomb_create_usage
-      else
-        risks_tomb_create_command
-      fi
-      ;;
-
-    "tomb open")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_tomb_open_usage
-      else
-        risks_tomb_open_command
-      fi
-      ;;
-
-    "tomb close")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_tomb_close_usage
-      else
-        risks_tomb_close_command
-      fi
-      ;;
-
-    "tomb delete")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_tomb_delete_usage
-      else
-        risks_tomb_delete_command
-      fi
-      ;;
-
-    "list")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_list_usage
-      else
-        risks_list_command
-      fi
-      ;;
-
-    "slam")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_slam_usage
-      else
-        risks_slam_command
-      fi
-      ;;
-
-    "load")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_load_usage
-      else
-        risks_load_command
-      fi
-      ;;
-
-    "save")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_save_usage
-      else
-        risks_save_command
-      fi
-      ;;
-
-    "resolve")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_resolve_usage
-      else
-        risks_resolve_command
-      fi
-      ;;
-
-    "resolve coffin")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_resolve_coffin_usage
-      else
-        risks_resolve_coffin_command
-      fi
-      ;;
-
-    "resolve tomb")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_resolve_tomb_usage
-      else
-        risks_resolve_tomb_command
-      fi
-      ;;
-
-    "resolve key")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_resolve_key_usage
-      else
-        risks_resolve_key_command
-      fi
-      ;;
-
-    "config")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_config_usage
-      else
-        risks_config_command
-      fi
-      ;;
-
-    "config set")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_config_set_usage
-      else
-        risks_config_set_command
-      fi
-      ;;
-
-    "config get")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_config_get_usage
-      else
-        risks_config_get_command
-      fi
-      ;;
-
-    "config unset")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_config_unset_usage
-      else
-        risks_config_unset_command
-      fi
-      ;;
-
-    "config list")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_config_list_usage
-      else
-        risks_config_list_command
-      fi
-      ;;
-
-    "config keys")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_config_keys_usage
-      else
-        risks_config_keys_command
-      fi
-      ;;
-
-    "kv")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_kv_usage
-      else
-        risks_kv_command
-      fi
-      ;;
-
-    "kv set")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_kv_set_usage
-      else
-        risks_kv_set_command
-      fi
-      ;;
-
-    "kv append")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_kv_append_usage
-      else
-        risks_kv_append_command
-      fi
-      ;;
-
-    "kv get")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_kv_get_usage
-      else
-        risks_kv_get_command
-      fi
-      ;;
-
-    "kv unset")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_kv_unset_usage
-      else
-        risks_kv_unset_command
-      fi
-      ;;
-
-    "kv filter")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_kv_filter_usage
-      else
-        risks_kv_filter_command
-      fi
-      ;;
-
-    "kv list")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_kv_list_usage
-      else
-        risks_kv_list_command
-      fi
-      ;;
-
-    "kv clean")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_kv_clean_usage
-      else
-        risks_kv_clean_command
-      fi
-      ;;
-
-    "help")
-      if [[ ${args['--help']:-} ]]; then
-        long_usage=yes
-        risks_help_usage
-      else
-        risks_help_command
-      fi
-      ;;
-
+    "hush") risks_hush_command ;;
+    "hush format") risks_hush_format_command ;;
+    "hush mount") risks_hush_mount_command ;;
+    "hush rw") risks_hush_rw_command ;;
+    "hush ro") risks_hush_ro_command ;;
+    "hush umount") risks_hush_umount_command ;;
+    "hush status") risks_hush_status_command ;;
+    "backup") risks_backup_command ;;
+    "backup format") risks_backup_format_command ;;
+    "backup mount") risks_backup_mount_command ;;
+    "backup umount") risks_backup_umount_command ;;
+    "backup unlock") risks_backup_unlock_command ;;
+    "backup lock") risks_backup_lock_command ;;
+    "backup status") risks_backup_status_command ;;
+    "backup identity") risks_backup_identity_command ;;
+    "backup hush") risks_backup_hush_command ;;
+    "identity") risks_identity_command ;;
+    "identity create") risks_identity_create_command ;;
+    "identity open") risks_identity_open_command ;;
+    "identity close") risks_identity_close_command ;;
+    "identity delete") risks_identity_delete_command ;;
+    "identity backup") risks_identity_backup_command ;;
+    "identity active") risks_identity_active_command ;;
+    "gpg") risks_gpg_command ;;
+    "gpg generate") risks_gpg_generate_command ;;
+    "gpg open") risks_gpg_open_command ;;
+    "gpg close") risks_gpg_close_command ;;
+    "gpg import") risks_gpg_import_command ;;
+    "gpg remove") risks_gpg_remove_command ;;
+    "gpg pass") risks_gpg_pass_command ;;
+    "ssh") risks_ssh_command ;;
+    "ssh generate") risks_ssh_generate_command ;;
+    "tomb") risks_tomb_command ;;
+    "tomb create") risks_tomb_create_command ;;
+    "tomb open") risks_tomb_open_command ;;
+    "tomb close") risks_tomb_close_command ;;
+    "tomb delete") risks_tomb_delete_command ;;
+    "list") risks_list_command ;;
+    "slam") risks_slam_command ;;
+    "load") risks_load_command ;;
+    "save") risks_save_command ;;
+    "resolve") risks_resolve_command ;;
+    "resolve coffin") risks_resolve_coffin_command ;;
+    "resolve tomb") risks_resolve_tomb_command ;;
+    "resolve key") risks_resolve_key_command ;;
+    "config") risks_config_command ;;
+    "config set") risks_config_set_command ;;
+    "config get") risks_config_get_command ;;
+    "config unset") risks_config_unset_command ;;
+    "config list") risks_config_list_command ;;
+    "config keys") risks_config_keys_command ;;
+    "kv") risks_kv_command ;;
+    "kv set") risks_kv_set_command ;;
+    "kv append") risks_kv_append_command ;;
+    "kv get") risks_kv_get_command ;;
+    "kv unset") risks_kv_unset_command ;;
+    "kv filter") risks_kv_filter_command ;;
+    "kv list") risks_kv_list_command ;;
+    "kv clean") risks_kv_clean_command ;;
+    "help") risks_help_command ;;
   esac
 }
 
